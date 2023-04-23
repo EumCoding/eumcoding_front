@@ -1,0 +1,95 @@
+.image_thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image_banner {
+    width: 100%;
+    height: 30vw;
+    background: #cccccc;
+    overflow: hidden;
+}
+
+.image_mid {
+    width: 90%;
+    height: auto;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.image_mid_outer {
+    width:20%;
+    height:auto;
+    text-align: center;
+}
+
+.image_top5{
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+}
+
+.font_bold{
+    font-family: 'NanumSquareNeo';
+    font-weight: 900;
+    font-size: 7rem;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.font_small{
+    font-family: 'NanumSquareNeo';
+    font-weight: 700;
+    font-size: 2rem;
+    text-align: center;
+}
+
+.font_login{
+    font-family: 'NanumSquareNeo';
+    font-weight: 900;
+    font-size: 4rem;
+    text-align: center;
+    color: #FFFFFF;
+    justify-content: center;
+    justify-items: center;
+    align-content: center;
+    align-items: center;
+}
+
+.font_footer_logo{
+    font-family: 'NanumSquareNeo';
+    font-weight: 900;
+    font-size: 3rem;
+    text-align: center;
+    color: #A3A3A3;
+    margin-top: 0;
+}
+
+.font_footer_description{
+    font-family: 'NanumSquareNeo';
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: left;
+    color: #A3A3A3;
+    justify-content: center;
+    justify-items: center;
+    align-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+    margin-top: 0;
+}
+
+.font_footer_menu{
+    font-family: 'NanumSquareNeo';
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: left;
+    color: #A3A3A3;
+    justify-content: center;
+    justify-items: center;
+    align-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+    margin-top: 0;
+}

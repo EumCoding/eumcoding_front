@@ -7,11 +7,16 @@ import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
-import {createTheme, MenuItem, ThemeProvider} from "@mui/material";
+import {Button, createTheme, Grid, MenuItem, ThemeProvider} from "@mui/material";
+import styles from './css/TopNav.module.css';
 
-const pages =  ['강의', '테마별 강의', '소개'];
+
+const pages = ["강의", "테마별 강의", "소개", "검색"];
+
 
 export default function TopBar() {
+
+
     const [anchorElNav, setAnchorElNav] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -40,36 +45,36 @@ export default function TopBar() {
                         }
                       `,
             },
+            MuiToolbar: {
+                styleOverrides: {
+                    dense: {
+                        height: 64,
+                        minHeight: 64
+                    }
+                }
+            }
         },
     });
 
     const handleOpenNavMenu = (event) => {
         setAnchorElNav(event.currentTarget);
     };
-    const handleOpenUserMenu = (event) => {
-        setAnchorElUser(event.currentTarget);
-    };
 
     const handleCloseNavMenu = () => {
         setAnchorElNav(null);
     };
 
-    const handleCloseUserMenu = () => {
-        setAnchorElUser(null);
-    };
-
     return (
         <ThemeProvider theme={theme}>
-            <AppBar position="static">
-                <Container maxWidth="xl" sx={{mx:30}}>
+            <AppBar position="static" sx={{px:'20%'}}>
+                <Container maxWidth="xl">
                     <Toolbar disableGutters>
                         <Typography
-                            variant="h4"
                             noWrap
                             component="a"
                             href="/"
                             sx={{
-                                my:2,
+                                my: 2,
                                 mr: 2,
                                 display: 'flex',
                                 color: '#3767A6',
@@ -77,10 +82,10 @@ export default function TopBar() {
                                 alignItems: 'center',
                             }}
                         >
-                            <b>이음코딩</b>
+                            <b className={styles.font_logo}>이음코딩</b>
                         </Typography>
 
-                        <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+                        <Box sx={{flexGrow: 1, display: {xs: 'flex', md: 'none'}}}>
                             <IconButton
                                 size="large"
                                 aria-label="account of current user"
@@ -89,7 +94,7 @@ export default function TopBar() {
                                 onClick={handleOpenNavMenu}
                                 color="inherit"
                             >
-                                <MenuIcon />
+                                <MenuIcon/>
                             </IconButton>
                             <Menu
                                 id="menu-appbar"
@@ -106,15 +111,68 @@ export default function TopBar() {
                                 open={Boolean(anchorElNav)}
                                 onClose={handleCloseNavMenu}
                                 sx={{
-                                    display: { xs: 'block', md: 'none' },
+                                    display: {xs: 'block', md: 'none'},
                                 }}
                             >
-                                {pages.map((page) => {
+                                {pages.map((page) => (
                                     <MenuItem key={page} onClick={handleCloseNavMenu}>
-                                        <Typography textAlign="center">{page}</Typography>
+                                        <Typography textAlign="center" sx={{color:'#000000'}}>{page}</Typography>
                                     </MenuItem>
-                            })}
+                                ))}
                             </Menu>
+                        </Box>
+                        <Typography
+                            noWrap
+                            component="a"
+                            href=""
+                            sx={{
+                                mr: 2,
+                                display: {xs: 'flex', md: 'none'},
+                                flexGrow: 1,
+                                color: '#3767A6',
+                                textDecoration: 'none',
+                            }}
+                            className={styles.font_logo}
+                        >
+                            이음코딩
+                        </Typography>
+                        <Box direction="row"
+                             justifyContent="center"
+                             alignItems="center"
+                             sx={{flexGrow: 1, height:'100%', display: {xs: 'none', md: 'flex', alignItems: 'center'}}}>
+                            {/*{pages.map((page) => (*/}
+                            {/*    <Button*/}
+                            {/*        direction="row"*/}
+                            {/*        key={page}*/}
+                            {/*        onClick={handleCloseNavMenu}*/}
+                            {/*        sx={{my: 2, color: 'white', display: 'block'}}*/}
+                            {/*    >*/}
+                            {/*        <Typography textAlign="center" sx={{color:'#000000'}}>{page}</Typography>*/}
+                            {/*    </Button>*/}
+                            {/*))}*/}
+                            <Grid container justifyContent="center" alignItems="center" spacing={0} sx={{flexGrow:1, height:'100%'}}>
+                                {pages.map((page) => (
+                                    <Grid item md={12/(pages.length+1)}>
+                                        <Typography  textAlign="center" sx={{color:'#000000'}}>
+                                            <b className={styles.font_menu}>{page}</b>
+                                        </Typography>
+                                    </Grid>
+                                ))}
+                                <Grid
+                                    display="flex"
+                                    justifyContent="center"
+                                    alignItems="center"
+                                    item
+                                    md={12/(pages.length+1)}
+                                    sx={{p:0, height:'100%'}}>
+                                    <Box display="flex"
+                                         justifyContent="center"
+                                         alignItems="center"
+                                         sx={{ borderRadius: '15vw', border:1, borderColor:"#000000", width:"30%", height:"100%", m:0, p:1 }}>
+                                        <b className={styles.font_menu}>로그인</b>
+                                    </Box>
+                                </Grid>
+                            </Grid>
                         </Box>
                     </Toolbar>
                 </Container>
