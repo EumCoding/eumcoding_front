@@ -1,11 +1,12 @@
 import './App.css';
 import React from 'react';
 import {Route, Routes} from "react-router-dom";
-import Join from "./student/Join";
+import Join from "./unauth/Join";
 import TopBar from "./component/TopNav";
 import Main from "./unauth/Main";
 import Login from "./unauth/Login";
 import Lecture from "./unauth/Lecture";
+import DashBoard from "./student/DashBoard";
 
 function App() {
     return (
@@ -18,6 +19,8 @@ function App() {
             <Route path={"/unauth/login"} element={<Login />}/>
             {/* 강의 설명 화면 **/}
             <Route path={"/lecture"} element={<Lecture />}/>
+            {/* 강의 설명 화면 **/}
+            <Route path={"/dashboard"} element={<DashBoard />}/>
         </Routes>
 
     );

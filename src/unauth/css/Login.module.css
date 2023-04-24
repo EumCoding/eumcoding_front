@@ -49,6 +49,8 @@
 
 .svg_icon_kakao{
     margin-right: 1rem;
+    width: 3rem;
+    text-align: left;
 }
 
 .font_body_find{
@@ -61,4 +63,15 @@
     justify-content: center;
     align-items: center;
     text-decoration-line: underline;
+}
+
+.image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image_box{
+    width: 30%;
+    height: auto;
 }

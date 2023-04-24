@@ -1,0 +1,17 @@
+.font_logo{
+    font-family: 'NanumSquareNeo';
+    font-weight: 900;
+    font-size: 2rem;
+    text-align: start;
+    color: #FFFFFF;
+}
+
+.font_menu{
+    font-family: 'NanumSquareNeo';
+    font-weight: 600;
+    font-size: 1rem;
+    text-align: center;
+    color: #000000;
+    margin-top: 0;
+    margin-bottom: 0;
+}

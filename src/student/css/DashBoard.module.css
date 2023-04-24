@@ -1,0 +1,55 @@
+.font_main{
+    font-family: 'NanumSquareNeo';
+    font-weight: 900;
+    font-size: 1.7rem;
+    text-align: start;
+    color: #000000;
+}
+
+.font_name{
+    font-family: 'NanumSquareNeo';
+    font-weight: 900;
+    font-size: 1.5rem;
+    text-align: start;
+    color: #000000;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.font_normal{
+    font-family: 'NanumSquareNeo';
+    font-weight: 500;
+    font-size: 1.5rem;
+    text-align: start;
+    color: #000000;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.font_gray{
+    font-family: 'NanumSquareNeo';
+    font-weight: 500;
+    font-size: 1rem;
+    text-align: start;
+    color: #8D8D8D;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.font_black{
+    font-family: 'NanumSquareNeo';
+    font-weight: 500;
+    font-size: 1rem;
+    text-align: start;
+    color: #000000;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.font_btn{
+    font-family: 'NanumSquareNeo';
+    font-weight: 600;
+    font-size: 1.5rem;
+    text-align: center;
+    color: #FFFFFF;
+}

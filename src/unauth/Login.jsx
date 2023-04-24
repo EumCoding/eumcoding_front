@@ -64,7 +64,7 @@ function Login(props) {
                          justifyContent="center"
                          alignItems="center"
                          sx={{ borderRadius: '10vw',
-                             width:"50vw", height:"2.5vw",
+                             width:"100%", height:"2.5vw",
                              m:0, p:1,
                              border:0,
                              background: "#3767A6"}}>
@@ -83,7 +83,7 @@ function Login(props) {
                          justifyContent="center"
                          alignItems="center"
                          sx={{ borderRadius: '10vw',
-                             width:"50vw", height:"2.5vw",
+                             width:"100%", height:"2.5vw",
                              m:0, p:1,
                              border:0,
                              background: "#FFE812"}}>
@@ -102,7 +102,7 @@ function Login(props) {
                          justifyContent="center"
                          alignItems="center"
                          sx={{ borderRadius: '10vw',
-                             width:"50vw", height:"2.5vw",
+                             width:"100%", height:"2.5vw",
                              m:0, p:1,
                              border:5,
                              borderColor: "#3767A6"}}>
