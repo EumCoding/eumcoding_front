@@ -7,6 +7,7 @@ import Main from "./unauth/Main";
 import Login from "./unauth/Login";
 import Lecture from "./unauth/Lecture";
 import DashBoard from "./student/DashBoard";
+import MyPage from "./student/MyPage";
 
 function App() {
     return (
@@ -21,6 +22,8 @@ function App() {
             <Route path={"/lecture"} element={<Lecture />}/>
             {/* 강의 설명 화면 **/}
             <Route path={"/dashboard"} element={<DashBoard />}/>
+            {/* 강의 설명 화면 **/}
+            <Route path={"/my"} element={<MyPage />}/>
         </Routes>
 
     );

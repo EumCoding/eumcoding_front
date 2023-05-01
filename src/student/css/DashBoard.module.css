@@ -53,3 +53,14 @@
     text-align: center;
     color: #FFFFFF;
 }
+
+.font_a{
+    font-family: 'NanumSquareNeo';
+    font-weight: 900;
+    font-size: 1rem;
+    text-align: start;
+    color: #8D8D8D;
+    margin-top: 0;
+    margin-bottom: 0;
+    text-decoration-line: underline;
+}
