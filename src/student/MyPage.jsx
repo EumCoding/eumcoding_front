@@ -1,5 +1,5 @@
 import React from 'react';
-import {Box, createTheme, Divider, Grid, ThemeProvider} from "@mui/material";
+import {Box, Button, createTheme, Divider, Grid, ThemeProvider} from "@mui/material";
 import DashTop from "../component/DashTop";
 import FaceIcon from "@mui/icons-material/Face6";
 import Typography from "@mui/material/Typography";
@@ -9,6 +9,24 @@ function MyPage(props) {
     const theme = createTheme({ // Theme
         typography: {
             fontFamily: 'NanumSquareNeo',
+        },
+        components: {
+            MuiButton: {
+                styleOverrides: {
+                    root: {
+                        '&:hover': {
+                            backgroundColor: '#C3D9C9', // 버튼 클릭 시 효과 색상
+                            // 클릭 효과 변경
+                            '@media (hover: none)': {
+                                backgroundColor: 'transparent',
+                            },
+                            '& .MuiTouchRipple-root': {
+                                color: '#C3D9C9', // 터치 효과 색상
+                            },
+                        },
+                    },
+                },
+            },
         },
     });
     return (
@@ -148,6 +166,19 @@ function MyPage(props) {
                         sx={{fontWeight:'900', fontSize:'1rem', color:'#000000'}}>
                         01000000000<EditIcon />
                     </Typography>
+                </Grid>
+
+                {/* 비밀번호 변경 **/}
+                <Grid item xs={12} display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                      sx={{mt:"2rem"}}
+                >
+                    <Button fullWidth variant="outlined" sx={{borderRadius:"0.5vw", backgroundColor:"#FFFFFF", borderColor:"#000000", py:"1rem",}}>
+                        <Typography sx={{fontWeight:"700", fontSize:"1rem", color:"#000000"}}>
+                            비밀번호 변경
+                        </Typography>
+                    </Button>
                 </Grid>
             </Grid>
         </ThemeProvider>
