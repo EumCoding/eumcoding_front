@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {Box, Button, createTheme, Grid, MenuItem, Select, TextField, ThemeProvider} from "@mui/material";
 import DashTop from "../component/DashTop";
 import Typography from "@mui/material/Typography";
+import lectureThumb from "../images/강의썸네일.png";
 
 function MyLecture(props) {
     const theme = createTheme({ // Theme
@@ -22,6 +23,9 @@ function MyLecture(props) {
                                 color: '#C3D9C9', // 터치 효과 색상
                             },
                         },
+                        '&:hover, &:focus': {
+                            borderColor: 'black',
+                        },
                     },
                 },
             },
@@ -32,8 +36,8 @@ function MyLecture(props) {
     return (
         <ThemeProvider theme={theme}>
             <DashTop/>
-            <Grid container sx={{px:"2rem", pt:"2rem"}}>
-                <Grid xs={12} item direction='flex' justifyContent='center' alignItems='center'>
+            <Grid container sx={{px:"5rem", pt:"2rem", width:"100vw"}} spacing={2}>
+                <Grid xs={12} item display='flex' justifyContent='flex-start' alignItems='center' sx={{mb:"2rem"}}>
                     <Select
                         onChange={(e) => setSort(e.target.value)}
                         label="정렬"
@@ -49,8 +53,124 @@ function MyLecture(props) {
                         <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#FFFFFF"}}>검색</Typography>
                     </Button>
                 </Grid>
-                <Grid xs={3} item>
+                <Grid xs={12} container item display='flex' justifyContent='flex-start' alignItems='center' sx={{width:"100%"}}
+                    spacing={2}
+                >
+                    <Grid xs={3} container item sx={{width:"100%"}}>
+                        <Grid xs={12} item sx={{width:"100%"}}>
+                            <div style={{width:"100%", aspectRatio: "8:5", overflow:"hidden"}}>
+                                <img style={{width: "100%", height: "100%", objectFit: "cover"}} src={lectureThumb} />
+                            </div>
+                        </Grid>
+                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{mt:"0.2rem"}}>
+                            <Typography sx={{fontWeight:"900", fontSize:"1rem"}}>
+                                무작정 따라하는 우리아이 첫 코딩교육
+                            </Typography>
+                        </Grid>
+                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{pt:"0.5rem"}}>
+                            <Typography sx={{fontWeight:"900", fontSize:"0.5rem", color:"#8D8D8D"}}>
+                                진행률 : 50%
+                            </Typography>
+                        </Grid>
+                    </Grid>
+                    <Grid xs={3} container item>
+                        <Grid xs={12} item sx={{width:"100%"}}>
+                            <div style={{width:"100%", aspectRatio: "8:5", overflow:"hidden"}}>
+                                <img style={{width: "100%", height: "100%", objectFit: "cover"}} src={lectureThumb} />
+                            </div>
+                        </Grid>
+                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{pt:"0.2rem"}}>
+                            <Typography sx={{fontWeight:"900", fontSize:"1rem"}}>
+                                무료강의 1
+                            </Typography>
+                        </Grid>
+                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{pt:"0.5rem"}}>
+                            <Typography sx={{fontWeight:"900", fontSize:"0.5rem", color:"#8D8D8D"}}>
+                                진행률 : 50%
+                            </Typography>
+                        </Grid>
+                    </Grid>
+                    <Grid xs={3} container item>
+                        <Grid xs={12} item sx={{width:"100%"}}>
+                            <div style={{width:"100%", aspectRatio: "8:5", overflow:"hidden"}}>
+                                <img style={{width: "100%", height: "100%", objectFit: "cover"}} src={lectureThumb} />
+                            </div>
+                        </Grid>
+                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{pt:"0.2rem"}}>
+                            <Typography sx={{fontWeight:"900", fontSize:"1rem"}}>
+                                무료강의 1
+                            </Typography>
+                        </Grid>
+                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{pt:"0.5rem"}}>
+                            <Typography sx={{fontWeight:"900", fontSize:"0.5rem", color:"#8D8D8D"}}>
+                                진행률 : 50%
+                            </Typography>
+                        </Grid>
+                    </Grid>
+                    <Grid xs={3} container item>
+                        <Grid xs={12} item sx={{width:"100%"}}>
+                            <div style={{width:"100%", aspectRatio: "8:5", overflow:"hidden"}}>
+                                <img style={{width: "100%", height: "100%", objectFit: "cover"}} src={lectureThumb} />
+                            </div>
+                        </Grid>
+                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{pt:"0.2rem"}}>
+                            <Typography sx={{fontWeight:"900", fontSize:"1rem"}}>
+                                무료강의 1
+                            </Typography>
+                        </Grid>
+                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{pt:"0.5rem"}}>
+                            <Typography sx={{fontWeight:"900", fontSize:"0.5rem", color:"#8D8D8D"}}>
+                                진행률 : 50%
+                            </Typography>
+                        </Grid>
+                    </Grid>
+                    <Grid xs={3} container item>
+                        <Grid xs={12} item sx={{width:"100%"}}>
+                            <div style={{width:"100%", aspectRatio: "8:5", overflow:"hidden"}}>
+                                <img style={{width: "100%", height: "100%", objectFit: "cover"}} src={lectureThumb} />
+                            </div>
+                        </Grid>
+                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{pt:"0.2rem"}}>
+                            <Typography sx={{fontWeight:"900", fontSize:"1rem"}}>
+                                무료강의 1
+                            </Typography>
+                        </Grid>
+                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{pt:"0.5rem"}}>
+                            <Typography sx={{fontWeight:"900", fontSize:"0.5rem", color:"#8D8D8D"}}>
+                                진행률 : 50%
+                            </Typography>
+                        </Grid>
+                    </Grid>
+                    <Grid xs={3} container item>
+                        <Grid xs={12} item sx={{width:"100%"}}>
+                            <div style={{width:"100%", aspectRatio: "8:5", overflow:"hidden"}}>
+                                <img style={{width: "100%", height: "100%", objectFit: "cover"}} src={lectureThumb} />
+                            </div>
+                        </Grid>
+                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{pt:"0.2rem"}}>
+                            <Typography sx={{fontWeight:"900", fontSize:"1rem"}}>
+                                무료강의 1
+                            </Typography>
+                        </Grid>
+                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{pt:"0.5rem"}}>
+                            <Typography sx={{fontWeight:"900", fontSize:"0.5rem", color:"#8D8D8D"}}>
+                                진행률 : 50%
+                            </Typography>
+                        </Grid>
+                    </Grid>
 
+                </Grid>
+                <Grid xs={12} container item display='flex' justifyContent='center' alignItems='center' sx={{width:"100%", py:"3rem"}}>
+                    <Grid xs={12} item
+                          display="flex"
+                          justifyContent="center"
+                          alignItems="center">
+                        <Button fullWidth variant="outlined" sx={{borderRadius:"0.5vw", backgroundColor:"#FFFFFF", borderColor:"#000000", py:"1rem",}}>
+                            <Typography sx={{fontWeight:"700", fontSize:"1rem", color:"#000000"}}>
+                                더보기
+                            </Typography>
+                        </Button>
+                    </Grid>
                 </Grid>
             </Grid>
         </ThemeProvider>

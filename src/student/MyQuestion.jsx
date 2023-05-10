@@ -10,7 +10,7 @@ import FaceIcon from "@mui/icons-material/Face6";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
-function MyReview(props) {
+function MyQuestion(props) {
     const theme = createTheme({ // Theme
         typography: {
             fontFamily: 'NanumSquareNeo',
@@ -146,19 +146,6 @@ function MyReview(props) {
                                         xs={12}
                                         display="flex"
                                         justifyContent="flex-start"
-                                        alignItems="flex-end"
-                                    >
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    </Grid>
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        display="flex"
-                                        justifyContent="flex-start"
                                         alignItems="center"
                                         sx={{pl:0}}
                                     >
@@ -180,11 +167,19 @@ function MyReview(props) {
                                   display="flex"
                                   justifyContent="flex-start"
                                   alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
+                                  xs={12} sx={{pt:'1vw'}}>
+                                <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D"}}>
+                                    무료강의 1
+                                </Typography>
+                            </Grid>
+                            <Grid item
+                                  display="flex"
+                                  justifyContent="flex-start"
+                                  alignItems="center"
+                                  xs={12} sx={{pt:'0.5vw'}}>
                                 <span className={styles.font_review_date}>
-                                    2022-03-18 ♥2
+                                    2022-03-18
                                 </span>
-                                <br/>
                             </Grid>
                             <Grid item
                                   xs={12} sx={{mt:'2vw', mb:'1vw'}}>
@@ -213,19 +208,6 @@ function MyReview(props) {
                                         xs={12}
                                         display="flex"
                                         justifyContent="flex-start"
-                                        alignItems="flex-end"
-                                    >
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    </Grid>
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        display="flex"
-                                        justifyContent="flex-start"
                                         alignItems="center"
                                         sx={{pl:0}}
                                     >
@@ -247,11 +229,19 @@ function MyReview(props) {
                                   display="flex"
                                   justifyContent="flex-start"
                                   alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
+                                  xs={12} sx={{pt:'1vw'}}>
+                                <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D"}}>
+                                    무료강의 1
+                                </Typography>
+                            </Grid>
+                            <Grid item
+                                  display="flex"
+                                  justifyContent="flex-start"
+                                  alignItems="center"
+                                  xs={12} sx={{pt:'0.5vw'}}>
                                 <span className={styles.font_review_date}>
-                                    2022-03-18 ♥2
+                                    2022-03-18
                                 </span>
-                                <br/>
                             </Grid>
                             <Grid item
                                   xs={12} sx={{mt:'2vw', mb:'1vw'}}>
@@ -281,19 +271,6 @@ function MyReview(props) {
                                         xs={12}
                                         display="flex"
                                         justifyContent="flex-start"
-                                        alignItems="flex-end"
-                                    >
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    </Grid>
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        display="flex"
-                                        justifyContent="flex-start"
                                         alignItems="center"
                                         sx={{pl:0}}
                                     >
@@ -315,11 +292,19 @@ function MyReview(props) {
                                   display="flex"
                                   justifyContent="flex-start"
                                   alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
+                                  xs={12} sx={{pt:'1vw'}}>
+                                <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D"}}>
+                                    무료강의 1
+                                </Typography>
+                            </Grid>
+                            <Grid item
+                                  display="flex"
+                                  justifyContent="flex-start"
+                                  alignItems="center"
+                                  xs={12} sx={{pt:'0.5vw'}}>
                                 <span className={styles.font_review_date}>
-                                    2022-03-18 ♥2
+                                    2022-03-18
                                 </span>
-                                <br/>
                             </Grid>
                             <Grid item
                                   xs={12} sx={{mt:'2vw', mb:'1vw'}}>
@@ -349,19 +334,6 @@ function MyReview(props) {
                                         xs={12}
                                         display="flex"
                                         justifyContent="flex-start"
-                                        alignItems="flex-end"
-                                    >
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    </Grid>
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        display="flex"
-                                        justifyContent="flex-start"
                                         alignItems="center"
                                         sx={{pl:0}}
                                     >
@@ -383,11 +355,19 @@ function MyReview(props) {
                                   display="flex"
                                   justifyContent="flex-start"
                                   alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
+                                  xs={12} sx={{pt:'1vw'}}>
+                                <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D"}}>
+                                    무료강의 1
+                                </Typography>
+                            </Grid>
+                            <Grid item
+                                  display="flex"
+                                  justifyContent="flex-start"
+                                  alignItems="center"
+                                  xs={12} sx={{pt:'0.5vw'}}>
                                 <span className={styles.font_review_date}>
-                                    2022-03-18 ♥2
+                                    2022-03-18
                                 </span>
-                                <br/>
                             </Grid>
                             <Grid item
                                   xs={12} sx={{mt:'2vw', mb:'1vw'}}>
@@ -441,7 +421,7 @@ function MyReview(props) {
                                   alignItems="center"
                                   xs={12} sx={{mt:'1vw'}}>
                                 <span className={styles.font_review_date}>
-                                    2022-03-18 ♥2
+                                    2022-03-18
                                 </span>
                                 <br/>
                             </Grid>
@@ -463,4 +443,4 @@ function MyReview(props) {
     );
 }
 
-export default MyReview;
+export default MyQuestion;

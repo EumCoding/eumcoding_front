@@ -66,7 +66,7 @@ export default function TopBar() {
 
     return (
         <ThemeProvider theme={theme}>
-            <AppBar position="static" sx={{px:'20%'}}>
+            <AppBar position="static" sx={{px:{xs:"5%", sm:"10%", md:"10%", lg:"20%"}}}>
                 <Container maxWidth="xl">
                     <Toolbar disableGutters>
                         <Typography
@@ -85,7 +85,7 @@ export default function TopBar() {
                             <b className={styles.font_logo}>이음코딩</b>
                         </Typography>
 
-                        <Box sx={{flexGrow: 1, display: {xs: 'flex', md: 'none'}}}>
+                        <Box sx={{flexGrow: 1, display: {xs: 'flex', md: 'none'}}} justifyContent={"flex-end"}>
                             <IconButton
                                 size="large"
                                 aria-label="account of current user"
@@ -119,23 +119,12 @@ export default function TopBar() {
                                         <Typography textAlign="center" sx={{color:'#000000'}}>{page}</Typography>
                                     </MenuItem>
                                 ))}
+                                <MenuItem onClick={handleCloseNavMenu}>
+                                    <Typography textAlign="center" sx={{color:'#000000'}}>로그인</Typography>
+                                </MenuItem>
                             </Menu>
                         </Box>
-                        <Typography
-                            noWrap
-                            component="a"
-                            href=""
-                            sx={{
-                                mr: 2,
-                                display: {xs: 'flex', md: 'none'},
-                                flexGrow: 1,
-                                color: '#3767A6',
-                                textDecoration: 'none',
-                            }}
-                            className={styles.font_logo}
-                        >
-                            이음코딩
-                        </Typography>
+
                         <Box direction="row"
                              justifyContent="center"
                              alignItems="center"
@@ -168,7 +157,7 @@ export default function TopBar() {
                                     <Box display="flex"
                                          justifyContent="center"
                                          alignItems="center"
-                                         sx={{ borderRadius: '15vw', border:1, borderColor:"#000000", width:"30%", height:"100%", m:0, p:1 }}>
+                                         sx={{ borderRadius: '15vw', border:1, borderColor:"#000000", height:"100%", m:0, p:1, aspectRatio:"4:1" }}>
                                         <b className={styles.font_menu}>로그인</b>
                                     </Box>
                                 </Grid>

@@ -24,11 +24,15 @@ function MyPage(props) {
                                 color: '#C3D9C9', // 터치 효과 색상
                             },
                         },
+                        '&:hover, &:focus': {
+                            borderColor: 'black',
+                        },
                     },
                 },
             },
         },
     });
+
     return (
         <ThemeProvider theme={theme}>
             <DashTop/>
