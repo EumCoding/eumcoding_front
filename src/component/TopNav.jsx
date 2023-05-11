@@ -67,8 +67,8 @@ export default function TopBar() {
     return (
         <ThemeProvider theme={theme}>
             <AppBar position="static" sx={{px:{xs:"5%", sm:"10%", md:"10%", lg:"20%"}}}>
-                <Container maxWidth="xl">
-                    <Toolbar disableGutters>
+                <Container maxWidth="xl" sx={{padding:{xs:0, md:0}}}>
+                    <Toolbar disableGutters sx={{p:0, m:0}}>
                         <Typography
                             noWrap
                             component="a"

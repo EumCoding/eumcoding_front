@@ -16,7 +16,7 @@ function DashTop(props) {
 
     return (
         <ThemeProvider theme={theme}>
-            <AppBar position="static" sx={{background:"#0B401D", px:{md:"5rem", sx:"2rem"}}}>
+            <AppBar position="static" sx={{background:"#0B401D", px:{md:"5rem", sx:"2rem", zIndex: 9999}}}>
                 <Toolbar sx={{height:"5rem"}}>
                     <Box flexGrow={1}>
                         <div className={styles.font_logo}>

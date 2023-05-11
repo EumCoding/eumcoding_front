@@ -13,7 +13,7 @@
 
 .image_thumb {
     width: 100%;
-    height: auto;
+    aspect-ratio: 16/9;
     background: #cccccc;
     overflow: hidden;
     border-radius: 1vw;
@@ -23,7 +23,7 @@
 .font_lecture_name{
     font-family: 'NanumSquareNeo';
     font-weight: 900;
-    font-size: 2.5rem;
+    font-size: 2rem;
     text-align: left;
     color: #FFFFFF;
     margin: 0;
@@ -33,7 +33,7 @@
 .font_review{
     font-family: 'NanumSquareNeo';
     font-weight: 900;
-    font-size: 2.5rem;
+    font-size: 2rem;
     text-align: left;
     color: #FFFFFF;
     margin: 0;

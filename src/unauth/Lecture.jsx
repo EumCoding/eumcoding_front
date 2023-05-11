@@ -41,7 +41,7 @@ function Lecture(props) {
                     </div>
                 </Grid>
                 {/* 강의 요약 **/}
-                <Grid container item xs={12} sx={{px:'20%', background:'#3767A6', pt:'5vw'}}>
+                <Grid container item xs={12} sx={{px:'20%', background:'#3767A6', pt:'3rem'}}>
                     {/* 요약왼쪽 **/}
                     <Grid container item xs={6}>
                         {/* 강의 썸네일 **/}
@@ -69,11 +69,11 @@ function Lecture(props) {
                               justifyContent="left"
                               alignItems="center"
                         >
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>
+                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
+                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
+                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
+                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
+                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
                             <span className={styles.font_review}>(5.0)</span>
                         </Grid>
                         <Grid item xs={12}
@@ -105,7 +105,7 @@ function Lecture(props) {
                     </Grid>
                 </Grid>
 
-                <Grid container item xs={12} sx={{px:'20%', background:'#3767A6' ,pb:'5vw'}}>
+                <Grid container item xs={12} sx={{px:'20%', background:'#3767A6' ,pb:'3rem'}}>
                     {/* 수강신청하기 버튼 **/}
                     <Grid item
                           display="flex"
