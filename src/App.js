@@ -22,9 +22,9 @@ function App() {
             {/* 회원가입 */}
             <Route path="/join" element={<Join/>}/>
             {/* 비로그인 메인화면 */}
-            <Route path={"/unauth/main"} element={<Main />}/>
+            <Route path={"/main"} element={<Main />}/>
             {/* 로그인 화면 **/}
-            <Route path={"/unauth/login"} element={<Login />}/>
+            <Route path={"/login"} element={<Login />}/>
             {/* 강의 설명 화면 **/}
             <Route path={"/lecture"} element={<Lecture />}/>
             {/* 대시보드 **/}

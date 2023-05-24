@@ -9,13 +9,19 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import {Button, createTheme, Grid, MenuItem, ThemeProvider} from "@mui/material";
 import styles from './css/TopNav.module.css';
+import {useDispatch, useSelector} from "react-redux";
+import {useNavigate} from "react-router-dom";
+import {clearAccessToken} from "../redux/actions";
 
 
 const pages = ["강의", "테마별 강의", "소개", "검색"];
 
 
-export default function TopBar() {
+export default function TopBar(props) {
+    const dispatch = useDispatch();
 
+    const accessToken = useSelector((state) => state.accessToken); // redux access token
+    const navigate = useNavigate();
 
     const [anchorElNav, setAnchorElNav] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
@@ -62,6 +68,14 @@ export default function TopBar() {
 
     const handleCloseNavMenu = () => {
         setAnchorElNav(null);
+    };
+
+    // 로그아웃 버튼
+    const handleLogout = () => {
+        // 로그아웃 처리 로직
+
+        // 가정: 로그아웃 버튼 클릭 시 access token을 초기화한다.
+        dispatch(clearAccessToken());
     };
 
     return (
@@ -155,10 +169,16 @@ export default function TopBar() {
                                     md={12/(pages.length+1)}
                                     sx={{p:0, height:'100%'}}>
                                     <Box display="flex"
+                                         onClick={() => accessToken ? (handleLogout) : (navigate("/login"))}
                                          justifyContent="center"
                                          alignItems="center"
                                          sx={{ borderRadius: '15vw', border:1, borderColor:"#000000", height:"100%", m:0, p:1, aspectRatio:"4:1" }}>
-                                        <b className={styles.font_menu}>로그인</b>
+                                        {accessToken ? (
+                                            <b className={styles.font_menu}>로그아웃</b>
+                                        ) : (
+                                            <b className={styles.font_menu}>로그인</b>
+                                        )}
+
                                     </Box>
                                 </Grid>
                             </Grid>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Button, createTheme, Grid, ThemeProvider} from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Container from "@mui/material/Container";
@@ -6,6 +6,7 @@ import Toolbar from "@mui/material/Toolbar";
 import styles from "./css/DashTop.module.css";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import {useSelector} from "react-redux";
 
 function DashTop(props) {
     const theme = createTheme({ // Theme
@@ -13,6 +14,8 @@ function DashTop(props) {
             fontFamily: 'NanumSquareNeo',
         },
     });
+
+    const accessToken = useSelector((state) => state.accessToken); // redux access token
 
     return (
         <ThemeProvider theme={theme}>
