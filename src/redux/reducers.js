@@ -1,5 +1,7 @@
 const initialState = {
     accessToken: null,
+    role:999,
+
 };
 
 const reducer = (state = initialState, action) => {
@@ -13,6 +15,11 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 accessToken: null,
+            };
+        case 'SET_ROLE':
+            return{
+                ...state,
+                role: action.payload,
             };
         default:
             return state;

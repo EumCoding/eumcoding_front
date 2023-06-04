@@ -1,18 +1,49 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Box, Button, createTheme, Grid, ThemeProvider} from "@mui/material";
 import DashTop from "../component/DashTop";
 import styles from "./css/DashBoard.module.css";
 import FaceIcon from "@mui/icons-material/Face6";
 import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
 import StarIcon from '@mui/icons-material/Star';
+import {useSelector} from "react-redux";
+import {useNavigate} from "react-router-dom";
+import axios from "axios";
 
 
 function DashBoard(props) {
+    const accessToken = useSelector((state) => state.accessToken); // 엑세스 토큰
+
+    const [profile, setProfile] = useState(null); // 프로필 저장될 부분
+
+    const navigate = useNavigate()
+
     const theme = createTheme({ // Theme
         typography: {
             fontFamily: 'NanumSquareNeo',
         },
     });
+
+    // 최초 정보 가져오기
+    const getProfile = async () => {
+        const response = await axios.post(
+            `http://localhost:8099/member/info`,
+            null,
+            {
+                headers:{Authorization: `Bearer ${accessToken}`,}
+            }
+        ).then((res) => {
+            res.data && setProfile(res.data)
+            console.log(res)
+        }).catch((err) => console.log(err))
+
+    }
+
+    useEffect(() => {
+        if(!accessToken){
+            navigate("/login");
+        }
+        getProfile();
+    },[])
 
     return (
         <ThemeProvider theme={theme}>
@@ -45,7 +76,7 @@ function DashBoard(props) {
                               alignItems="center"
                               xs={10} sx={{pl: '1rem', pt: "1rem"}}>
                                 <span className={styles.font_normal}>
-                                    <b className={styles.font_name}>응애코딩1998</b>님<br></br>반가워요!
+                                    <b className={styles.font_name}>{profile && profile.nickname}</b>님<br></br>반가워요!
                                 </span>
                         </Grid>
                         <Grid item
@@ -54,7 +85,7 @@ function DashBoard(props) {
                               alignItems="center"
                               xs={12} sx={{pt: "2rem"}}>
                                 <span className={styles.font_gray}>
-                                    dlwl2023@kyungmin.ac.kr
+                                    {profile && profile.email}
                                 </span>
                         </Grid>
                         <Grid item
@@ -63,7 +94,7 @@ function DashBoard(props) {
                               alignItems="center"
                               xs={12} sx={{pt: "2rem"}}>
                                 <span className={styles.font_black}>
-                                    자기소개가 없습니다.
+                                    가입일 : {profile && profile.joinDay}
                                 </span>
                         </Grid>
                         <Grid item
@@ -76,6 +107,7 @@ function DashBoard(props) {
                                     width: "92%", mb: "1rem", height: "4rem",
                                     background: '#0B401D', borderRadius: '10px', position: 'absolute', bottom: 0
                                 }}
+                                onClick={() => navigate("/my/profile")}
                             >
                                 <span className={styles.font_btn}>프로필 수정하기</span>
                             </Button>

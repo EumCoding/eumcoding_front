@@ -12,9 +12,11 @@ import styles from './css/TopNav.module.css';
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import {clearAccessToken} from "../redux/actions";
+import Cookies from "js-cookie"
 
 
-const pages = ["강의", "테마별 강의", "소개", "검색"];
+
+const pages = ["강의", "테마별 강의", "소개", "대시보드"];
 
 
 export default function TopBar(props) {
@@ -35,7 +37,7 @@ export default function TopBar(props) {
                 main: '#FFFFFF',
             },
             secondary: {
-                main: '#1E90FF',
+                main: '#1B65FF',
             },
         },
         components: {
@@ -78,9 +80,15 @@ export default function TopBar(props) {
         dispatch(clearAccessToken());
     };
 
+    // 로그아웃
+    const logout = () => {
+        dispatch(clearAccessToken()); // 리덕스에서 토큰 제거
+        Cookies.remove('accessToken'); // 쿠키에 들어있던 accessToken 제거
+    }
+
     return (
         <ThemeProvider theme={theme}>
-            <AppBar position="static" sx={{px:{xs:"5%", sm:"10%", md:"10%", lg:"20%"}}}>
+            <AppBar position="relative" sx={{px:{xs:"5%", sm:"10%", md:"10%", lg:"20%"}}}>
                 <Container maxWidth="xl" sx={{padding:{xs:0, md:0}}}>
                     <Toolbar disableGutters sx={{p:0, m:0}}>
                         <Typography
@@ -156,7 +164,14 @@ export default function TopBar(props) {
                             <Grid container justifyContent="center" alignItems="center" spacing={0} sx={{flexGrow:1, height:'100%'}}>
                                 {pages.map((page) => (
                                     <Grid item md={12/(pages.length+1)}>
-                                        <Typography  textAlign="center" sx={{color:'#000000'}}>
+                                        <Typography  textAlign="center" sx={{color:'#000000'}}
+                                            onClick={() => {
+                                                if(page === "대시보드") {
+                                                    if(!accessToken) navigate("/login");
+                                                    navigate("/dashboard");
+                                                }
+                                            }}
+                                        >
                                             <b className={styles.font_menu}>{page}</b>
                                         </Typography>
                                     </Grid>
@@ -169,16 +184,19 @@ export default function TopBar(props) {
                                     md={12/(pages.length+1)}
                                     sx={{p:0, height:'100%'}}>
                                     <Box display="flex"
-                                         onClick={() => accessToken ? (handleLogout) : (navigate("/login"))}
                                          justifyContent="center"
                                          alignItems="center"
-                                         sx={{ borderRadius: '15vw', border:1, borderColor:"#000000", height:"100%", m:0, p:1, aspectRatio:"4:1" }}>
-                                        {accessToken ? (
-                                            <b className={styles.font_menu}>로그아웃</b>
-                                        ) : (
-                                            <b className={styles.font_menu}>로그인</b>
-                                        )}
-
+                                         onClick={() => accessToken ? logout() : navigate("/login")}
+                                         sx={{
+                                             borderRadius: '15vw',
+                                             border: 1,
+                                             borderColor: "#A2A2A2",
+                                             height: "100%",
+                                             m: 0,
+                                             px:"1rem",
+                                             py:"0.5rem"
+                                         }}>
+                                        <Typography sx={{whiteSpace:"nowrap", color:"#000000"}}>{accessToken?"로그아웃":"로그인"}</Typography>
                                     </Box>
                                 </Grid>
                             </Grid>

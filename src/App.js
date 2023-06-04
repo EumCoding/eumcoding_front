@@ -1,5 +1,5 @@
 import './App.css';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Route, Routes} from "react-router-dom";
 import Join from "./unauth/Join";
 import TopBar from "./component/TopNav";
@@ -15,8 +15,24 @@ import Basket from "./student/Basket";
 import PayLog from "./student/PayLog";
 import LectureInfo from "./student/LectureInfo";
 import Video from "./student/Video";
+import {setAccessToken, setRole} from "./redux/actions";
+import Cookies from "js-cookie"
+import {useDispatch} from "react-redux";
+
 
 function App() {
+
+
+        const dispatch = useDispatch();
+
+        // token을 리덕스로 가져옴. 이후에 refresh token 적용 시 쿠키에는 refresh token, redux에는 access token 적용하는 식으로 진행.
+        useEffect(() => {
+                if(Cookies.get('accessToken'))
+                        dispatch(setAccessToken(Cookies.get('accessToken')));
+                if(Cookies.get('role'))
+                        dispatch(setRole(Cookies.get('role')));
+        },[])
+
     return (
         <Routes>
             {/* 회원가입 */}

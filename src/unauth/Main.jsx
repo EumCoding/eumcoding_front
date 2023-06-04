@@ -10,9 +10,13 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import top5 from '../images/top5.svg';
 import ArrowCircleRightRoundedIcon from '@mui/icons-material/ArrowCircleRightRounded';
+import {useSelector} from "react-redux";
 
 
 function Main(props) {
+
+    const accessToken = useSelector((state) => state.accessToken)
+
     // image slider settings
     const settings = {
         infinite: false,
@@ -110,7 +114,7 @@ function Main(props) {
             <Box sx={{height: 64}}/>
             <Grid container>
                 {/* Banner **/}
-                <Grid item xs={12} sx={{px: 27}}>
+                <Grid item xs={12} sx={{px:"20%", width:"100%", pb:"10rem"}}>
                     <Slider {...settings}>
                         <div className={styles.image_banner}>
                             <img
@@ -136,10 +140,12 @@ function Main(props) {
                     </Slider>
                 </Grid>
                 {/* 인기강의 **/}
-                <Grid container xs={12} sx={{mt: 10, pt:20 , background: "#3767A6"}}>
+                <Grid container xs={12} sx={{ background: "#1B65FF", px:"20%", width:"100%", py:"5rem"}}>
                     <Grid container xs={12} sx={{px: 27}}>
                         {/* 인기강의 타이틀 **/}
-                        <Grid container item xs={12} sx={{mb:20}}>
+                        <Grid item container xs={12} sx={{width:"100%", pt:"1rem", mt:"1rem",mb:20,
+                            backgroundColor:"#1B65FF",
+                        }}>
                             <Grid item xs={5}
                                   sx={{
                                       display: "flex",
@@ -148,7 +154,7 @@ function Main(props) {
                                   }}
                             >
                                 <Typography variant={'h1'} align={'right'}
-                                            sx={{verticalAlign: "middle", color: "#F2D857"}}
+                                            sx={{verticalAlign: "middle", color: "#FFE600"}}
                                 >
                                     <b className={styles.font_bold}>인기</b>
                                 </Typography>
@@ -172,7 +178,7 @@ function Main(props) {
                                   }}
                             >
                                 <Typography variant={'h1'} align={'left'}
-                                            sx={{verticalAlign: "middle", color: "#F2D857"}}>
+                                            sx={{verticalAlign: "middle", color: "#FFE600"}}>
                                     <b className={styles.font_bold}>강의</b>
                                 </Typography>
                             </Grid>
@@ -232,7 +238,7 @@ function Main(props) {
                 </Grid>
 
                 {/* 신규강의 **/}
-                <Grid container xs={12} sx={{mt: 10, pt:5 , background: "#FFFFFF"}}>
+                <Grid container xs={12} sx={{ background: "#FFFFFF", px:"20%", width:"100%", py:"5rem"}}>
                     <Grid container xs={12} sx={{px: 27}}>
                         {/* 신규강의 타이틀 **/}
                         <Grid item xs={12}
@@ -298,7 +304,7 @@ function Main(props) {
                     </Grid>
                 </Grid>
                 {/* 학년별 강의 **/}
-                <Grid container xs={12} sx={{mt: 10, pt:20 , background: "#F2D857"}}>
+                <Grid container xs={12} sx={{py:"1rem" , background: "#FFE600", px:"20%", width:"100%", pb:"10rem"}}>
                     <Grid container xs={12} sx={{px: 27}}>
                         {/* 학년별 강의 타이틀 **/}
                         <Grid item xs={12}
@@ -316,22 +322,23 @@ function Main(props) {
                             display="flex"
                             justifyContent="center"
                             alignItems="center"
-                            item xs={12} sx={{mb:20}}>
+                            item xs={12} sx={{mb:"2rem"}}>
                             <Box display="flex"
                                  justifyContent="center"
                                  alignItems="center"
                                  sx={{ borderRadius: '10vw',
-                                     width:"50%", height:"10vw",
-                                     m:0, p:1,
-                                     background: "#3767A6"}}>
-                                <Grid container className={styles.font_login}>
-                                    <Grid item xs={10}>
-                                        로그인하고 확인하기
+                                     width:"50%", aspectRatio:"4/1",
+                                     background: "#1B65FF"}}>
+                                <Grid container display={"flex"} justifyContent={"center"} alignItems={"center"}>
+                                    <Grid item xs={10} display={"flex"} justifyContent={"center"} alignItems={"center"}>
+                                        <Typography sx={{fontWeight:"900", fontSize:"4rem", color:"#FFFFFF"}}>
+                                            확인하기
+                                        </Typography>
                                     </Grid>
                                     <Grid item xs={2} direction='row' justifyContent='center'
                                     sx={{display: 'flex', alignItems: 'center'}}
                                     >
-                                        <ArrowCircleRightRoundedIcon sx={{fontSize:'6rem'}}/>
+                                        <ArrowCircleRightRoundedIcon sx={{fontSize:'6rem', color:"#FFFFFF"}}/>
                                     </Grid>
                                 </Grid>
                             </Box>
@@ -340,7 +347,7 @@ function Main(props) {
                 </Grid>
 
                 {/* footer **/}
-                <Grid container xs={12} sx={{mt: 10 , mb:20, background: "#FFFFFF"}}>
+                <Grid container xs={12} sx={{mt:"20rem" , mb:20, background: "#FFFFFF", px:"20%", width:"100%", pb:"10rem"}}>
                     <Grid container xs={12} sx={{px: 27}}>
                         <Grid item xs={3}  direction='row'  justifyContent='center'>
                             <p className={styles.font_footer_logo}>이음코딩</p>

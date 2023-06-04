@@ -1,11 +1,21 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Box, Button, createTheme, Divider, Grid, ThemeProvider} from "@mui/material";
 import DashTop from "../component/DashTop";
 import FaceIcon from "@mui/icons-material/Face6";
 import Typography from "@mui/material/Typography";
 import EditIcon from '@mui/icons-material/Edit';
+import axios from "axios";
+import {useSelector} from "react-redux";
+import {useNavigate} from "react-router-dom";
 
 function MyPage(props) {
+    const accessToken = useSelector((state) => state.accessToken); // 엑세스 토큰
+
+    const [profile, setProfile] = useState(null); // 프로필 저장될 부분
+
+    const navigate = useNavigate()
+
+
     const theme = createTheme({ // Theme
         typography: {
             fontFamily: 'NanumSquareNeo',
@@ -33,6 +43,28 @@ function MyPage(props) {
         },
     });
 
+    // 최초 정보 가져오기
+    const getProfile = async () => {
+        const response = await axios.post(
+            `http://localhost:8099/member/info`,
+            null,
+            {
+                headers:{Authorization: `Bearer ${accessToken}`,}
+            }
+        ).then((res) => {
+            res.data && setProfile(res.data)
+            console.log(res)
+        }).catch((err) => console.log(err))
+
+    }
+
+    useEffect(() => {
+        if(!accessToken){
+            navigate("/login");
+        }
+        getProfile();
+    },[])
+
     return (
         <ThemeProvider theme={theme}>
             <DashTop/>
@@ -51,7 +83,7 @@ function MyPage(props) {
                       alignItems="center"
                 >
                     <Typography sx={{fontWeight:'900', fontSize:'3rem'}}>
-                        응애코딩 1998
+                        {profile && profile.nickname}
                     </Typography>
                 </Grid>
                 <Grid item xs={12} sx={{py:'3rem'}}><Divider/></Grid>
@@ -69,7 +101,7 @@ function MyPage(props) {
                       alignItems="center"
                 >
                     <Typography sx={{fontWeight:'900', fontSize:'1rem', color:'#8D8D8D'}}>
-                        dlwl2023@kyungmin.ac.kr
+                        {profile && profile.email}
                     </Typography>
                 </Grid>
                 <Grid item xs={12} sx={{py:'1rem'}}></Grid>
@@ -87,7 +119,7 @@ function MyPage(props) {
                       alignItems="center"
                 >
                     <Typography sx={{fontWeight:'900', fontSize:'1rem', color:'#8D8D8D'}}>
-                        이지*
+                        {profile && profile.name}
                     </Typography>
                 </Grid>
                 <Grid item xs={12} sx={{py:'1rem'}}></Grid>
@@ -105,7 +137,7 @@ function MyPage(props) {
                       alignItems="center"
                 >
                     <Typography sx={{fontWeight:'900', fontSize:'1rem', color:'#8D8D8D'}}>
-                        2023-03-01
+                        {profile && profile.joinDay}
                     </Typography>
                 </Grid>
                 <Grid item xs={12} sx={{py:'1rem'}}></Grid>
@@ -123,7 +155,7 @@ function MyPage(props) {
                       alignItems="center"
                 >
                     <Typography sx={{fontWeight:'900', fontSize:'1rem', color:'#8D8D8D'}}>
-                        1998-02-14
+                        {profile && profile.birthDay}
                     </Typography>
                 </Grid>
                 <Grid item xs={12} sx={{py:'1rem'}}></Grid>
@@ -145,7 +177,7 @@ function MyPage(props) {
                         justifyContent="flex-start"
                         alignItems="center"
                         sx={{fontWeight:'900', fontSize:'1rem', color:'#000000'}}>
-                        경민대학교<EditIcon />
+                        {profile && profile.address}<EditIcon />
                     </Typography>
                 </Grid>
                 <Grid item xs={12} sx={{py:'1rem'}}></Grid>
@@ -168,7 +200,7 @@ function MyPage(props) {
                         justifyContent="flex-start"
                         alignItems="center"
                         sx={{fontWeight:'900', fontSize:'1rem', color:'#000000'}}>
-                        01000000000<EditIcon />
+                        {profile && profile.tel}<EditIcon />
                     </Typography>
                 </Grid>
 
