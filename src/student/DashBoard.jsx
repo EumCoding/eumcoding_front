@@ -29,21 +29,17 @@ function DashBoard(props) {
             `http://localhost:8099/member/info`,
             null,
             {
-                headers:{Authorization: `Bearer ${accessToken}`,}
+                headers:{Authorization: `${accessToken}`,}
             }
         ).then((res) => {
             res.data && setProfile(res.data)
             console.log(res)
         }).catch((err) => console.log(err))
-
     }
 
     useEffect(() => {
-        if(!accessToken){
-            navigate("/login");
-        }
         getProfile();
-    },[])
+    },[,accessToken])
 
     return (
         <ThemeProvider theme={theme}>
@@ -162,12 +158,13 @@ function DashBoard(props) {
                               alignItems="center"
                               xs={12} sx={{pt: "1rem"}}>
                             <Button
+                                onClick={() => navigate("/my/lectureList")}
                                 sx={{
                                     width: "92%", mb: "1rem", height: "4rem",
                                     background: '#0B401D', borderRadius: '10px', position: 'absolute', bottom: 0
                                 }}
                             >
-                                <span className={styles.font_btn}>이어서 수강하기</span>
+                                <span className={styles.font_btn} >이어서 수강하기</span>
                             </Button>
                         </Grid>
                     </Grid>

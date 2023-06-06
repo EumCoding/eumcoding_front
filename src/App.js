@@ -1,6 +1,6 @@
 import './App.css';
 import React, {useEffect} from 'react';
-import {Route, Routes} from "react-router-dom";
+import {Route, Routes, useNavigate} from "react-router-dom";
 import Join from "./unauth/Join";
 import TopBar from "./component/TopNav";
 import Main from "./unauth/Main";
@@ -17,13 +17,16 @@ import LectureInfo from "./student/LectureInfo";
 import Video from "./student/Video";
 import {setAccessToken, setRole} from "./redux/actions";
 import Cookies from "js-cookie"
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
+import Search from "./unauth/Search";
 
 
 function App() {
 
 
         const dispatch = useDispatch();
+        const accessToken = useSelector((state) => state.accessToken);
+        const navigate = useNavigate();
 
         // token을 리덕스로 가져옴. 이후에 refresh token 적용 시 쿠키에는 refresh token, redux에는 access token 적용하는 식으로 진행.
         useEffect(() => {
@@ -31,6 +34,9 @@ function App() {
                         dispatch(setAccessToken(Cookies.get('accessToken')));
                 if(Cookies.get('role'))
                         dispatch(setRole(Cookies.get('role')));
+                if(!accessToken && !Cookies.get('accessToken')){
+                        navigate("/login");
+                }
         },[])
 
     return (
@@ -42,7 +48,7 @@ function App() {
             {/* 로그인 화면 **/}
             <Route path={"/login"} element={<Login />}/>
             {/* 강의 설명 화면 **/}
-            <Route path={"/lecture"} element={<Lecture />}/>
+            <Route path={"/lecture/:value"} element={<Lecture />}/>
             {/* 대시보드 **/}
             <Route path={"/dashboard"} element={<DashBoard />}/>
             {/* 내 프로필 **/}
@@ -61,6 +67,9 @@ function App() {
             <Route path={"/my/lectureInfo"} element={<LectureInfo />}/>
             {/* 동영상 재생 **/}
             <Route path={"/my/lecture/video"} element={<Video />}/>
+                {/* 강의 검색 **/}
+                <Route path={"/search"} element={<Search />}/>
+
         </Routes>
 
     );

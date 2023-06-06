@@ -6,7 +6,11 @@ import Toolbar from "@mui/material/Toolbar";
 import styles from "./css/DashTop.module.css";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
+import {useNavigate} from "react-router-dom";
+import {clearAccessToken} from "../redux/actions";
+import Cookies from "js-cookie"
+
 
 function DashTop(props) {
     const theme = createTheme({ // Theme
@@ -15,7 +19,16 @@ function DashTop(props) {
         },
     });
 
+    const dispatch = useDispatch();
+
     const accessToken = useSelector((state) => state.accessToken); // redux access token
+    const navigate = useNavigate();
+
+    // 로그아웃
+    const logout = () => {
+        dispatch(clearAccessToken()); // 리덕스에서 토큰 제거
+        Cookies.remove('accessToken'); // 쿠키에 들어있던 accessToken 제거
+    }
 
     return (
         <ThemeProvider theme={theme}>
@@ -23,7 +36,7 @@ function DashTop(props) {
                 <Toolbar sx={{height:"5rem"}}>
                     <Box flexGrow={1}>
                         <div className={styles.font_logo}>
-                            이음코딩 대시보드
+                            <span onClick={() => navigate("/main")}>이음코딩</span> <span onClick={() => navigate("/dashboard")}>대시보드</span>
                         </div>
                     </Box>
                     <Button color="inherit"
@@ -32,7 +45,7 @@ function DashTop(props) {
                                 width:"8rem"
                                 }}>
                         <div className={styles.font_menu}>
-                            MY
+                            <Typography sx={{whiteSpace:"nowrap", color:"#000000"}}>{accessToken?"로그아웃":"로그인"}</Typography>
                         </div>
                     </Button>
                 </Toolbar>

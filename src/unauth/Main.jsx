@@ -327,7 +327,7 @@ function Main(props) {
                                  justifyContent="center"
                                  alignItems="center"
                                  sx={{ borderRadius: '10vw',
-                                     width:"50%", aspectRatio:"4/1",
+                                     width:"80%", py:"2rem",
                                      background: "#1B65FF"}}>
                                 <Grid container display={"flex"} justifyContent={"center"} alignItems={"center"}>
                                     <Grid item xs={10} display={"flex"} justifyContent={"center"} alignItems={"center"}>
@@ -347,7 +347,7 @@ function Main(props) {
                 </Grid>
 
                 {/* footer **/}
-                <Grid container xs={12} sx={{mt:"20rem" , mb:20, background: "#FFFFFF", px:"20%", width:"100%", pb:"10rem"}}>
+                <Grid container xs={12} sx={{py:"10rem"}}>
                     <Grid container xs={12} sx={{px: 27}}>
                         <Grid item xs={3}  direction='row'  justifyContent='center'>
                             <p className={styles.font_footer_logo}>이음코딩</p>

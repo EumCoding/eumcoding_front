@@ -17,9 +17,11 @@ import desc from '../images/강의설명.jpg';
 import Container from "@mui/material/Container";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FaceIcon from '@mui/icons-material/Face6';
+import {useParams} from "react-router-dom";
 
 
 function Lecture(props) {
+    const params = useParams();
 
     const theme = createTheme({ // Theme
         typography: {
@@ -41,7 +43,7 @@ function Lecture(props) {
                     </div>
                 </Grid>
                 {/* 강의 요약 **/}
-                <Grid container item xs={12} sx={{px:'20%', background:'#3767A6', pt:'3rem'}}>
+                <Grid container item xs={12} sx={{px:'20%', background:'#1B65FF', pt:'3rem'}}>
                     {/* 요약왼쪽 **/}
                     <Grid container item xs={6}>
                         {/* 강의 썸네일 **/}
@@ -105,7 +107,7 @@ function Lecture(props) {
                     </Grid>
                 </Grid>
 
-                <Grid container item xs={12} sx={{px:'20%', background:'#3767A6' ,pb:'3rem'}}>
+                <Grid container item xs={12} sx={{px:'20%', background:'#1B65FF' ,pb:'3rem'}}>
                     {/* 수강신청하기 버튼 **/}
                     <Grid item
                           display="flex"
@@ -120,7 +122,7 @@ function Lecture(props) {
                                  width:"50vw", height:"2.5vw",
                                  m:0, p:1,
                                  border:0,
-                                 background: "#FFE812"}}>
+                                 background: "#FFE600"}}>
                             <p className={styles.font_sugang}>
                                 수강신청하기
                             </p>
@@ -177,7 +179,7 @@ function Lecture(props) {
                 </Grid>
 
                 {/* 커리큘럼 **/}
-                <Grid container item xs={12} sx={{px:'20%', pt:0, mt:0, background:'#F2D857'}}>
+                <Grid container item xs={12} sx={{px:'20%', pt:0, mt:0, background:'#FFE600'}}>
                     <Grid item
                           display="flex"
                           justifyContent="center"

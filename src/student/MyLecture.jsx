@@ -1,10 +1,14 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Box, Button, createTheme, Grid, MenuItem, Select, TextField, ThemeProvider} from "@mui/material";
 import DashTop from "../component/DashTop";
 import Typography from "@mui/material/Typography";
 import lectureThumb from "../images/강의썸네일.png";
+import axios from "axios";
+import {useSelector} from "react-redux";
 
 function MyLecture(props) {
+    const accessToken = useSelector((state) => state.accessToken);
+
     const theme = createTheme({ // Theme
         typography: {
             fontFamily: 'NanumSquareNeo',
@@ -31,7 +35,28 @@ function MyLecture(props) {
             },
         },
     });
-    const [sort, setSort] = useState("최신순");
+    const [sort, setSort] = useState(0);
+    const [result, setResult] = useState(null); // 결과담을 state
+
+    // 서버에서 결과 받아오기
+    const getMyLecture = async (pageParam) => { // pageParam : 가져올 page
+        const response = await axios.post(
+            `http://localhost:8099/member/mylecture/list?page=1&sort=0`,
+            null,
+            {
+                headers:{Authorization: `${accessToken}`,}
+            }
+        ).catch((err) => {
+            console.log(err)
+        }).then((res) => {
+            console.log(res)
+            res && res.data && setResult(res.data);
+        })
+    }
+
+    useEffect(() => {
+        getMyLecture(1); // 최초 1페이지 가져옴
+    },[, accessToken])
 
     return (
         <ThemeProvider theme={theme}>
@@ -44,9 +69,9 @@ function MyLecture(props) {
                         defaultValue={sort}
                         sx={{mr:"1.5rem"}}
                     >
-                        <MenuItem value="최신순">최신순</MenuItem>
-                        <MenuItem value="진행도순">진행도순</MenuItem>
-                        <MenuItem value="오래된순">오래된순</MenuItem>
+                        <MenuItem value="0">최신순</MenuItem>
+                        <MenuItem value="1">진행도순</MenuItem>
+                        <MenuItem value="2">오래된순</MenuItem>
                     </Select>
                     <TextField variant={"outlined"} label="검색어" sx={{mr:"1rem", height:"100%", aspectRatio: "10/1"}} />
                     <Button sx={{backgroundColor: "#0B401D", height:"100%", aspectRatio: "3/1", borderRadius:"0.3vw"}}>

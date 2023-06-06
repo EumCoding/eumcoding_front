@@ -170,6 +170,10 @@ export default function TopBar(props) {
                                                     if(!accessToken) navigate("/login");
                                                     navigate("/dashboard");
                                                 }
+                                                if(page === "강의") {
+                                                    if(!accessToken) navigate("/login");
+                                                    navigate("/search?keyword=&page=1&sort=0");
+                                                }
                                             }}
                                         >
                                             <b className={styles.font_menu}>{page}</b>

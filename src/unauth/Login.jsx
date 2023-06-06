@@ -35,22 +35,14 @@ function Login(props) {
     useEffect(() => {
         // 이미 로그인 상태인 경우 메인 페이지로 이동
         if (accessToken) {
-            if(role === 0){
-                navigate("/main")
-            }else if(role === 2){
-                navigate("/guide/main/info")
-            }
+            navigate("/main")
         }
     },[accessToken])
 
     useEffect(() => {
         // 이미 로그인 상태인 경우 메인 페이지로 이동
         if (accessToken) {
-            if(role === 0){
-                navigate("/main")
-            }else if(role === 2){
-                navigate("/guide/main/info")
-            }
+            navigate("/main")
         }
     },[])
 
@@ -71,8 +63,8 @@ function Login(props) {
         }).then((res) => {
             console.log(res);
             // 쿠키에 저장(임시)
-            Cookies.set('accessToken', res.data.token)
-            Cookies.set('role', res.data.role)
+            Cookies.set('accessToken', res.data.token, { sameSite: 'lax' })
+            Cookies.set('role', res.data.role, { sameSite: 'lax' })
             dispatch(setAccessToken(res.data.token))
             // role이 0인 경우 (일반 회원인 경우)
             if(res.data.role === 0){
