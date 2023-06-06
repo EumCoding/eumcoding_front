@@ -64,7 +64,7 @@ function App() {
             {/* 결제내역 **/}
             <Route path={"/my/payLog"} element={<PayLog />}/>
             {/* 대시보드 - 강의 **/}
-            <Route path={"/my/lectureInfo"} element={<LectureInfo />}/>
+            <Route path={"/my/lectureInfo/:value"} element={<LectureInfo />}/>
             {/* 동영상 재생 **/}
             <Route path={"/my/lecture/video"} element={<Video />}/>
                 {/* 강의 검색 **/}

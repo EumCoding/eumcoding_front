@@ -18,9 +18,12 @@ import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Container from "@mui/material/Container";
 import EditIcon from "@mui/icons-material/Edit";
+import {useParams} from "react-router-dom";
 
 
 function LectureInfo(props) {
+    const params = useParams(); // 주소에서 lectureId 가져오기
+
 
     const theme = createTheme({ // Theme
         typography: {

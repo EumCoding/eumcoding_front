@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Accordion,
     AccordionDetails,
@@ -18,16 +18,62 @@ import Container from "@mui/material/Container";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FaceIcon from '@mui/icons-material/Face6';
 import {useParams} from "react-router-dom";
+import axios from "axios";
 
 
 function Lecture(props) {
     const params = useParams();
+
+    const [result, setResult] = useState(null); // 1번 정보(첫번째 호출하는 api에서 주는 정보) 넣기
+
+    const [teacher, setTeacher] = useState(null); // 강사 정보 넣을곳
+
+    const [section, setSection] = useState(null);
 
     const theme = createTheme({ // Theme
         typography: {
             fontFamily: 'NanumSquareNeo',
         },
     });
+
+    // 강의 정보 가져오기 1
+    const getLectureInfo = async (id) => { // id: 강의아이디
+        const response = await axios.get(
+            `http://localhost:8099/lecture/unauth/view?id=${id}`
+        ).then((res) => {
+            console.log(res)
+            res.data && setResult(res.data);
+        })
+    }
+
+    // 강사정보 가져오기
+    const getTeacherInfo = async (id) => { // id: 강의아이디
+        const response = await axios.get(
+            `http://localhost:8099/unauth/profile/teacher/${id}`
+        ).then((res) => {
+            console.log(res)
+            res.data && setTeacher(res.data);
+        })
+    }
+
+    // 섹션 정보 가져오기
+    const getSectionInfo = async (id) => { // id: 강의아이디
+        const response = await axios.get(
+            `http://localhost:8099/lecture/section/unauth/list?id=${id}`
+        ).then((res) => {
+            console.log(res)
+            res.data && setSection(res.data);
+        })
+    }
+
+    useEffect(() => {
+        getLectureInfo(params.value) // 첫번째 정보 가져옴
+    },[])
+
+    useEffect(() => {
+        result && getTeacherInfo(result.memberId);
+        result && getSectionInfo(params.value);
+    }, [result])
 
     return (
         <ThemeProvider theme={theme}>
@@ -64,18 +110,18 @@ function Lecture(props) {
                               justifyContent="left"
                               alignItems="center"
                         >
-                            <p className={styles.font_lecture_name}>무작정 따라하는 우리아이 첫 코딩교육</p>
+                            <p className={styles.font_lecture_name}>{result && result.name}</p>
                         </Grid>
                         <Grid item xs={12}
                               display="flex"
                               justifyContent="left"
                               alignItems="center"
                         >
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
+                            <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>
+                            <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>
+                            <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>
+                            <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>
+                            <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>
                             <span className={styles.font_review}>(5.0)</span>
                         </Grid>
                         <Grid item xs={12}
@@ -93,7 +139,7 @@ function Lecture(props) {
                               justifyContent="left"
                               alignItems="center"
                         >
-                            <p className={styles.font_teacher_name}>강사 <u>이지훈</u></p>
+                            <p className={styles.font_teacher_name}>강사 <u>{teacher && teacher.teacherName}</u></p>
                         </Grid>
                         <Grid item xs={12}
                               display="flex"
@@ -101,7 +147,7 @@ function Lecture(props) {
                               alignItems="center"
                         >
                             <span className={styles.font_lecture_info_normal}>
-                                난이도 : 초등 1학년 ~ 3학년
+                                난이도 : {result && result.grade} 학년
                             </span>
                         </Grid>
                     </Grid>
@@ -142,10 +188,10 @@ function Lecture(props) {
                               justifyContent="flex-start"
                               alignItems="flex-end"
                         >
-                            <span className={styles.font_price_small}>55000원</span>
+                            <span className={styles.font_price_small}>{result && result.price}</span>
                         </Grid>
                         <Grid item xs={12}>
-                            <span className={styles.font_price_large}>월 5500원</span>
+                            <span className={styles.font_price_large}>{result && result.price / 5}</span>
                             <span className={styles.font_price_small}> 5개월 할부 시</span>
                         </Grid>
                     </Grid>
@@ -172,8 +218,7 @@ function Lecture(props) {
                         sx={{py:'7vw'}}
                     >
                         <span className={styles.font_description}>
-                            무작정 따라하면 됩니당<br/>
-                            안되면 제탓 아니예요
+                            {result && result.description}
                         </span>
                     </Grid>
                 </Grid>
@@ -219,22 +264,18 @@ function Lecture(props) {
                           sx={{pb:'7vw'}}
                     >
                         <Container>
-                            <Accordion >
-                                <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />}>
-                                    <span className={styles.font_curriculum_title}>써머리</span>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                    <span className={styles.font_curriculum_content}>디테일</span>
-                                </AccordionDetails>
-                            </Accordion>
-                            <Accordion>
-                                <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />}>
-                                    <span className={styles.font_curriculum_title}>써머리</span>
-                                </AccordionSummary>
-                                <AccordionDetails >
-                                    <span className={styles.font_curriculum_content}>디테일</span>
-                                </AccordionDetails>
-                            </Accordion>
+                            {section && section.map((item, idx) => {
+                                return(
+                                    <Accordion >
+                                        <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />}>
+                                            <span className={styles.font_curriculum_title}>{item.name}</span>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <span className={styles.font_curriculum_content}>디테일</span>
+                                        </AccordionDetails>
+                                    </Accordion>
+                                )
+                            })}
                         </Container>
                     </Grid>
                 </Grid>
