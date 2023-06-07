@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Accordion,
     AccordionDetails,
@@ -19,10 +19,50 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Container from "@mui/material/Container";
 import EditIcon from "@mui/icons-material/Edit";
 import {useParams} from "react-router-dom";
+import axios from "axios";
+import {useSelector} from "react-redux";
 
 
 function LectureInfo(props) {
-    const params = useParams(); // 주소에서 lectureId 가져오기
+    const accessToken = useSelector((state) => state.accessToken);
+
+    const params = useParams();
+
+    const [result, setResult] = useState(null); // 1번 정보(첫번째 호출하는 api에서 주는 정보) 넣기
+
+    const [teacher, setTeacher] = useState(null); // 강사 정보 넣을곳
+
+    const [section, setSection] = useState(null);
+
+    // 강의 정보 가져오기 1
+    const getLectureInfo = async (id) => { // id: 강의아이디
+        const response = await axios.get(
+            `http://localhost:8099/lecture/unauth/view?id=${id}`
+        ).then((res) => {
+            console.log(res)
+            res.data && setResult(res.data);
+        })
+    }
+
+    // 강사정보 가져오기
+    const getTeacherInfo = async (id) => { // id: 강의아이디
+        const response = await axios.get(
+            `http://localhost:8099/unauth/profile/teacher/${id}`
+        ).then((res) => {
+            console.log(res)
+            res.data && setTeacher(res.data);
+        })
+    }
+
+    // 섹션 정보 가져오기
+    const getSectionInfo = async (id) => { // id: 강의아이디
+        const response = await axios.get(
+            `http://localhost:8099/lecture/section/unauth/list?id=${id}`
+        ).then((res) => {
+            console.log(res)
+            res.data && setSection(res.data);
+        })
+    }
 
 
     const theme = createTheme({ // Theme
@@ -31,13 +71,22 @@ function LectureInfo(props) {
         },
     });
 
+    useEffect(() => {
+        getLectureInfo(params.value) // 첫번째 정보 가져옴
+    },[])
+
+    useEffect(() => {
+        result && getTeacherInfo(result.memberId);
+        result && getSectionInfo(params.value);
+    }, [result])
+
     return (
         <ThemeProvider theme={theme}>
             <DashTop/>
             {/* TopBar 띄우기 위한 Box*/}
             <Grid container sx={{width:"100%", mb:"10rem"}}>
                 <Grid xs={12} item container display={"flex"} justtifyContent={"center"} alignItems={"stretch"}
-                    sx={{backgroundColor:"#3767A6", px:{xs:"3vw", md:"10vw", lg:"20vw"},  py:"3rem", m:0}}
+                    sx={{backgroundColor:"#1B65FF", px:{xs:"3vw", md:"10vw", lg:"20vw"},  py:"3rem", m:0}}
                       spacing={5}
                 >
                     {/* 요약왼쪽 **/}
@@ -60,28 +109,28 @@ function LectureInfo(props) {
                               justifyContent="left"
                               alignItems="center"
                         >
-                            <p className={styles.font_lecture_name}>무작정 따라하는 우리아이 첫 코딩교육</p>
+                            <p className={styles.font_lecture_name}>{result && result.name}</p>
                         </Grid>
                         <Grid item xs={12}
                               display="flex"
                               justifyContent="left"
                               alignItems="center"
                         >
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2.5rem' }}/>
-                            <span className={styles.font_review}>(5.0)</span>
+                            {result && result.score > 0 && <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>}
+                            {result && result.score > 1 && <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>}
+                            {result && result.score > 2 && <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>}
+                            {result && result.score > 3 && <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>}
+                            {result && result.score > 4 && <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>}
+                            <span className={styles.font_review}>({result && result.score})</span>
                         </Grid>
                         <Grid item xs={12}
                               display="flex"
                               justifyContent="left"
                               alignItems="center"
                         >
-                            <span className={styles.font_lecture_info_bold}>6개&nbsp;</span>
+                            <span className={styles.font_lecture_info_bold}>{result && result.totalReview}개&nbsp;</span>
                             <span className={styles.font_lecture_info_normal}>의&nbsp;수강평&nbsp;|&nbsp;</span>
-                            <span className={styles.font_lecture_info_bold}>1520명</span>
+                            <span className={styles.font_lecture_info_bold}>{result && result.totalStudent}명</span>
                             <span className={styles.font_lecture_info_normal}>&nbsp;의&nbsp;수강생</span>
                         </Grid>
                         <Grid item xs={12}
@@ -89,7 +138,7 @@ function LectureInfo(props) {
                               justifyContent="left"
                               alignItems="center"
                         >
-                            <p className={styles.font_teacher_name}>강사 <u>이지훈</u></p>
+                            <p className={styles.font_teacher_name}>강사 <u>{teacher && teacher.teacherName}</u></p>
                         </Grid>
                         <Grid item xs={12}
                               display="flex"
@@ -97,7 +146,7 @@ function LectureInfo(props) {
                               alignItems="center"
                         >
                             <span className={styles.font_lecture_info_normal}>
-                                난이도 : 초등 1학년 ~ 3학년
+                                난이도 : {result && result.grade}학년
                             </span>
                         </Grid>
                     </Grid>
@@ -116,7 +165,7 @@ function LectureInfo(props) {
                                      width:"50vw", height:"2.5vw",
                                      m:0, p:1,
                                      border:0,
-                                     background: "#FFE812"}}>
+                                     background: "#FFE600"}}>
                                 <p className={styles.font_sugang}>
                                     이어서 수강하기
                                 </p>
@@ -136,7 +185,7 @@ function LectureInfo(props) {
                                      width:"50vw", height:"2.5vw",
                                      m:0, p:1,
                                      border:0,
-                                     background: "#FFE812"}}>
+                                     background: "#FFE600"}}>
                                 <p className={styles.font_sugang}>
                                     질문하기
                                 </p>

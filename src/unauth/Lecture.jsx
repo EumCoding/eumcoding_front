@@ -6,7 +6,7 @@ import {
     Box, Button,
     createTheme,
     Divider,
-    Grid,
+    Grid, Modal,
     ThemeProvider
 } from "@mui/material";
 import TopBar from "../component/TopNav";
@@ -19,9 +19,27 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FaceIcon from '@mui/icons-material/Face6';
 import {useParams} from "react-router-dom";
 import axios from "axios";
+import testImg from "../images/강의썸네일.png"
+import Typography from "@mui/material/Typography";
+import ReactPlayer from "react-player";
+import {useSelector} from "react-redux";
 
+// modal에 적용할 style
+const modalStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: "60vw",
+    bgcolor: 'background.paper',
+    boxShadow: 24,
+    p: 4,
+    borderRadius:"1vw",
+};
 
 function Lecture(props) {
+    const accessToken = useSelector((state) => state.accessToken)
+
     const params = useParams();
 
     const [result, setResult] = useState(null); // 1번 정보(첫번째 호출하는 api에서 주는 정보) 넣기
@@ -29,6 +47,21 @@ function Lecture(props) {
     const [teacher, setTeacher] = useState(null); // 강사 정보 넣을곳
 
     const [section, setSection] = useState(null);
+
+    // modal용 state
+    const [open, setOpen] = React.useState(false);
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => {
+        setOpen(false);
+        // 비디오 관련 state들도 초기화
+        setVideoName("");
+        setVideoUrl("");
+    }
+
+    // 동영상이름
+    const [videoName, setVideoName] = useState("");
+    // 동영상주소
+    const [videoUrl, setVideoUrl] = useState("");
 
     const theme = createTheme({ // Theme
         typography: {
@@ -66,6 +99,25 @@ function Lecture(props) {
         })
     }
 
+    // 비디오 정보 가져오기
+    const getVideoInfo = async (id) => { // id: 강의아이디
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/video/view?id=${id}`,
+            null,
+                {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            console.log(res)
+            if(res.data){
+                // URL 객체 생성
+                let urlObj = new URL(res.data.path);
+                // 포트 번호 변경
+                urlObj.port = "8099";
+                // 다시 문자열로 변환 후 state에 저장
+                setVideoUrl(urlObj.href);
+            }
+        })
+    }
+
     useEffect(() => {
         getLectureInfo(params.value) // 첫번째 정보 가져옴
     },[])
@@ -75,8 +127,35 @@ function Lecture(props) {
         result && getSectionInfo(params.value);
     }, [result])
 
+
+
     return (
         <ThemeProvider theme={theme}>
+
+            {/* 동영상 미리보기용 modal **/}
+            <Modal
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box sx={modalStyle} >
+                    <Grid container sx={{width:"100%"}} display={"flex"} justifyContent={"center"} alignItems={"center"}>
+                        <Grid item xs={12} display={"flex"} justifyContent={"center"} alignItems={"center"} sx={{mb:"2rem"}}>
+                            <Typography id="modal-modal-description" fullWidth sx={{ fontSize:"1.5rem", fontWeight:"900" }}>
+                                {videoName} 미리보기
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={12} display={"flex"} justifyContent={"center"} alignItems={"center"} sx={{pt:"3rem"}}
+                            sx={{width:"100%", aspectRatio:"16/9"}}
+                        >
+                            <ReactPlayer url={videoUrl} playing controls={true} width='100%' height="100%"/>
+                        </Grid>
+                    </Grid>
+                </Box>
+            </Modal>
+
+
             <TopBar/>
             {/* TopBar 띄우기 위한 Box*/}
             <Box sx={{height: 64}}/>
@@ -117,21 +196,21 @@ function Lecture(props) {
                               justifyContent="left"
                               alignItems="center"
                         >
-                            <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>
-                            <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>
-                            <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>
-                            <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>
-                            <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>
-                            <span className={styles.font_review}>(5.0)</span>
+                            {result && result.score > 0 && <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>}
+                            {result && result.score > 1 && <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>}
+                            {result && result.score > 2 && <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>}
+                            {result && result.score > 3 && <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>}
+                            {result && result.score > 4 && <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>}
+                            <span className={styles.font_review}>({result && result.score})</span>
                         </Grid>
                         <Grid item xs={12}
                               display="flex"
                               justifyContent="left"
                               alignItems="center"
                         >
-                            <span className={styles.font_lecture_info_bold}>6개&nbsp;</span>
+                            <span className={styles.font_lecture_info_bold}>{result && result.totalReview}개&nbsp;</span>
                             <span className={styles.font_lecture_info_normal}>의&nbsp;수강평&nbsp;|&nbsp;</span>
-                            <span className={styles.font_lecture_info_bold}>1520명</span>
+                            <span className={styles.font_lecture_info_bold}>{result && result.totalStudent}명</span>
                             <span className={styles.font_lecture_info_normal}>&nbsp;의&nbsp;수강생</span>
                         </Grid>
                         <Grid item xs={12}
@@ -188,10 +267,10 @@ function Lecture(props) {
                               justifyContent="flex-start"
                               alignItems="flex-end"
                         >
-                            <span className={styles.font_price_small}>{result && result.price}</span>
+                            <span className={styles.font_price_small}>{result && result.price}원</span>
                         </Grid>
                         <Grid item xs={12}>
-                            <span className={styles.font_price_large}>{result && result.price / 5}</span>
+                            <span className={styles.font_price_large}>{result && result.price / 5}원</span>
                             <span className={styles.font_price_small}> 5개월 할부 시</span>
                         </Grid>
                     </Grid>
@@ -266,13 +345,46 @@ function Lecture(props) {
                         <Container>
                             {section && section.map((item, idx) => {
                                 return(
-                                    <Accordion >
+                                    <Accordion>
                                         <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />}>
                                             <span className={styles.font_curriculum_title}>{item.name}</span>
                                         </AccordionSummary>
-                                        <AccordionDetails>
-                                            <span className={styles.font_curriculum_content}>디테일</span>
-                                        </AccordionDetails>
+                                        {item.videoDTOList && item.videoDTOList.map((subItem, idx) => {
+                                            return(
+                                                <AccordionDetails>
+                                                    <Grid container sx={{width:"100%"}}>
+                                                        <Grid item xs={9} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
+                                                            <div style={{display: 'flex', alignItems: 'center', flexGrow: 1, width:"60%"}}>
+                                                                <Box position="relative" sx={{width:"100px", aspectRatio:"16/9", overflow:"hidden"}}>
+                                                                    <img src={testImg} style={{width:"100%", height:"100%", objectFit:"cover"}}/>
+                                                                </Box>
+                                                                <span className={styles.font_curriculum_content}>{subItem.name}</span>
+                                                            </div>
+                                                        </Grid>
+                                                        <Grid item xs={3} display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
+                                                            {subItem.preview === 1 && (
+                                                                <Button variant="outlined" color="primary" sx={{borderColor:"#000000"}}
+                                                                    onClick={() => {
+                                                                        if(accessToken){
+                                                                            setVideoName(subItem.name);
+                                                                            getVideoInfo(subItem.id);
+                                                                            handleOpen();
+                                                                        }else{
+                                                                            //로그인 안된 상태면 alert
+                                                                            alert("로그인이 필요한 서비스입니다.")
+                                                                        }
+
+                                                                    }}
+                                                                >
+                                                                    <Typography sx={{color:"#000000"}}>미리보기</Typography>
+                                                                </Button>
+                                                            )}
+                                                        </Grid>
+                                                    </Grid>
+
+                                                </AccordionDetails>
+                                            )
+                                        }) }
                                     </Accordion>
                                 )
                             })}
