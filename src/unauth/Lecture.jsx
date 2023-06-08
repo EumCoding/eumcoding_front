@@ -23,6 +23,7 @@ import testImg from "../images/강의썸네일.png"
 import Typography from "@mui/material/Typography";
 import ReactPlayer from "react-player";
 import {useSelector} from "react-redux";
+import dayjs from "dayjs";
 
 // modal에 적용할 style
 const modalStyle = {
@@ -47,6 +48,12 @@ function Lecture(props) {
     const [teacher, setTeacher] = useState(null); // 강사 정보 넣을곳
 
     const [section, setSection] = useState(null);
+
+    const [review, setReview] = useState(null);
+
+    const [page, setPage] = useState(1);
+
+    const [more, setMore] = useState(true);
 
     // modal용 state
     const [open, setOpen] = React.useState(false);
@@ -118,8 +125,26 @@ function Lecture(props) {
         })
     }
 
+    // 리뷰 가져오기
+    const getReviewList = async (id, paramPage) => {
+        const response = await axios.get(
+            `http://localhost:8099/lecture/review/unauth/list?id=${id}&page=${paramPage}&size=10`
+        ).then((res) => {
+            console.log(res)
+            if(paramPage > 1){
+                // 깊은복사
+                const temp = JSON.parse(JSON.stringify(review))
+                setReview(temp.concat(res.data))
+            }else{
+                res.data && setReview(res.data);
+            }
+            res.data && res.data.length < 10 ? setMore(false) : setMore(true);
+        })
+    }
+
     useEffect(() => {
         getLectureInfo(params.value) // 첫번째 정보 가져옴
+        getReviewList(params.value, 1);
     },[])
 
     useEffect(() => {
@@ -127,7 +152,12 @@ function Lecture(props) {
         result && getSectionInfo(params.value);
     }, [result])
 
-
+    //리뷰다음페이지 가져오기
+    useEffect(() => {
+        if(page > 1){
+            getReviewList(params.value, page);
+        }
+    }, [page])
 
     return (
         <ThemeProvider theme={theme}>
@@ -400,7 +430,7 @@ function Lecture(props) {
                           sx={{pt:'7vw'}}
                     >
                         <span className={styles.font_curriculum_main}>수강평&nbsp;</span>
-                        <span className={styles.font_review_count}>총 207개</span>
+                        <span className={styles.font_review_count}>총 {result && result.totalReview}개</span>
                     </Grid>
                     <Grid item xs={12}
                           display="flex"
@@ -408,12 +438,13 @@ function Lecture(props) {
                           alignItems="center"
                           sx={{pb:'7vw', mt:'1rem'}}
                     >
-                        <StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>
-                        <StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>
-                        <StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>
-                        <StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>
-                        <StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>
-                        <span className={styles.font_review_score}>(5.0)</span>
+                        {result && result.score > 0 && (<StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>)}
+                        {result && result.score > 1 && (<StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>)}
+                        {result && result.score > 2 && (<StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>)}
+                        {result && result.score > 3 && (<StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>)}
+                        {result && result.score > 4 && (<StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>)}
+
+                        <span className={styles.font_review_score}>({result && result.score})</span>
                     </Grid>
                     {/* 리뷰 정렬 옵션 **/}
                     <Grid container item xs={12}
@@ -439,141 +470,89 @@ function Lecture(props) {
                         alignItems="center"
                         sx={{mt:'1rem'}}
                     >
-                        <Grid container item xs={12} sx={{mt:'0.3vw'}}>
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={1} sx={{pr:'1vw'}}>
-                                <FaceIcon sx={{fontSize:'4rem'}}/>
-                            </Grid>
-                            <Grid
-                                item
-                                container
-                                display="flex"
-                                justifyContent="flex-start"
-                                alignItems="center"
-                                xs={1}
-                            >
-                                <Grid
-                                    item
-                                    xs={12}
-                                    display="flex"
-                                    justifyContent="flex-start"
-                                    alignItems="flex-end"
+                        {/* items **/}
+                        {review && review.map((item, idx) => {
+                            return(
+                                <Grid container item xs={12} sx={{mt:'0.3vw'}}>
+                                    <Grid item
+                                          display="flex"
+                                          justifyContent="flex-start"
+                                          alignItems="center"
+                                          xs={1} sx={{pr:'1vw'}}>
+                                        <FaceIcon sx={{fontSize:'4rem'}}/>
+                                    </Grid>
+                                    <Grid
+                                        item
+                                        container
+                                        display="flex"
+                                        justifyContent="flex-start"
+                                        alignItems="center"
+                                        xs={1}
                                     >
-                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                </Grid>
-                                <Grid
-                                    item
-                                    xs={12}
-                                    display="flex"
-                                    justifyContent="flex-start"
-                                    alignItems="center"
-                                    sx={{pl:0}}
-                                >
-                                    <span className={styles.font_review_nickname}>닉네임</span>
-                                </Grid>
-                            </Grid>
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
+                                        <Grid
+                                            item
+                                            xs={12}
+                                            display="flex"
+                                            justifyContent="flex-start"
+                                            alignItems="flex-end"
+                                        >
+                                            {item.rating > 0 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+                                            {item.rating > 1 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+                                            {item.rating > 2 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+                                            {item.rating > 3 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+                                            {item.rating > 4 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+
+                                        </Grid>
+                                        <Grid
+                                            item
+                                            xs={12}
+                                            display="flex"
+                                            justifyContent="flex-start"
+                                            alignItems="center"
+                                            sx={{pl:0}}
+                                        >
+                                            {/* 추후 클릭시 해당 멤버 페이지로 이동하도록 함 **/}
+                                            <span className={styles.font_review_nickname}>{item.nickname}</span>
+                                        </Grid>
+                                    </Grid>
+                                    <Grid item
+                                          display="flex"
+                                          justifyContent="flex-start"
+                                          alignItems="center"
+                                          xs={12} sx={{mt:'1vw'}}>
                                 <span className={styles.font_review_content}>
-                                    내용내용내용내용내용내용내용
+                                    {item.content}
                                 </span>
-                            </Grid>
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
+                                    </Grid>
+                                    <Grid item
+                                          display="flex"
+                                          justifyContent="flex-start"
+                                          alignItems="center"
+                                          xs={12} sx={{mt:'1vw'}}>
                                 <span className={styles.font_review_date}>
-                                    2022-03-18 ♥2
+                                    {dayjs(item.createdDay).format('YYYY년MM월DD일 HH시mm분ss초')} ♥{item.heart}
                                 </span>
-                                <br/>
-                            </Grid>
-                            <Grid item
-                                  xs={12} sx={{mt:'2vw', mb:'1vw'}}>
-                                <Divider fullWidth/>
-                                <br/>
-                            </Grid>
-                        </Grid>
-                        <Grid container item xs={12} sx={{mt:'0.3vw'}}>
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={1} sx={{pr:'1vw'}}>
-                                <FaceIcon sx={{fontSize:'4rem'}}/>
-                            </Grid>
-                            <Grid
-                                item
-                                container
-                                display="flex"
-                                justifyContent="flex-start"
-                                alignItems="center"
-                                xs={1}
-                            >
-                                <Grid
-                                    item
-                                    xs={12}
-                                    display="flex"
-                                    justifyContent="flex-start"
-                                    alignItems="flex-end"
-                                >
-                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
+                                        <br/>
+                                    </Grid>
+                                    <Grid item
+                                          xs={12} sx={{mt:'2vw', mb:'1vw'}}>
+                                        <Divider fullWidth/>
+                                        <br/>
+                                    </Grid>
                                 </Grid>
-                                <Grid
-                                    item
-                                    xs={12}
-                                    display="flex"
-                                    justifyContent="flex-start"
-                                    alignItems="center"
-                                    sx={{pl:0}}
-                                >
-                                    <span className={styles.font_review_nickname}>닉네임</span>
-                                </Grid>
-                            </Grid>
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
-                                <span className={styles.font_review_content}>
-                                    내용내용내용내용내용내용내용
-                                </span>
-                            </Grid>
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
-                                <span className={styles.font_review_date}>
-                                    2022-03-18 ♥2
-                                </span>
-                                <br/>
-                            </Grid>
-                            <Grid item
-                                  xs={12} sx={{mt:'2vw', mb:'1vw'}}>
-                                <Divider fullWidth/>
-                                <br/>
-                            </Grid>
-                        </Grid>
+                            )
+                        })}
+
                     </Grid>
                     <Grid xs={12} item sx={{mt:'1vw', mb:'7vw'}}>
-                        <Button variant="outlined" fullWidth sx={{borderColor:'#000000', borderRadius:'10px'}}>
-                            <span className={styles.font_review_more}>수강평 더보기</span>
-                        </Button>
+                        {more === true && (
+                            <Button variant="outlined" fullWidth sx={{borderColor:'#000000', borderRadius:'10px'}}
+                                onClick={() => setPage(page+1)}
+                            >
+                                <span className={styles.font_review_more}>수강평 더보기</span>
+                            </Button>
+                        )}
+
                     </Grid>
                 </Grid>
                 {/* footer **/}

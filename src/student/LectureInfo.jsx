@@ -18,12 +18,14 @@ import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Container from "@mui/material/Container";
 import EditIcon from "@mui/icons-material/Edit";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import axios from "axios";
 import {useSelector} from "react-redux";
 
 
 function LectureInfo(props) {
+    const navigate = useNavigate();
+
     const accessToken = useSelector((state) => state.accessToken);
 
     const params = useParams();
@@ -210,79 +212,46 @@ function LectureInfo(props) {
                       sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}}}
                 >
                     <Container>
-                        <Accordion>
-                            <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />}>
-                                <span className={styles.font_curriculum_title}>Section 01. 시작하기</span>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                <Grid container sx={{width:"100%", pt:"0.5rem"}}>
-                                    <Grid item xs={9}>
-                                        <Typography sx={{fontWeight:"700", fontSize:"1.5rem"}}>
-                                            소요시간 설정
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={3} display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
-                                        <Typography sx={{fontWeight:"700", fontSize:"1.3rem", textDecoration:"underline"}}>
-                                            3일
-                                        </Typography>
-                                        <EditIcon />
-                                    </Grid>
-                                </Grid>
-                            </AccordionDetails>
-                            <Divider fullWidth />
-                            <AccordionDetails>
-                                <Grid container sx={{width:"100%", pl:"3rem", pt:"0.5rem"}}>
-                                    <Grid item xs={2}>
-                                        <Box sx={{width:"100%", aspectRatio:"16/9", overflow:"hidden", borderRadius:"1vw"}}>
-                                            <img src={testImg} style={{width:"100%", height:"100%", objectFit:"cover"}} />
-                                        </Box>
-                                    </Grid>
-                                    <Grid item xs={7} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}
-                                        sx={{pl:"1rem"}}
-                                    >
-                                        <Typography sx={{fontWeight:"700", fontSize:"1.5rem"}}>
-                                            시작하기
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={3} display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
-                                        <Typography sx={{fontWeight:"700", color:"#8D8D8D",fontSize:"1.5rem"}}>
-                                            05:03/03:50
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
-                            </AccordionDetails>
+                        {section && section.map((item, idx) => {
+                            return(
+                                <Accordion>
+                                    <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />}>
+                                        <span className={styles.font_curriculum_title}>{item.name}</span>
+                                    </AccordionSummary>
+                                    {item.videoDTOList && item.videoDTOList.map((subItem, idx) => {
+                                        return(
+                                            <AccordionDetails>
+                                                <Grid container sx={{width:"100%"}}>
+                                                    <Grid item xs={9} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
+                                                        <div style={{display: 'flex', alignItems: 'center', flexGrow: 1, width:"60%"}}>
+                                                            <Box position="relative" sx={{width:"100px", aspectRatio:"16/9", overflow:"hidden"}}>
+                                                                <img src={testImg} style={{width:"100%", height:"100%", objectFit:"cover"}}/>
+                                                            </Box>
+                                                            <span className={styles.font_curriculum_content}>{subItem.name}</span>
+                                                        </div>
+                                                    </Grid>
+                                                    <Grid item xs={3} display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
+                                                        <Button variant="outlined" color="primary" sx={{borderColor:"#000000"}}
+                                                                onClick={() => {
+                                                                    if(accessToken){
+                                                                        navigate(`/my/lecture/video?id=${subItem.id}`)
+                                                                    }else{
+                                                                        //로그인 안된 상태면 alert
+                                                                        alert("로그인이 필요한 서비스입니다.")
+                                                                    }
+                                                                }}
+                                                        >
+                                                            <Typography sx={{color:"#000000"}}>시청하기</Typography>
+                                                        </Button>
+                                                    </Grid>
+                                                </Grid>
 
-                            <Divider fullWidth />
-                            <AccordionDetails>
-                                <Grid container sx={{width:"100%", pl:"3rem", pt:"0.5rem"}}>
-                                    <Grid item xs={2}>
-                                        <Box sx={{width:"100%", aspectRatio:"16/9", overflow:"hidden", borderRadius:"1vw"}}>
-                                            <img src={testImg} style={{width:"100%", height:"100%", objectFit:"cover"}} />
-                                        </Box>
-                                    </Grid>
-                                    <Grid item xs={7} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}
-                                          sx={{pl:"1rem"}}
-                                    >
-                                        <Typography sx={{fontWeight:"700", fontSize:"1.5rem"}}>
-                                            시작하기2
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={3} display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
-                                        <Typography sx={{fontWeight:"700", color:"#8D8D8D",fontSize:"1.5rem"}}>
-                                            03:50
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
-                            </AccordionDetails>
-                        </Accordion>
-                        <Accordion>
-                            <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />}>
-                                <span className={styles.font_curriculum_title}>Section 02. 끝내기</span>
-                            </AccordionSummary>
-                            <AccordionDetails >
-                                <span className={styles.font_curriculum_content}>디테일</span>
-                            </AccordionDetails>
-                        </Accordion>
+                                            </AccordionDetails>
+                                        )
+                                    }) }
+                                </Accordion>
+                            )
+                        })}
                     </Container>
                 </Grid>
 

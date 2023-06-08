@@ -26,6 +26,7 @@
     "redux": "^4.2.1",
     "redux-devtools-extension": "^2.13.9",
     "redux-logger": "^3.0.6",
+    "screenfull": "^3.3.3",
     "slick-carousel": "^1.8.1",
     "video.js": "^8.3.0",
     "videojs-react-enhanced": "^0.3.1",
