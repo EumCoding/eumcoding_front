@@ -1,5 +1,5 @@
-import React from 'react';
-import {Box, createTheme, Grid, ThemeProvider, Typography} from "@mui/material";
+import React, {useEffect, useState} from 'react';
+import {Box, Button, createTheme, Grid, ThemeProvider, Typography} from "@mui/material";
 import TopBar from "../component/TopNav";
 import styles from './css/Main.module.css';
 import Slider from 'react-slick';
@@ -11,11 +11,23 @@ import 'slick-carousel/slick/slick-theme.css';
 import top5 from '../images/top5.svg';
 import ArrowCircleRightRoundedIcon from '@mui/icons-material/ArrowCircleRightRounded';
 import {useSelector} from "react-redux";
+import testImg from "../images/test.png"
+import axios from "axios";
+import {useNavigate} from "react-router-dom";
+import {getHourNumbers} from "@mui/x-date-pickers/TimeClock/ClockNumbers";
+import './css/SlickSlider.css'; // 임포트!
+
 
 
 function Main(props) {
 
     const accessToken = useSelector((state) => state.accessToken)
+
+    const navigate = useNavigate();
+
+    const [popular, setPopular] = useState(null);
+
+    const [newest, setNewest]  = useState(null);
 
     // image slider settings
     const settings = {
@@ -107,43 +119,63 @@ function Main(props) {
         },
     });
 
+    // 인기강의 연결
+    const getPopular = async () => {
+        const response = await axios.get(
+            `http://localhost:8099/unauth/main/popular`,
+        ).then((res) => {
+            console.log(res);
+            if(res.data){
+                setPopular(res.data)
+            }
+        })
+    }
+
+    // 신규강의 연결
+    const getNewest = async () => {
+        const response = await axios.get(
+            `http://localhost:8099/unauth/main/new`,
+        ).then((res) => {
+            console.log(res);
+            if(res.data){
+                setNewest(res.data)
+            }
+        })
+    }
+
+    useEffect(() => {
+        getPopular();
+        getNewest();
+    },[])
+
     return (
         <ThemeProvider theme={theme}>
             <TopBar/>
             {/* TopBar 띄우기 위한 Box*/}
-            <Box sx={{height: 64}}/>
-            <Grid container>
+            <Grid container sx={{width:"100%"}}>
                 {/* Banner **/}
-                <Grid item xs={12} sx={{px:"20%", width:"100%", pb:"10rem"}}>
+                <Grid item xs={12} sx={{px:{xs:"3%", md:"5%", lg:"20%"}, width:"100%", pb:"30px",}}>
                     <Slider {...settings}>
-                        <div className={styles.image_banner}>
-                            <img
-                                src={banner1}
-                                className={styles.image_thumbnail}
-                                alt={'banner1'}
-                            />
-                        </div>
-                        <div className={styles.image_banner}>
-                            <img
-                                src={banner1}
-                                className={styles.image_thumbnail}
-                                alt={'banner2'}
-                            />
-                        </div>
-                        <div className={styles.image_banner}>
-                            <img
-                                src={banner1}
-                                className={styles.image_thumbnail}
-                                alt={'banner3'}
-                            />
-                        </div>
+                        {popular && popular.map((item, idx) => {
+                            return(
+                                <div className={styles.image_banner}
+                                    onClick={() => navigate(`/lecture/${item.lectureId}`)}
+                                >
+                                    <img
+                                        src={item.lectureThumb}
+                                        className={styles.image_thumbnail}
+                                        alt={'banner1'}
+                                    />
+                                </div>
+                            )
+                        })}
                     </Slider>
                 </Grid>
                 {/* 인기강의 **/}
-                <Grid container xs={12} sx={{ background: "#1B65FF", px:"20%", width:"100%", py:"5rem"}}>
-                    <Grid container xs={12} sx={{px: 27}}>
+                <Grid container xs={12} sx={{ background: "#1B65FF", px:{xs:"3%", md:"5%", lg:"20%"}, width:"100%", py:"10px"}}>
+                    <Grid container xs={12}>
                         {/* 인기강의 타이틀 **/}
-                        <Grid item container xs={12} sx={{width:"100%", pt:"1rem", mt:"1rem",mb:20,
+                        <Grid item container xs={12} sx={{width:"100%", pt:"1rem", mt:"1rem",my:10,
                             backgroundColor:"#1B65FF",
                         }}>
                             <Grid item xs={5}
@@ -185,64 +217,41 @@ function Main(props) {
                         </Grid>
 
                         {/* 인기강의 slider **/}
-                        <Grid item xs={12} sx={{mb:30}}>
+                        <Grid item xs={12} sx={{mb:15}}>
                             <Slider {...midSettings}>
-                                <div className={styles.image_mid_outer}>
-                                    <div className={styles.image_mid}>
-                                        <img
-                                            src={banner1}
-                                            className={styles.image_thumbnail}
-                                            alt={'banner1'}
-                                        />
-                                    </div>
-                                </div>
-                                <div className={styles.image_mid_outer}>
-                                    <div className={styles.image_mid}>
-                                        <img
-                                            src={banner1}
-                                            className={styles.image_thumbnail}
-                                            alt={'banner1'}
-                                        />
-                                    </div>
-                                </div>
-                                <div className={styles.image_mid_outer}>
-                                    <div className={styles.image_mid}>
-                                        <img
-                                            src={banner1}
-                                            className={styles.image_thumbnail}
-                                            alt={'banner1'}
-                                        />
-                                    </div>
-                                </div>
-                                <div className={styles.image_mid_outer}>
-                                    <div className={styles.image_mid}>
-                                        <img
-                                            src={banner1}
-                                            className={styles.image_thumbnail}
-                                            alt={'banner1'}
-                                        />
-                                    </div>
-                                </div>
-                                <div className={styles.image_mid_outer}>
-                                    <div className={styles.image_mid}>
-                                        <img
-                                            src={banner1}
-                                            className={styles.image_thumbnail}
-                                            alt={'banner1'}
-                                        />
-                                    </div>
-                                </div>
+                                {popular && popular.map((item, idx) => {
+                                    return(
+                                        <Grid container sx={{width:"100%"}}>
+                                            <Grid item xs={12}
+                                                  display="flex"
+                                                  justifyContent="center"
+                                                  alignItems="center"
+                                            >
+                                                <Box sx={{width:"80%", aspectRatio:"16/9"}}
+                                                     onClick={() => navigate(`/lecture/${item.lectureId}`)}
+                                                >
+                                                    <img
+                                                        src={item.lectureThumb}
+                                                        className={styles.image_thumbnail}
+                                                        alt={'banner1'}
+                                                    />
+                                                    <Typography sx={{color:"#FFFFFF", fontWeight:"700", fontSize:"1rem"}}>강의명들어가요</Typography>
+                                                </Box>
+                                            </Grid>
+                                        </Grid>
+                                    )
+                                })}
                             </Slider>
                         </Grid>
                     </Grid>
                 </Grid>
 
                 {/* 신규강의 **/}
-                <Grid container xs={12} sx={{ background: "#FFFFFF", px:"20%", width:"100%", py:"5rem"}}>
-                    <Grid container xs={12} sx={{px: 27}}>
+                <Grid container xs={12} sx={{ background: "#FFFFFF", px:{xs:"3%", md:"5%", lg:"20%"}, width:"100%"}}>
+                    <Grid container xs={12}>
                         {/* 신규강의 타이틀 **/}
                         <Grid item xs={12}
-                              sx={{mb:20,
+                              sx={{my:10,
                                   display: "flex",
                                   flexDirection: "column",
                                   justifyContent: "center"}}
@@ -251,64 +260,41 @@ function Main(props) {
                             <p className={styles.font_small}>최신 트랜드 반영!! 따끈따끈한 신규 강좌를 만나보세요.</p>
                         </Grid>
 
-                        {/* 인기강의 slider **/}
-                        <Grid item xs={12} sx={{mb:20}}>
+                        {/* 신규강의 slider **/}
+                        <Grid item xs={12} sx={{mb:15}}>
                             <Slider {...midSettings}>
-                                <div className={styles.image_mid_outer}>
-                                    <div className={styles.image_mid}>
-                                        <img
-                                            src={banner1}
-                                            className={styles.image_thumbnail}
-                                            alt={'banner1'}
-                                        />
-                                    </div>
-                                </div>
-                                <div className={styles.image_mid_outer}>
-                                    <div className={styles.image_mid}>
-                                        <img
-                                            src={banner1}
-                                            className={styles.image_thumbnail}
-                                            alt={'banner1'}
-                                        />
-                                    </div>
-                                </div>
-                                <div className={styles.image_mid_outer}>
-                                    <div className={styles.image_mid}>
-                                        <img
-                                            src={banner1}
-                                            className={styles.image_thumbnail}
-                                            alt={'banner1'}
-                                        />
-                                    </div>
-                                </div>
-                                <div className={styles.image_mid_outer}>
-                                    <div className={styles.image_mid}>
-                                        <img
-                                            src={banner1}
-                                            className={styles.image_thumbnail}
-                                            alt={'banner1'}
-                                        />
-                                    </div>
-                                </div>
-                                <div className={styles.image_mid_outer}>
-                                    <div className={styles.image_mid}>
-                                        <img
-                                            src={banner1}
-                                            className={styles.image_thumbnail}
-                                            alt={'banner1'}
-                                        />
-                                    </div>
-                                </div>
+                                {newest && newest.map((item, idx) => {
+                                    return(
+                                    <Grid container sx={{width:"100%"}}>
+                                        <Grid item xs={12}
+                                              display="flex"
+                                              justifyContent="center"
+                                              alignItems="center"
+                                        >
+                                            <Box sx={{width:"80%", aspectRatio:"16/9"}}
+                                                 onClick={() => navigate(`/lecture/${item.lectureId}`)}
+                                            >
+                                                <img
+                                                    src={item.lectureThumb}
+                                                    className={styles.image_thumbnail}
+                                                    alt={'banner1'}
+                                                />
+                                                <Typography sx={{color:"#000000", fontWeight:"700", fontSize:"1rem"}}>강의명들어가요</Typography>
+                                            </Box>
+                                        </Grid>
+                                    </Grid>
+                                    )
+                                })}
                             </Slider>
                         </Grid>
                     </Grid>
                 </Grid>
                 {/* 학년별 강의 **/}
-                <Grid container xs={12} sx={{py:"1rem" , background: "#FFE600", px:"20%", width:"100%", pb:"10rem"}}>
-                    <Grid container xs={12} sx={{px: 27}}>
+                <Grid container xs={12} sx={{py:"1rem" , background: "#FFE600", px:{xs:"3%", md:"5%", lg:"20%"}, width:"100%"}}>
+                    <Grid container xs={12}>
                         {/* 학년별 강의 타이틀 **/}
                         <Grid item xs={12}
-                              sx={{mb:20,
+                              sx={{my:10,
                                   display: "flex",
                                   flexDirection: "column",
                                   justifyContent: "center"}}
@@ -322,33 +308,49 @@ function Main(props) {
                             display="flex"
                             justifyContent="center"
                             alignItems="center"
-                            item xs={12} sx={{mb:"2rem"}}>
-                            <Box display="flex"
-                                 justifyContent="center"
-                                 alignItems="center"
-                                 sx={{ borderRadius: '10vw',
-                                     width:"80%", py:"2rem",
-                                     background: "#1B65FF"}}>
+                            item xs={12} sx={{mb:15}}>
+                            <Button
+                                display="flex"
+                                justifyContent="center"
+                                alignItems="center"
+                                position="relative" // 이 부분 추가
+                                sx={{
+                                    borderRadius: '10vw',
+                                    width: "60%",
+                                    py: "2rem",
+                                    background: "#1B65FF",
+                                    '&:hover': {
+                                        backgroundColor: 'skyblue',
+                                        transition: 'background-color 0.3s'
+                                    }
+                                }}
+                            >
                                 <Grid container display={"flex"} justifyContent={"center"} alignItems={"center"}>
-                                    <Grid item xs={10} display={"flex"} justifyContent={"center"} alignItems={"center"}>
-                                        <Typography sx={{fontWeight:"900", fontSize:"4rem", color:"#FFFFFF"}}>
+                                    <Grid item xs={12} display={"flex"} justifyContent={"center"} alignItems={"center"}>
+                                        <Typography sx={{fontWeight:"900", fontSize:"2rem", color:"#FFFFFF"}}>
                                             확인하기
                                         </Typography>
                                     </Grid>
-                                    <Grid item xs={2} direction='row' justifyContent='center'
-                                    sx={{display: 'flex', alignItems: 'center'}}
-                                    >
-                                        <ArrowCircleRightRoundedIcon sx={{fontSize:'6rem', color:"#FFFFFF"}}/>
-                                    </Grid>
+                                    {/* 아이콘 위치 변경 */}
+                                    <ArrowCircleRightRoundedIcon
+                                        sx={{
+                                            fontSize:'4rem',
+                                            color:"#FFFFFF",
+                                            position: 'absolute',
+                                            right: '8%',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)'
+                                        }}
+                                    />
                                 </Grid>
-                            </Box>
+                            </Button>
                         </Grid>
                     </Grid>
                 </Grid>
 
                 {/* footer **/}
-                <Grid container xs={12} sx={{py:"10rem"}}>
-                    <Grid container xs={12} sx={{px: 27}}>
+                <Grid container xs={12} sx={{py:"10rem", px:{xs:"3%", md:"5%", lg:"20%"}}}>
+                    <Grid container xs={12}>
                         <Grid item xs={3}  direction='row'  justifyContent='center'>
                             <p className={styles.font_footer_logo}>이음코딩</p>
                         </Grid>

@@ -100,7 +100,7 @@ function LectureInfo(props) {
                               alignItems="center"
                         >
                             <div className={styles.image_thumb}>
-                                <img className={styles.image} src={testImg} />
+                                <img className={styles.image} src={result && result.thumb} />
                             </div>
                         </Grid>
                     </Grid>
@@ -225,7 +225,7 @@ function LectureInfo(props) {
                                                     <Grid item xs={9} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
                                                         <div style={{display: 'flex', alignItems: 'center', flexGrow: 1, width:"60%"}}>
                                                             <Box position="relative" sx={{width:"100px", aspectRatio:"16/9", overflow:"hidden"}}>
-                                                                <img src={testImg} style={{width:"100%", height:"100%", objectFit:"cover"}}/>
+                                                                <img src={subItem.thumb} style={{width:"100%", height:"100%", objectFit:"cover"}}/>
                                                             </Box>
                                                             <span className={styles.font_curriculum_content}>{subItem.name}</span>
                                                         </div>

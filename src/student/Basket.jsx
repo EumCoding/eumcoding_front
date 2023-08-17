@@ -1,10 +1,60 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Box, Button, Checkbox, createTheme, Divider, Grid, ThemeProvider} from "@mui/material";
 import TopBar from "../component/TopNav";
 import Typography from "@mui/material/Typography";
 import testImg from "../images/test.png";
+import {useSelector} from "react-redux";
+import axios from "axios";
+import {useNavigate} from "react-router-dom";
 
 function Basket(props) {
+
+    const accessToken = useSelector((state) => state.accessToken);
+
+    const navigate = useNavigate();
+
+    const [price, setPrice] = useState(0);
+
+    const [result, setResult] = useState(null);
+
+    // 장바구니 내용 가져오기
+    const getBasket = async () => {
+        const response = await axios.post(
+            `http://localhost:8099/basket/list?page=1`,
+            null,
+            {
+                headers:{Authorization: `${accessToken}`,}
+            }
+        ).then((res) => {
+            console.log(res);
+            if(res.data){
+                setResult(res.data)
+                let temp = 0;
+                res.data.map((item) => temp += item.price)
+                // 총액설정
+                setPrice(temp);
+            }
+        })
+    }
+
+    // 장바구니에서 제거
+    const delBasket = async (id) => {
+        const response = await axios.post(
+            `http://localhost:8099/basket/delete?basketId=${id}`,
+            null,
+            {
+                headers: {Authorization: `${accessToken}`,}
+            }
+        )
+        getBasket()
+    }
+
+    useEffect(() => {
+        if(accessToken){
+            getBasket()
+        }
+    },[,accessToken])
+
     const theme = createTheme({ // Theme
         typography: {
             fontFamily: 'NanumSquareNeo',
@@ -45,44 +95,54 @@ function Basket(props) {
                                 장바구니
                             </Typography>
                         </Grid>
+                        {result && result.map((item, idx) => {
+                            return(
+                                <Grid xs={12} container item display={"flex"} justifyContent={"flex-start"} alignItems={"stretch"}
+                                      sx={{border:1, borderColor:"#A2A2A2", borderRadius:"1vw", p:"2rem", mt:"1rem"}}
+                                >
 
-                        <Grid xs={12} container item display={"flex"} justifyContent={"flex-start"} alignItems={"stretch"}
-                            sx={{border:1, borderColor:"#000000", borderRadius:"1vw", p:"2rem",}}
-                        >
-                            <Grid xs={1} item container display={"flex"} justifyContent={"center"} alignItems={"center"}>
-                                <Checkbox sx={{
-                                    '&.Mui-checked': {
-                                        color: "#3767A6",
-                                    },
-                                }}/>
-                            </Grid>
-                            <Grid xs={4} item display={"flex"} justifyContent={"center"} alignItems={"center"}>
-                                <Box sx={{width:"100%", aspectRatio:"16:9", overflow:"hidden", borderRadius:"1rem"}}>
-                                    <img src={testImg} style={{width:"100%", objectFit:"cover"}}/>
-                                </Box>
-                            </Grid>
-                            <Grid xs={7} item container display={"flex"} justifyContent={"center"} alignItems={"center"} sx={{pl:"1rem"}}>
-                                <Grid xs={12} item display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
-                                    <Typography sx={{fontWeight:"700", color:"#000000", fontSize:"1rem"}}>
-                                        무작정 따라하는 우리아이 첫 코딩교육
-                                    </Typography>
+                                    <Grid xs={1} item container display={"flex"} justifyContent={"center"} alignItems={"center"}>
+                                        {/*<Checkbox sx={{
+                                            '&.Mui-checked': {
+                                                color: "#3767A6",
+                                            },
+                                        }}/>*/}
+                                        <Button onClick={() => delBasket(item.basketId)}>
+                                            X
+                                        </Button>
+                                    </Grid>
+                                    <Grid xs={4} item display={"flex"} justifyContent={"center"} alignItems={"center"}>
+                                        <Box sx={{width:"100%", aspectRatio:"16:9", overflow:"hidden", borderRadius:"1rem"}}
+                                            onClick={() => navigate(`/lecture/${item.lectureId}`)}
+                                        >
+                                            <img src={`http://localhost:8099/eumCodingImgs/lecture/thumb/${item.thumb}`} style={{width:"100%", objectFit:"cover"}}/>
+                                        </Box>
+                                    </Grid>
+                                    <Grid xs={7} item container display={"flex"} justifyContent={"center"} alignItems={"center"} sx={{pl:"1rem"}}>
+                                        <Grid xs={12} item display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
+                                            <Typography sx={{fontWeight:"700", color:"#000000", fontSize:"1rem"}}>
+                                                {item.lectureName}
+                                            </Typography>
+                                        </Grid>
+                                        <Grid xs={12} item display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
+                                            <Typography sx={{fontWeight:"900", color:"#8D8D8D", fontSize:"1rem"}}>
+                                                {item.teacherName}
+                                            </Typography>
+                                        </Grid>
+                                        <Grid xs={12} item display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
+                                            <Typography sx={{fontWeight:"900", color:"#000000", fontSize:"1rem"}}>
+                                                {item.price}원
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
                                 </Grid>
-                                <Grid xs={12} item display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
-                                    <Typography sx={{fontWeight:"900", color:"#8D8D8D", fontSize:"1rem"}}>
-                                        이지훈
-                                    </Typography>
-                                </Grid>
-                                <Grid xs={12} item display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
-                                    <Typography sx={{fontWeight:"900", color:"#000000", fontSize:"1rem"}}>
-                                        6000원
-                                    </Typography>
-                                </Grid>
-                            </Grid>
-                        </Grid>
+                            )
+                        })}
+
                     </Grid>
                 </Grid>
                 <Grid item container md={4} xs={12}>
-                    <Grid item container xs={12} sx={{borderRadius:"1vw", border:1, borderColor:"#000000", p:"2rem", width:"100%"}}>
+                    <Grid item container xs={12} sx={{borderRadius:"1vw", border:1, borderColor:"#A2A2A2", p:"2rem", width:"100%"}}>
                         <Grid item xs={12}
                               display={"flex"} justifyContent={"flex-start"} alignItems={"center"}
                               sx={{pb:"0.5rem"}}
@@ -173,7 +233,7 @@ function Basket(props) {
                               sx={{pb:"0.5rem"}}
                         >
                             <Typography sx={{fontWeight:"900", fontSize:"0.7rem", color:"#8D8D8D"}}>
-                                12000원
+                                {price}원
                             </Typography>
                         </Grid>
 
@@ -190,7 +250,7 @@ function Basket(props) {
                               sx={{pb:"0.5rem"}}
                         >
                             <Typography sx={{fontWeight:"900", fontSize:"1em", color:"#000000"}}>
-                                12000원
+                                {price}원
                             </Typography>
                         </Grid>
                         <Grid xs={12} item sx={{pt:"1rem", pb:"0.5rem"}}>

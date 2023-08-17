@@ -17,7 +17,7 @@ import desc from '../images/강의설명.jpg';
 import Container from "@mui/material/Container";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FaceIcon from '@mui/icons-material/Face6';
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import axios from "axios";
 import testImg from "../images/강의썸네일.png"
 import Typography from "@mui/material/Typography";
@@ -39,6 +39,8 @@ const modalStyle = {
 };
 
 function Lecture(props) {
+    const navigate = useNavigate();
+
     const accessToken = useSelector((state) => state.accessToken)
 
     const params = useParams();
@@ -51,7 +53,7 @@ function Lecture(props) {
 
     const [review, setReview] = useState(null);
 
-    const [page, setPage] = useState(1);
+    const [page, setPage] = useState(0);
 
     const [more, setMore] = useState(true);
 
@@ -128,8 +130,9 @@ function Lecture(props) {
     // 리뷰 가져오기
     const getReviewList = async (id, paramPage) => {
         const response = await axios.get(
-            `http://localhost:8099/lecture/review/unauth/list?id=${id}&page=${paramPage}&size=10`
+            `http://localhost:8099/lecture/review/unauth/list?id=${id}&page=${paramPage}`
         ).then((res) => {
+            console.log("리뷰가져옴")
             console.log(res)
             if(paramPage > 1){
                 // 깊은복사
@@ -142,9 +145,25 @@ function Lecture(props) {
         })
     }
 
+    // 장바구니에 추가
+    const addBasket = async (id) => {
+        if(!accessToken){
+            alert("로그인이 필요한 서비스입니다.")
+            navigate("/login")
+        }
+        const response = await axios.post(
+            `http://localhost:8099/basket/add`,
+            {lectureId : id},
+            {
+                headers:{Authorization: `${accessToken}`,}
+            }
+        )
+        navigate("/my/basket")
+    }
+
     useEffect(() => {
         getLectureInfo(params.value) // 첫번째 정보 가져옴
-        getReviewList(params.value, 1);
+        getReviewList(params.value, 0);
     },[])
 
     useEffect(() => {
@@ -154,7 +173,7 @@ function Lecture(props) {
 
     //리뷰다음페이지 가져오기
     useEffect(() => {
-        if(page > 1){
+        if(page > 0){
             getReviewList(params.value, page);
         }
     }, [page])
@@ -187,15 +206,23 @@ function Lecture(props) {
 
 
             <TopBar/>
-            {/* TopBar 띄우기 위한 Box*/}
-            <Box sx={{height: 64}}/>
 
-            <Grid container>
+
+            <Grid container sx={{width:"100%"}}>
                 {/* 강의 이미지 **/}
-                <Grid item xs={12}>
-                    <div className={styles.image_banner}>
-                        <img className={styles.image} src={banner} />
-                    </div>
+                <Grid item xs={12} sx={{width:"100%"}}>
+                    <Box
+                        sx={{
+                            width: "100%",
+                            aspectRatio: "16/4",
+                            overflow: "hidden",
+                            display: 'flex',
+                            alignItems: 'center',  // 세로 중앙 정렬
+                            justifyContent: 'center'  // 가로 중앙 정렬
+                        }}
+                    >
+                        <img style={{width:"100%", objectFit:"cover"}} src={result && result.image} alt="Description" />
+                    </Box>
                 </Grid>
                 {/* 강의 요약 **/}
                 <Grid container item xs={12} sx={{px:'20%', background:'#1B65FF', pt:'3rem'}}>
@@ -208,7 +235,7 @@ function Lecture(props) {
                               alignItems="center"
                         >
                             <div className={styles.image_thumb}>
-                                <img className={styles.image} src={banner} />
+                                <img className={styles.image} src={result && result.thumb} />
                             </div>
                         </Grid>
                     </Grid>
@@ -273,6 +300,7 @@ function Lecture(props) {
                         <Box display="flex"
                              justifyContent="center"
                              alignItems="center"
+                             onClick={() => addBasket(params.value)}
                              sx={{ borderRadius: '1vw',
                                  width:"50vw", height:"2.5vw",
                                  m:0, p:1,
@@ -315,7 +343,7 @@ function Lecture(props) {
                         alignItems="center"
                         item xs={12}>
                         <div className={styles.image_description}>
-                            <img className={styles.image} src={desc}/>
+                            <img className={styles.image} src={result && result.image}/>
                         </div>
                     </Grid>
                     {/* 강의설명 텍스트 **/}
@@ -386,7 +414,7 @@ function Lecture(props) {
                                                         <Grid item xs={9} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
                                                             <div style={{display: 'flex', alignItems: 'center', flexGrow: 1, width:"60%"}}>
                                                                 <Box position="relative" sx={{width:"100px", aspectRatio:"16/9", overflow:"hidden"}}>
-                                                                    <img src={testImg} style={{width:"100%", height:"100%", objectFit:"cover"}}/>
+                                                                    <img src={subItem.thumb} style={{width:"100%", height:"100%", objectFit:"cover"}}/>
                                                                 </Box>
                                                                 <span className={styles.font_curriculum_content}>{subItem.name}</span>
                                                             </div>
@@ -429,8 +457,8 @@ function Lecture(props) {
                           alignItems="flex-end"
                           sx={{pt:'7vw'}}
                     >
-                        <span className={styles.font_curriculum_main}>수강평&nbsp;</span>
-                        <span className={styles.font_review_count}>총 {result && result.totalReview}개</span>
+                        <Typography sx={{fontWeight:"900", fontSize:"2.5rem", display:"flex", alignItems:"flex-end"}}>수강평&nbsp;</Typography>
+                        <Typography sx={{fontWeight:"900", fontSize:"1.5rem", color:"#8D8D8D", display:"flex", alignItems:"flex-end"}}>총 {result && result.totalReview}개</Typography>
                     </Grid>
                     <Grid item xs={12}
                           display="flex"
@@ -438,11 +466,11 @@ function Lecture(props) {
                           alignItems="center"
                           sx={{pb:'7vw', mt:'1rem'}}
                     >
-                        {result && result.score > 0 && (<StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>)}
-                        {result && result.score > 1 && (<StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>)}
-                        {result && result.score > 2 && (<StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>)}
-                        {result && result.score > 3 && (<StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>)}
-                        {result && result.score > 4 && (<StarIcon sx={{ color: '#F2D857', fontSize: '3rem' }}/>)}
+                        {result && result.score > 0 && (<StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>)}
+                        {result && result.score > 1 && (<StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>)}
+                        {result && result.score > 2 && (<StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>)}
+                        {result && result.score > 3 && (<StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>)}
+                        {result && result.score > 4 && (<StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>)}
 
                         <span className={styles.font_review_score}>({result && result.score})</span>
                     </Grid>
@@ -473,7 +501,7 @@ function Lecture(props) {
                         {/* items **/}
                         {review && review.map((item, idx) => {
                             return(
-                                <Grid container item xs={12} sx={{mt:'0.3vw'}}>
+                                <Grid container item xs={12} sx={{mt:1}}>
                                     <Grid item
                                           display="flex"
                                           justifyContent="flex-start"
@@ -519,7 +547,7 @@ function Lecture(props) {
                                           display="flex"
                                           justifyContent="flex-start"
                                           alignItems="center"
-                                          xs={12} sx={{mt:'1vw'}}>
+                                          xs={12} sx={{mt:3}}>
                                 <span className={styles.font_review_content}>
                                     {item.content}
                                 </span>
@@ -528,14 +556,14 @@ function Lecture(props) {
                                           display="flex"
                                           justifyContent="flex-start"
                                           alignItems="center"
-                                          xs={12} sx={{mt:'1vw'}}>
+                                          xs={12} sx={{mt:3}}>
                                 <span className={styles.font_review_date}>
                                     {dayjs(item.createdDay).format('YYYY년MM월DD일 HH시mm분ss초')} ♥{item.heart}
                                 </span>
                                         <br/>
                                     </Grid>
                                     <Grid item
-                                          xs={12} sx={{mt:'2vw', mb:'1vw'}}>
+                                          xs={12} sx={{mt:3, mb:1}}>
                                         <Divider fullWidth/>
                                         <br/>
                                     </Grid>
@@ -556,8 +584,8 @@ function Lecture(props) {
                     </Grid>
                 </Grid>
                 {/* footer **/}
-                <Grid container xs={12} sx={{mt: 10 , mb:20, background: "#FFFFFF"}}>
-                    <Grid container xs={12} sx={{px: "20%"}}>
+                <Grid item container xs={12} sx={{mt: 10 , mb:20, background: "#FFFFFF"}}>
+                    <Grid container item xs={12} sx={{px: "20%"}}>
                         <Grid item xs={3}  direction='row'  justifyContent='left'>
                             <p className={styles.font_footer_logo}>이음코딩</p>
                         </Grid>

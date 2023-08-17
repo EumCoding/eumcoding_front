@@ -149,7 +149,9 @@ function MyPage(props) {
                 // 닉네임 변경 관련 state 초기화
                 setNickEdit(false);
             }
-        )
+        ).catch((err) => {
+            alert("이미 같은 닉네임이 있어요")
+        })
     }
 
     useEffect(() => {
@@ -215,7 +217,7 @@ function MyPage(props) {
                             <CloseIcon onClick={() => setNickEdit(false)} />
                         )}
                         {nickEdit === true && (
-                            <CheckIcon onClick={() => updateNickname()}/>
+                            <CheckIcon onClick={() => nickname !== "" ? updateNickname() : alert("닉네임을 써주세요")}/>
                         )}
                         {nickEdit === false && (
                             <EditIcon onClick={() => setNickEdit(true)}/>

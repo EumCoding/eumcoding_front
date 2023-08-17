@@ -175,7 +175,7 @@
 .font_review_score{
     font-family: 'NanumSquareNeo';
     font-weight: 500;
-    font-size: 2rem;
+    font-size: 1.5rem;
     text-align: left;
     color: #000000;
 }
@@ -184,7 +184,7 @@
 .font_review_sort_selected{
     font-family: 'NanumSquareNeo';
     font-weight: 900;
-    font-size: 1.2rem;
+    font-size: 1rem;
     text-align: left;
     color: #000000;
     margin-right: 4vw;
@@ -194,7 +194,7 @@
 .font_review_sort{
     font-family: 'NanumSquareNeo';
     font-weight: 900;
-    font-size: 1.2rem;
+    font-size: 1rem;
     text-align: left;
     color: #8D8D8D;
     margin-right: 4vw;
@@ -204,7 +204,7 @@
 .font_review_nickname{
     font-family: 'NanumSquareNeo';
     font-weight: 900;
-    font-size: 1.2rem;
+    font-size: 1rem;
     text-align: left;
     color: #000000;
 }
@@ -221,8 +221,8 @@
 /* 리뷰 날짜 **/
 .font_review_date{
     font-family: 'NanumSquareNeo';
-    font-weight: 700;
-    font-size: 1rem;
+    font-weight: 500;
+    font-size: 0.7rem;
     text-align: left;
     color: #8D8D8D;
 }

@@ -13,10 +13,11 @@ import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import {clearAccessToken} from "../redux/actions";
 import Cookies from "js-cookie"
+import testImg from "../images/test.png"
 
 
 
-const pages = ["강의", "테마별 강의", "소개", "대시보드"];
+const pages = ["강의", "테마별 강의", "장바구니", "대시보드"];
 
 
 export default function TopBar(props) {
@@ -88,13 +89,12 @@ export default function TopBar(props) {
 
     return (
         <ThemeProvider theme={theme}>
-            <AppBar position="relative" sx={{px:{xs:"5%", sm:"10%", md:"10%", lg:"20%"}}}>
+            <AppBar position="sticky" sx={{ top: 0, px: { xs: "5%", sm: "10%", md: "10%", lg: "20%" } }}>
                 <Container maxWidth="xl" sx={{padding:{xs:0, md:0}}}>
                     <Toolbar disableGutters sx={{p:0, m:0}}>
                         <Typography
                             noWrap
                             component="a"
-                            href="/"
                             sx={{
                                 my: 2,
                                 mr: 2,
@@ -103,6 +103,7 @@ export default function TopBar(props) {
                                 textDecoration: 'none',
                                 alignItems: 'center',
                             }}
+                            onClick={() => navigate("/main")}
                         >
                             <b className={styles.font_logo}>이음코딩</b>
                         </Typography>
@@ -174,6 +175,10 @@ export default function TopBar(props) {
                                                     if(!accessToken) navigate("/login");
                                                     navigate("/search?keyword=&page=1&sort=0");
                                                 }
+                                                if(page === "장바구니") {
+                                                    if(!accessToken) navigate("/login");
+                                                    navigate("/my/basket");
+                                                }
                                             }}
                                         >
                                             <b className={styles.font_menu}>{page}</b>
@@ -187,7 +192,7 @@ export default function TopBar(props) {
                                     item
                                     md={12/(pages.length+1)}
                                     sx={{p:0, height:'100%'}}>
-                                    <Box display="flex"
+                                    <Button display="flex"
                                          justifyContent="center"
                                          alignItems="center"
                                          onClick={() => accessToken ? logout() : navigate("/login")}
@@ -198,10 +203,14 @@ export default function TopBar(props) {
                                              height: "100%",
                                              m: 0,
                                              px:"1rem",
-                                             py:"0.5rem"
+                                             py:"0.5rem",
+                                             '&:hover': {
+                                                 backgroundColor: 'skyblue',
+                                                 transition: 'background-color 0.3s'
+                                             }
                                          }}>
                                         <Typography sx={{whiteSpace:"nowrap", color:"#000000"}}>{accessToken?"로그아웃":"로그인"}</Typography>
-                                    </Box>
+                                    </Button>
                                 </Grid>
                             </Grid>
                         </Box>

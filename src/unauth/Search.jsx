@@ -138,7 +138,7 @@ function Search(props) {
                             >
                                 <Grid xs={12} item sx={{width:"100%"}}>
                                     <div style={{width:"100%", aspectRatio: "8:5", overflow:"hidden"}}>
-                                        <img style={{width: "100%", height: "100%", objectFit: "cover"}} src={lectureThumb} />
+                                        <img style={{width: "100%", height: "100%", objectFit: "cover"}} src={item.lectureThumb} />
                                     </div>
                                 </Grid>
                                 <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{mt:"0.2rem"}}>
@@ -154,58 +154,6 @@ function Search(props) {
                             </Grid>
                         )
                     })}
-
-                    <Grid xs={4} container item sx={{width:"100%"}}>
-                        <Grid xs={12} item sx={{width:"100%"}}>
-                            <div style={{width:"100%", aspectRatio: "8:5", overflow:"hidden"}}>
-                                <img style={{width: "100%", height: "100%", objectFit: "cover"}} src={lectureThumb} />
-                            </div>
-                        </Grid>
-                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{mt:"0.2rem"}}>
-                            <Typography sx={{fontWeight:"900", fontSize:"1rem"}}>
-                                무작정 따라하는 우리아이 첫 코딩교육
-                            </Typography>
-                        </Grid>
-                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{pt:"0.5rem"}}>
-                            <Typography sx={{fontWeight:"900", fontSize:"0.5rem", color:"#8D8D8D"}}>
-                                진행률 : 50%
-                            </Typography>
-                        </Grid>
-                    </Grid>
-                    <Grid xs={4} container item sx={{width:"100%"}}>
-                        <Grid xs={12} item sx={{width:"100%"}}>
-                            <div style={{width:"100%", aspectRatio: "8:5", overflow:"hidden"}}>
-                                <img style={{width: "100%", height: "100%", objectFit: "cover"}} src={lectureThumb} />
-                            </div>
-                        </Grid>
-                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{mt:"0.2rem"}}>
-                            <Typography sx={{fontWeight:"900", fontSize:"1rem"}}>
-                                무작정 따라하는 우리아이 첫 코딩교육
-                            </Typography>
-                        </Grid>
-                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{pt:"0.5rem"}}>
-                            <Typography sx={{fontWeight:"900", fontSize:"0.5rem", color:"#8D8D8D"}}>
-                                진행률 : 50%
-                            </Typography>
-                        </Grid>
-                    </Grid>
-                    <Grid xs={4} container item sx={{width:"100%"}}>
-                        <Grid xs={12} item sx={{width:"100%"}}>
-                            <div style={{width:"100%", aspectRatio: "8:5", overflow:"hidden"}}>
-                                <img style={{width: "100%", height: "100%", objectFit: "cover"}} src={lectureThumb} />
-                            </div>
-                        </Grid>
-                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{mt:"0.2rem"}}>
-                            <Typography sx={{fontWeight:"900", fontSize:"1rem"}}>
-                                무작정 따라하는 우리아이 첫 코딩교육
-                            </Typography>
-                        </Grid>
-                        <Grid xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"} item sx={{pt:"0.5rem"}}>
-                            <Typography sx={{fontWeight:"900", fontSize:"0.5rem", color:"#8D8D8D"}}>
-                                진행률 : 50%
-                            </Typography>
-                        </Grid>
-                    </Grid>
 
                 </Grid>
                 <Grid xs={12} container item display='flex' justifyContent='center' alignItems='center' sx={{width:"100%", py:"3rem"}}>

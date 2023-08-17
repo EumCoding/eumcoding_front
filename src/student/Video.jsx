@@ -8,7 +8,7 @@ import VolumeDownIcon from '@mui/icons-material/VolumeDown';
 import Grid from '@mui/material/Grid';
 import DashTop from "../component/DashTop";
 import axios from "axios";
-import {useLocation} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import {useSelector} from "react-redux";
 import screenfull from 'screenfull';
 import dayjs from "dayjs";
@@ -25,6 +25,7 @@ const style = {
     width: 1500,
     bgcolor: 'background.paper',
     border: '2px solid #000',
+    borderRadius : '20px',
     boxShadow: 24,
     p: 4,
 };
@@ -49,6 +50,7 @@ function ValueLabelComponent(props) {
 
 
 function Video(props) {
+    const navigate = useNavigate();
 
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
@@ -340,6 +342,7 @@ function Video(props) {
     useEffect(() => {
         if(currentTime > 1 && currentTime === duration){
             alert("시청을 마쳤습니다.")
+            navigate(-1);
         }
     },[currentTime])
 
@@ -361,7 +364,7 @@ function Video(props) {
                     aria-describedby="modal-modal-description"
                 >
                     <Box sx={style}>
-                        <Typography id="modal-modal-title" variant="h6" component="h2">
+                        <Typography id="modal-modal-title" variant="h6" component="h2" sx={{fontSize:"1.5rem", fontWeight:"700", py:"1rem"}}>
                             {videoTest[videoTestIdx].title}
                         </Typography>
                         {videoTest[videoTestIdx].type === 0 && (
@@ -391,11 +394,11 @@ function Video(props) {
                                                                 key={item.id}
                                                                 sx={{
                                                                     border:1,
-                                                                    borderColor:"#000000",
-                                                                    borderRadius : "50px",
+                                                                    borderColor:"#A2A2A2",
+                                                                    borderRadius : "10px",
                                                                     width:"100%",
                                                                     aspectRatio:"16/9",
-                                                                    bgcolor: 'grey.300',
+                                                                    bgcolor: '#66CC66',
                                                                     display: 'flex',
                                                                     alignItems: 'center',
                                                                     justifyContent: 'center',
@@ -432,11 +435,11 @@ function Video(props) {
                                                     <Box
                                                         sx={{
                                                             border:1,
-                                                            borderColor:"#000000",
-                                                            borderRadius : "50px",
+                                                            borderColor:"#A2A2A2",
+                                                            borderRadius : "10px",
                                                             width:"100%",
                                                             aspectRatio:"16/9",
-                                                            bgcolor: 'grey.300',
+                                                            bgcolor: '#FFFFFF',
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
@@ -471,7 +474,7 @@ function Video(props) {
 
                                 {/* 제공되는 블럭들, 클릭하면 state로 올라가고 blocks에서 pop됩니다. **/}
                                 <Grid container item xs={12} sx={{pt:"3rem"}}>
-                                    <Grid xs={12} item>
+                                    <Grid xs={12} item sx={{py:"2rem"}}>
                                         <Typography> 선생님이 준 블럭 </Typography>
                                     </Grid>
                                     {blocks && blocks.length > 0 && blocks.map((item, idx) => {
@@ -481,11 +484,11 @@ function Video(props) {
                                                     key={item.id}
                                                     sx={{
                                                         border:1,
-                                                        borderColor:"#000000",
-                                                        borderRadius : "50px",
+                                                        borderColor:"#A2A2A2",
+                                                        borderRadius : "10px",
                                                         width:"100%",
                                                         aspectRatio:"16/9",
-                                                        bgcolor: 'grey.300',
+                                                        bgcolor: '#99CCFF',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
@@ -508,11 +511,11 @@ function Video(props) {
                                         <Box
                                             sx={{
                                                 border:1,
-                                                borderColor:"#000000",
-                                                borderRadius : "50px",
+                                                borderColor:"#A2A2A2",
+                                                borderRadius : "10px",
                                                 width:"100%",
                                                 aspectRatio:"16/9",
-                                                bgcolor: 'grey.300',
+                                                bgcolor: '#white',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
@@ -530,7 +533,7 @@ function Video(props) {
                                 </Grid>
                             </Grid>
                         )}
-                        <Button onClick={() => {
+                        <Button sx={{mt:"1rem"}} onClick={() => {
                             // 1. 서버에 결과를 제출
                             if(videoTest[videoTestIdx].type === 0) {
                                 // 문제가 틀린지 맞는지 알려주기
@@ -627,7 +630,7 @@ function Video(props) {
                         </Grid>
                     </Grid>
                     <Grid item sm={12} md={4}>
-                        duration : {duration} cur : {currentTime} max : {maxPlayed}
+                        {/*duration : {duration} cur : {currentTime} max : {maxPlayed}*/}
                     </Grid>
                 </Grid>
             </Grid>
