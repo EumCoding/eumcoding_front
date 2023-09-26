@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Box, Checkbox, createTheme, FormControlLabel, Grid, TextField, ThemeProvider} from "@mui/material";
+import {Box, Button, Checkbox, createTheme, FormControlLabel, Grid, TextField, ThemeProvider} from "@mui/material";
 import TopBar from "../component/TopNav";
 import styles from "./css/Login.module.css"
 import kakao from "../images/kakao.svg"
@@ -71,10 +71,14 @@ function Login(props) {
                 // 메인페이지로 이동
                 dispatch(setRole(res.data.role))
                 navigate("/main")
-            }else if(res.data.role === 2){
-                // 가이드 페이지로 이동
+            }else if(res.data.role === 1){
+                // 강사 대시보드로 이동
                 dispatch(setRole(res.data.role))
                 navigate("/guide/main/info")
+            }else if(res.data.role === 3){
+                // 부모 대시보드로 이동
+                dispatch(setRole(res.data.role))
+                navigate("/parent/dashboard");
             }
         })
     }
@@ -84,10 +88,10 @@ function Login(props) {
         <ThemeProvider theme={theme}>
             <TopBar/>
             <Grid container sx={{px:{xs:"3%", md:"20%", lg:"30%"}}}>
-                <Grid item xs={12} sx={{pt:"4rem"}}>
+                <Grid item xs={12} sx={{pt:"3rem"}}>
                     <p className={styles.font_body_login}>로그인</p>
                 </Grid>
-                <Grid item xs={12} sx={{pt:"3rem"}}>
+                <Grid item xs={12} sx={{pt:"1rem"}}>
                     <p className={styles.font_body_menu}>이메일</p>
                     <TextField
                         required
@@ -127,19 +131,31 @@ function Login(props) {
                       alignItems="center"
                       xs={12} sx={{pt:2}}>
 
-                    <Box display="flex"
-                         justifyContent="center"
-                         alignItems="center"
-                         onClick={() => handleSubmit()}
-                         sx={{ borderRadius: '10vw',
-                             width:"100%", height:"2.5vw",
-                             m:0, p:1,
-                             border:0,
-                             background: "#1B65FF"}}>
+                    <Button
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        onClick={() => handleSubmit()}
+                        sx={{
+                            borderRadius: '10vw',
+                            width: "100%",
+                            height: "2.5vw",
+                            m: 0,
+                            p: 1,
+                            border: 0,
+                            background: "#1B65FF",
+                            '& p': {
+                                color: 'white',  // 기본 글자색
+                            },
+                            '&:hover': {
+                                background: "skyblue",  // 호버시 버튼 배경색
+                            }
+                        }}
+                    >
                         <p className={styles.font_body_btn}>
                             <div>아이디로 로그인</div>
                         </p>
-                    </Box>
+                    </Button>
                 </Grid>
                 <Grid item
                       display="flex"
@@ -147,38 +163,54 @@ function Login(props) {
                       alignItems="center"
                       xs={12} sx={{pt:2}}>
 
-                    <Box display="flex"
+                    <Button display="flex"
                          justifyContent="center"
                          alignItems="center"
-                         sx={{ borderRadius: '10vw',
-                             width:"100%", height:"2.5vw",
-                             m:0, p:1,
-                             border:0,
-                             background: "#FFE812"}}>
+                            sx={{
+                                borderRadius: '10vw',
+                                width: "100%",
+                                height: "2.5vw",
+                                m: 0,
+                                p: 1,
+                                border: 0,
+                                background: "#FFE812",
+                                '& p': {
+                                    color: '#000000',  // 기본 글자색
+                                },
+                                '&:hover': {
+                                    background: "skyblue",  // 호버시 버튼 배경색
+                                }
+                            }}>
                         <p className={styles.font_body_kakao}>
                             <img className={styles.svg_icon_kakao} src={kakao}/>
                             <div>카카오로 로그인</div>
                         </p>
-                    </Box>
+                    </Button>
                 </Grid>
                 <Grid item
                       display="flex"
                       justifyContent="center"
                       alignItems="center"
                       xs={12} sx={{pt:2}}>
-                    <Box display="flex"
+                    <Button display="flex"
                          justifyContent="center"
                          alignItems="center"
-                         onClick={()=>navigate("/join")}
+                         onClick={()=>navigate("/joinSelect")}
                          sx={{ borderRadius: '10vw',
                              width:"100%", height:"2.5vw",
                              m:0, p:1,
                              border:5,
-                             borderColor: "#1B65FF"}}>
+                             borderColor: "#1B65FF",
+                             '& p': {
+                                 color: '#000000',  // 기본 글자색
+                             },
+                             '&:hover': {
+                                 background: "skyblue",  // 호버시 버튼 배경색
+                             }}}>
                         <p className={styles.font_body_join}>
                             회원가입
                         </p>
-                    </Box>
+                    </Button>
                 </Grid>
 
                 <Grid container

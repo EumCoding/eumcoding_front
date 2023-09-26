@@ -22,7 +22,7 @@ import axios from "axios";
 import {useNavigate} from "react-router-dom";
 
 
-function Join(props) {
+function StudentJoin(props) {
     const navigate = useNavigate();
 
     const [email, setEmail] = useState(""); // 이메일
@@ -366,4 +366,4 @@ function Join(props) {
         );
 }
 
-export default Join;
+export default StudentJoin;

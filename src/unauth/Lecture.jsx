@@ -157,8 +157,19 @@ function Lecture(props) {
             {
                 headers:{Authorization: `${accessToken}`,}
             }
-        )
-        navigate("/my/basket")
+        ).then((res) => {
+            const userConfirmed = window.confirm("강의가 장바구니에 담겼습니다. 장바구니로 이동하시겠습니까?");
+
+            if (userConfirmed) {
+                // 사용자가 확인을 눌렀을 때 장바구니로 이동
+                navigate("/my/basket")
+            } else {
+                // 사용자가 취소를 눌렀을 때 아무 동작도 수행하지 않음
+            }
+        }).catch((res) => {
+            alert("이미 장바구니에 담긴 강의입니다.")
+        })
+
     }
 
     useEffect(() => {
@@ -297,7 +308,7 @@ function Lecture(props) {
                           alignItems="center"
                           sx={{pt:5}}
                           xs={6}>
-                        <Box display="flex"
+                        <Button display="flex"
                              justifyContent="center"
                              alignItems="center"
                              onClick={() => addBasket(params.value)}
@@ -309,7 +320,7 @@ function Lecture(props) {
                             <p className={styles.font_sugang}>
                                 수강신청하기
                             </p>
-                        </Box>
+                        </Button>
                     </Grid>
                     {/* 수강신청 버튼 옆 가격 **/}
                     <Grid item

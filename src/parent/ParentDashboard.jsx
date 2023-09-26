@@ -161,7 +161,7 @@ function DashBoard(props) {
                               alignItems="center"
                               xs={9} sx={{pt: "2rem"}}>
                                 <span className={styles.font_a}
-                                    onClick={() => navigate("/my/payLog")}
+                                      onClick={() => navigate("/my/payLog")}
                                 >
                                     결제내역
                                 </span>

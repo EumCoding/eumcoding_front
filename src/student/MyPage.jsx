@@ -187,21 +187,20 @@ function MyPage(props) {
     return (
         <ThemeProvider theme={theme}>
             <DashTop/>
-            <Box sx={{height: 80}}/>
-            <Grid justifyContent='center' container sx={{px:'20%'}}>
+            <Grid justifyContent='center' container sx={{px:'20%', pt:"2rem"}}>
                 <Grid item xs={4}
                       display="flex"
                       justifyContent="center"
                       alignItems="center"
                       >
-                    <FaceIcon sx={{fontSize: '10rem'}}/>
+                    <FaceIcon sx={{fontSize: '5rem'}}/>
                 </Grid>
                 <Grid item xs={8}
                       display="flex"
                       justifyContent="flex-start"
                       alignItems={"center"}
                 >
-                    <Typography sx={{fontWeight:'900', fontSize:'3rem'}}>
+                    <Typography sx={{fontWeight:'900', fontSize:'2rem'}}>
                         {nickEdit === false && profile && profile.nickname}
                         {nickEdit === true && (
                             <TextField variant="standard" sx={{mr: "1rem",
@@ -224,21 +223,22 @@ function MyPage(props) {
                         )}
                     </Typography>
                 </Grid>
-                <Grid item xs={12} sx={{py:'3rem'}}><Divider/></Grid>
+                <Grid item xs={12} sx={{py:'1rem'}}><Divider/></Grid>
                 {/* 이메일 **/}
                 <Grid item xs={4}
                       display="flex"
                       justifyContent="center"
                       alignItems="center"
+                      sx={{pt:'1rem', pb:"0.5rem"}}
                 >
-                    <Typography sx={{fontWeight:'900', fontSize:'1.7rem'}}>이메일</Typography>
+                    <Typography sx={{fontWeight:'800', fontSize:'1.5rem'}}>이메일</Typography>
                 </Grid>
                 <Grid item xs={8}
                       display="flex"
                       justifyContent="flex-start"
                       alignItems="center"
                 >
-                    <Typography sx={{fontWeight:'900', fontSize:'1rem', color:'#8D8D8D'}}>
+                    <Typography sx={{fontWeight:'800', fontSize:'1rem', color:'#8D8D8D'}}>
                         {profile && profile.email}
                     </Typography>
                 </Grid>
@@ -250,7 +250,7 @@ function MyPage(props) {
                       alignItems="center"
                       sx={{pb:'3rem'}}
                 >
-                    <Typography sx={{fontWeight:'900', fontSize:'1.7rem'}}>이름</Typography>
+                    <Typography sx={{fontWeight:'800', fontSize:'1.5rem'}}>이름</Typography>
                 </Grid>
                 <Grid item xs={8}
                       display="flex"
@@ -258,7 +258,7 @@ function MyPage(props) {
                       alignItems="center"
                       sx={{pb:'3rem'}}
                 >
-                    <Typography sx={{fontWeight:'900', fontSize:'1rem', color:'#8D8D8D'}}>
+                    <Typography sx={{fontWeight:'800', fontSize:'1rem', color:'#8D8D8D'}}>
                         {profile && profile.name}
                     </Typography>
                 </Grid>
@@ -267,12 +267,12 @@ function MyPage(props) {
                     <Grid item xs={4} display={"flex"} justifyContent="center" alignItems={"center"}
                           sx={{pb:"3rem"}}
                     >
-                        <Typography sx={{fontWeight:'900', fontSize:'1.7rem'}}>비밀번호</Typography>
+                        <Typography sx={{fontWeight:'800', fontSize:'1.5rem'}}>비밀번호</Typography>
                     </Grid>
                     <Grid item xs={8} display={"flex"} justifyContent="flex-start" alignItems={"center"}
                           sx={{pb:"3rem"}}
                     >
-                        <Typography sx={{fontWeight:'900', fontSize:'1rem', color:'#000000'}}
+                        <Typography sx={{fontWeight:'800', fontSize:'1rem', color:'#000000'}}
                                     display={"flex"} justifyContent="flex-start" alignItems={"center"}
                         >
                             {pwEdit === false && "**********"}
@@ -296,13 +296,13 @@ function MyPage(props) {
                                   alignItems={"center"}
                                   sx={{pb:"3rem"}}
                             >
-                                <Typography sx={{fontWeight:'900', fontSize:'1.7rem'}}>비밀번호 확인</Typography>
+                                <Typography sx={{fontWeight:'800', fontSize:'1.5rem'}}>비밀번호 확인</Typography>
                             </Grid>
                             <Grid item xs={8} display={"flex"} justifyContent="flex-start"
                                   alignItems={"center"}
                                   sx={{pb:"3rem"}}
                             >
-                                <Typography sx={{fontWeight:'900', fontSize:'1rem', color:'#000000'}}
+                                <Typography sx={{fontWeight:'800', fontSize:'1rem', color:'#000000'}}
                                             display={"flex"} justifyContent="flex-start" alignItems={"center"}
                                 >
                                     <TextField variant="standard" sx={{mr: "1rem"}} type={"password"} value={chgPw2} onChange={(e) => setChgPw2(e.target.value)}/>
@@ -314,13 +314,13 @@ function MyPage(props) {
                                   alignItems={"center"}
                                   sx={{pb:"3rem"}}
                             >
-                                <Typography sx={{fontWeight:'900', fontSize:'1.7rem'}}>현재 비밀번호</Typography>
+                                <Typography sx={{fontWeight:'800', fontSize:'1.5rem'}}>현재 비밀번호</Typography>
                             </Grid>
                             <Grid item xs={8} display={"flex"} justifyContent="flex-start"
                                   alignItems={"center"}
                                   sx={{pb:"3rem"}}
                             >
-                                <Typography sx={{fontWeight:'900', fontSize:'1rem', color:'#000000'}}
+                                <Typography sx={{fontWeight:'800', fontSize:'1rem', color:'#000000'}}
                                             display={"flex"} justifyContent="flex-start" alignItems={"center"}
                                 >
                                     <TextField variant="standard" sx={{mr: "1rem"}} type={"password"} value={curPw} onChange={(e) => setCurPw(e.target.value)}/>
@@ -340,7 +340,7 @@ function MyPage(props) {
                       alignItems="center"
                       sx={{pb:"3rem"}}
                 >
-                    <Typography sx={{fontWeight:'900', fontSize:'1.7rem'}}>가입일</Typography>
+                    <Typography sx={{fontWeight:'800', fontSize:'1.5rem'}}>가입일</Typography>
                 </Grid>
                 <Grid item xs={8}
                       display="flex"
@@ -348,7 +348,7 @@ function MyPage(props) {
                       alignItems="center"
                       sx={{pb:"3rem"}}
                 >
-                    <Typography sx={{fontWeight:'900', fontSize:'1rem', color:'#8D8D8D'}}>
+                    <Typography sx={{fontWeight:'800', fontSize:'1rem', color:'#8D8D8D'}}>
                         {profile && profile.joinDay}
                     </Typography>
                 </Grid>
@@ -359,7 +359,7 @@ function MyPage(props) {
                       alignItems="center"
                       sx={{pb:"3rem"}}
                 >
-                    <Typography sx={{fontWeight:'900', fontSize:'1.7rem'}}>생일</Typography>
+                    <Typography sx={{fontWeight:'800', fontSize:'1.5rem'}}>생일</Typography>
                 </Grid>
                 <Grid item xs={8}
                       display="flex"
@@ -367,7 +367,7 @@ function MyPage(props) {
                       alignItems="center"
                       sx={{pb:"3rem"}}
                 >
-                    <Typography sx={{fontWeight:'900', fontSize:'1rem', color:'#8D8D8D'}}>
+                    <Typography sx={{fontWeight:'800', fontSize:'1rem', color:'#8D8D8D'}}>
                         {profile && profile.birthDay}
                     </Typography>
                 </Grid>
@@ -378,7 +378,7 @@ function MyPage(props) {
                       alignItems="center"
                       sx={{pb:"3rem"}}
                 >
-                    <Typography sx={{fontWeight:'900', fontSize:'1.7rem'}}>주소</Typography>
+                    <Typography sx={{fontWeight:'800', fontSize:'1.5rem'}}>주소</Typography>
                 </Grid>
                 <Grid item xs={8}
                       display="flex"
@@ -390,7 +390,7 @@ function MyPage(props) {
                         display="flex"
                         justifyContent="flex-start"
                         alignItems="center"
-                        sx={{fontWeight:'900', fontSize:'1rem', color:'#000000'}}>
+                        sx={{fontWeight:'800', fontSize:'1rem', color:'#000000'}}>
                         {profile && profile.address}<EditIcon onClick={handleClick} />
                     </Typography>
                 </Grid>
@@ -402,7 +402,7 @@ function MyPage(props) {
                       alignItems="center"
                       sx={{pb:"3rem"}}
                 >
-                    <Typography sx={{fontWeight:'900', fontSize:'1.7rem'}}>전화번호</Typography>
+                    <Typography sx={{fontWeight:'800', fontSize:'1.5rem'}}>전화번호</Typography>
                 </Grid>
                 <Grid item xs={8}
                       display="flex"
@@ -414,7 +414,7 @@ function MyPage(props) {
                         display="flex"
                         justifyContent="flex-start"
                         alignItems="center"
-                        sx={{fontWeight:'900', fontSize:'1rem', color:'#000000'}}>
+                        sx={{fontWeight:'800', fontSize:'1rem', color:'#000000'}}>
                         {telEdit === false && profile && profile.tel}
                         {telEdit === true && (
                             <TextField variant="standard" sx={{mr: "1rem"}}

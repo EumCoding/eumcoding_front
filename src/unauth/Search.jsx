@@ -104,21 +104,23 @@ function Search(props) {
         <ThemeProvider theme={theme}>
             <TopBar/>
             <Grid container sx={{pt:"2rem", px:{xs:"5%", sm:"10%", md:"10%", lg:"20%"}}}>
-                <Grid xs={12} item display='flex' justifyContent='flex-start' alignItems='center' sx={{mb:"2rem"}}>
+                <Grid xs={12} item display='flex' justifyContent='center' alignItems='center' sx={{mb:"2rem"
+                    ,height : keyword === "" ? "80vh" : "auto"
+                }}>
                     <Select
                         onChange={(e) => setSort(e.target.value)}
                         label="정렬"
                         defaultValue={sort}
-                        sx={{mr:"1.5rem"}}
+                        sx={{mr:"1.5rem", width:"15vw", height:"40px"}}
                     >
                         <MenuItem value="0">최신순</MenuItem>
                         <MenuItem value="1">진행도순</MenuItem>
                         <MenuItem value="2">오래된순</MenuItem>
                     </Select>
-                    <TextField variant={"outlined"} label="검색어" sx={{mr:"1rem", height:"100%", aspectRatio: "10/1"}}
+                    <TextField variant={"outlined"} label="검색어" size={"small"} sx={{mr:"1rem", width:"60vw"}}
                         onChange={(e) => setNewKeyword(e.target.value)}
                     />
-                    <Button sx={{backgroundColor: "#0B401D", height:"100%", aspectRatio: "3/1", borderRadius:"0.3vw"}}
+                    <Button sx={{backgroundColor: "#0B401D", width:"15vw", borderRadius:"0.3vw", height:"40px"}}
                         onClick={() => {
                             navigate(`/search?keyword=${newKeyword}&page=1`)
                             search(1, newKeyword)

@@ -10,7 +10,7 @@ import {useNavigate} from "react-router-dom";
 import axios from "axios";
 
 
-function DashBoard(props) {
+function TeacherDashBoard(props) {
     const accessToken = useSelector((state) => state.accessToken); // 엑세스 토큰
 
     const [profile, setProfile] = useState(null); // 프로필 저장될 부분
@@ -114,7 +114,7 @@ function DashBoard(props) {
                     </Grid>
                 </Grid>
 
-                {/* 최근 학습 강의 **/}
+                {/* 최근 등록 강의 **/}
                 <Grid item container xs={4} sx={{px:"20px"}}>
                     <Grid item xs={12} container sx={{
                         width:"100%",
@@ -126,7 +126,7 @@ function DashBoard(props) {
                         position: "relative"
                     }}>
                         <Grid item xs={12} sx={{pt: "2rem"}}>
-                            <span className={styles.font_main}>최근 학습 강의</span>
+                            <span className={styles.font_main}>최근 등록 강의</span>
                         </Grid>
                         <Grid item
                               display="flex"
@@ -143,27 +143,16 @@ function DashBoard(props) {
                               alignItems="center"
                               xs={12} sx={{pt: "2rem"}}>
                                 <span className={styles.font_gray}>
-                                    진도율 : 1강 / 12강 (5%)
+                                    등록일 : 등록일이 들어갑니다
                                 </span>
                         </Grid>
                         <Grid item
                               display="flex"
                               justifyContent="flex-start"
                               alignItems="center"
-                              xs={3} sx={{pt: "2rem"}}>
-                                <span className={styles.font_a} >
-                                    전체보기
-                                </span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="flex-start"
-                              alignItems="center"
-                              xs={9} sx={{pt: "2rem"}}>
-                                <span className={styles.font_a}
-                                    onClick={() => navigate("/my/payLog")}
-                                >
-                                    결제내역
+                              xs={12} sx={{pt: "2rem"}}>
+                                <span className={styles.font_a} onClick={() => navigate("/teacher/newLecture")} >
+                                    강의등록
                                 </span>
                         </Grid>
                         <Grid item
@@ -172,7 +161,7 @@ function DashBoard(props) {
                               alignItems="center"
                               xs={12} sx={{pt: "1rem"}}>
                             <Button
-                                onClick={() => navigate("/my/lectureList")}
+                                onClick={() => navigate("/teacher/myLectureList")}
                                 sx={{
                                     width: "92%", mb: "1rem", height: "4rem",
                                     background: '#0B401D', borderRadius: '10px', position: 'absolute', bottom: 0,
@@ -181,14 +170,14 @@ function DashBoard(props) {
                                     }
                                 }}
                             >
-                                <span className={styles.font_btn} >이어서 수강하기</span>
+                                <span className={styles.font_btn} >내 강의 목록</span>
                             </Button>
                         </Grid>
                     </Grid>
                 </Grid>
 
 
-                {/* 뱃지 **/}
+                {/* 통계 **/}
                 <Grid id='badge' item container xs={4} sx={{pl:"10px"}}>
                     <Grid item xs={12} container sx={{
                         width:"100%",
@@ -200,7 +189,7 @@ function DashBoard(props) {
                         position: "relative"
                     }}>
                         <Grid item xs={12} sx={{pt: "2rem"}}>
-                            <span className={styles.font_main}>뱃지</span>
+                            <span className={styles.font_main}>통계</span>
                         </Grid>
                         <Grid item
                               container
@@ -223,7 +212,7 @@ function DashBoard(props) {
                                   sx={{mt:'1rem'}}
                             >
                                 <span className={styles.font_normal}>
-                                    보유중인 뱃지가 없어요!
+                                    통계가 표시됩니다
                                 </span>
                             </Grid>
                         </Grid>
@@ -241,7 +230,7 @@ function DashBoard(props) {
                                     }
                                 }}
                             >
-                                <span className={styles.font_btn}>뱃지 고르러 가기</span>
+                                <span className={styles.font_btn}>전체 통계 보기</span>
                             </Button>
                         </Grid>
                     </Grid>
@@ -249,7 +238,7 @@ function DashBoard(props) {
             </Grid>
 
 
-            {/* 학습 계획 **/}
+            {/* 최근 답변 **/}
             <Grid container  sx={{px: { xs: "5%", sm: "10%"}, mt:"5px"}}>
 
                 <Grid item container xs={4} sx={{pr:"10px"}}>
@@ -263,15 +252,15 @@ function DashBoard(props) {
                         position: "relative"
                     }}>
                         <Grid item xs={12} sx={{pt: "2rem"}}>
-                            <span className={styles.font_main}>학습 계획</span>
+                            <span className={styles.font_main}>최근 답변</span>
                         </Grid>
                         <Grid item
                               display="flex"
                               justifyContent="flex-start"
                               alignItems="center"
-                              xs={12} sx={{pt: "1rem"}}>
+                              xs={10} sx={{ pt: "1rem"}}>
                                 <span className={styles.font_normal}>
-                                    2023년 3월 25일
+                                    Q. 1강에 1번 문제가 이상해요
                                 </span>
                         </Grid>
                         <Grid item
@@ -280,7 +269,7 @@ function DashBoard(props) {
                               alignItems="center"
                               xs={12} sx={{pt: "2rem"}}>
                                 <span className={styles.font_gray}>
-                                    오늘 수강할 강의
+                                    A. 안이상해요
                                 </span>
                         </Grid>
                         <Grid item
@@ -288,8 +277,8 @@ function DashBoard(props) {
                               justifyContent="flex-start"
                               alignItems="center"
                               xs={12} sx={{pt: "2rem"}}>
-                                <span className={styles.font_gray}>
-                                    무작정 따라하는 우리아이 ... 1강 : 5%
+                                <span className={styles.font_a}>
+                                    답글이 달렸어요!
                                 </span>
                         </Grid>
                         <Grid item
@@ -305,7 +294,6 @@ function DashBoard(props) {
                                         background: "green",  // 호버시 버튼 배경색
                                     }
                                 }}
-                                onClick={() => navigate("/student/curriculum")}
                             >
                                 <span className={styles.font_btn}>전체보기</span>
                             </Button>
@@ -442,4 +430,4 @@ function DashBoard(props) {
     );
 }
 
-export default DashBoard;
+export default TeacherDashBoard;

@@ -24,6 +24,7 @@ export default function TopBar(props) {
     const dispatch = useDispatch();
 
     const accessToken = useSelector((state) => state.accessToken); // redux access token
+    const role = useSelector((state) => state.role); // role
     const navigate = useNavigate();
 
     const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -92,21 +93,21 @@ export default function TopBar(props) {
             <AppBar position="sticky" sx={{ top: 0, px: { xs: "5%", sm: "10%", md: "10%", lg: "20%" } }}>
                 <Container maxWidth="xl" sx={{padding:{xs:0, md:0}}}>
                     <Toolbar disableGutters sx={{p:0, m:0}}>
-                        <Typography
+                        <Box
                             noWrap
                             component="a"
                             sx={{
                                 my: 2,
                                 mr: 2,
                                 display: 'flex',
-                                color: '#3767A6',
-                                textDecoration: 'none',
+                                justifyContent:"flex-start",
                                 alignItems: 'center',
+                                height:"45px"
                             }}
                             onClick={() => navigate("/main")}
                         >
-                            <b className={styles.font_logo}>이음코딩</b>
-                        </Typography>
+                            <img className="logoImg" alt="logoImg" src="img/logo.svg" style={{ height: "100%",objectFit: "cover" }}/>
+                        </Box>
 
                         <Box sx={{flexGrow: 1, display: {xs: 'flex', md: 'none'}}} justifyContent={"flex-end"}>
                             <IconButton
@@ -165,11 +166,21 @@ export default function TopBar(props) {
                             <Grid container justifyContent="center" alignItems="center" spacing={0} sx={{flexGrow:1, height:'100%'}}>
                                 {pages.map((page) => (
                                     <Grid item md={12/(pages.length+1)}>
+
                                         <Typography  textAlign="center" sx={{color:'#000000'}}
                                             onClick={() => {
                                                 if(page === "대시보드") {
                                                     if(!accessToken) navigate("/login");
-                                                    navigate("/dashboard");
+                                                    if(role === "0") {
+                                                        navigate("/dashboard");
+                                                    }
+                                                    if(role === "1") {
+                                                        navigate("/teacher/dashboard");
+                                                    }
+                                                    if(role === "3") {
+                                                        navigate("/parent/dashboard");
+                                                    }
+                                                    console.log(role);
                                                 }
                                                 if(page === "강의") {
                                                     if(!accessToken) navigate("/login");

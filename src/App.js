@@ -1,7 +1,7 @@
 import './App.css';
 import React, {useEffect} from 'react';
 import {Route, Routes, useNavigate} from "react-router-dom";
-import Join from "./unauth/Join";
+import StudentJoin from "./unauth/StudentJoin";
 import TopBar from "./component/TopNav";
 import Main from "./unauth/Main";
 import Login from "./unauth/Login";
@@ -19,6 +19,15 @@ import {setAccessToken, setRole} from "./redux/actions";
 import Cookies from "js-cookie"
 import {useDispatch, useSelector} from "react-redux";
 import Search from "./unauth/Search";
+import JoinSelect from "./unauth/JoinSelect";
+import ParentJoin from "./unauth/ParentJoin";
+import TeacherJoin from "./unauth/TeacherJoin";
+import Test from "./unauth/test";
+import Curriculum from "./student/Curriculum";
+import TeacherDashBoard from "./teacher/TeacherDashBoard";
+import TeacherMyLectureList from "./teacher/TeacherMyLectureList";
+import NewLecture from "./teacher/NewLecture";
+import TeacherLectureInfo from "./teacher/TeacherLectureInfo"
 
 
 function App() {
@@ -41,8 +50,17 @@ function App() {
 
     return (
         <Routes>
+            {/*test**/}
+            <Route path="/test" element={<Test/>}/>
             {/* 회원가입 */}
-            <Route path="/join" element={<Join/>}/>
+            <Route path="/joinSelect" element={<JoinSelect/>}/>
+                {/* 학생 회원가입 */}
+                <Route path="/join/student" element={<StudentJoin/>}/>
+                {/* 부모 회원가입 */}
+                <Route path="/join/parent" element={<ParentJoin/>}/>
+                {/* 강사 회원가입 **/}
+                <Route path="/join/teacher" element={<TeacherJoin/>}/>
+
             {/* 비로그인 메인화면 */}
             <Route path={"/main"} element={<Main />}/>
             {/* 로그인 화면 **/}
@@ -67,8 +85,18 @@ function App() {
             <Route path={"/my/lectureInfo/:value"} element={<LectureInfo />}/>
             {/* 동영상 재생 **/}
             <Route path={"/my/lecture/video/"} element={<Video />}/>
-                {/* 강의 검색 **/}
-                <Route path={"/search"} element={<Search />}/>
+            {/* 강의 검색 **/}
+            <Route path={"/search"} element={<Search />}/>
+            {/* 학생 대시보드 - 커리큘럼 **/}
+            <Route path="/student/curriculum" element={<Curriculum/>}/>
+                {/* 강사 대시보드 **/}
+                <Route path={"/teacher/dashboard"} element={<TeacherDashBoard />}/>
+            {/* 강사 올린 강의 리스트 **/}
+            <Route path={"/teacher/myLectureList"} element={<TeacherMyLectureList />}/>
+            {/* 강의 추가 **/}
+            <Route path={"/teacher/newLecture"} element={<NewLecture />}/>
+                {/* 강의 추가 **/}
+                <Route path={"/teacher/lectureInfo/:value"} element={<TeacherLectureInfo />}/>
 
         </Routes>
 
