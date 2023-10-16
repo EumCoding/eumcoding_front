@@ -5,8 +5,8 @@ import {
     AccordionSummary,
     Box, Button,
     createTheme,
-    Divider,
-    Grid, Modal, TextField,
+    Divider, FormControlLabel,
+    Grid, Modal, Radio, RadioGroup, TextField,
     ThemeProvider
 } from "@mui/material";
 import TopBar from "../component/TopNav";
@@ -24,10 +24,12 @@ import {useSelector} from "react-redux";
 import CheckIcon from '@mui/icons-material/Check'; // 확인 아이콘
 import ClearIcon from '@mui/icons-material/Clear'; // 취소 아이콘
 import AddCircleIcon from '@mui/icons-material/AddCircle'; // 증가
-import RemoveCircleIcon from '@mui/icons-material/RemoveCircle'; // 감소
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 
 // 강사 side의 강의 정보를 표시하고 수정합니다.
 function TeacherLectureInfo(props) {
+    const [newSectionName, setNewSectionName] = useState(""); // 새로운 Section 이름
+
     const navigate = useNavigate();
 
     const accessToken = useSelector((state) => state.accessToken);
@@ -53,8 +55,48 @@ function TeacherLectureInfo(props) {
     const [editImage, setEditImage] = useState(false); // 이미지
     const [editDescription, setEditDescription] = useState(false); // 강의설명
 
+    const [editTimetaken, setEditTimetaken] = useState([]); // 소요시간 수정
+    const [newTimeTaken, setNewTimeTaken] = useState(0); // 소요시간 수정
+
     // section 추가용 modal
     const [sectionOpen, setSectionOpen] = useState(false);
+
+    // section 수정용 modal
+    const [sectionNameEditOpen, setSectionNameEditOpen] = useState(false);
+
+    // Video 추가용 modal
+    const [videoOpen, setVideoOpen] = useState(false);
+
+    // Video 추가용 state들
+    const [videoName, setVideoName] = useState(""); // Video 이름
+    const [videoFile, setVideoFile] = useState(null); // Video 파일
+    const [videoDescription, setVideoDescription] = useState(""); // Video 설명
+    const [videoThumb, setVideoThumb] = useState(null); // Video 썸네일
+    const [preview, setPreview] = useState(0); // video 미리보기 가능 여부... 0:false 1:true
+
+    // Video 수정용 modal
+    const [videoEditOpen, setVideoEditOpen] = useState(false);
+
+    // section 수정용 sectionId
+    const [sectionId, setSectionId] = useState(0);
+
+    // 아코디언의 확장 상태 관리
+    const [expanded, setExpanded] = useState([]);
+
+    // 아코디언 모두 닫기
+    const closeExpanded = () => {
+        const array = new Array(8).fill(false); // 배열생성
+        setExpanded(array); // expanded state에 할당
+    }
+
+    // 특정 아코디언 상태변경
+    const chgExpanded = (idx) => {
+        const temp = JSON.parse(JSON.stringify(expanded)); // 깊은복사
+        // 해당 index의 값을 반대로 변경
+        temp[idx] = !temp[idx];
+        // state에 할당
+        setExpanded(temp);
+    }
 
     const handleSectionOpen = () => {
         setSectionOpen(true);
@@ -63,6 +105,30 @@ function TeacherLectureInfo(props) {
     const handleSectionClose = () => {
         setSectionOpen(false);
     };
+
+    const handleSectionNameEditOpen = () => {
+        setSectionNameEditOpen(true);
+    }
+
+    const handleSectionNameEditClose = () => {
+        setSectionNameEditOpen(false);
+    }
+
+    const handleVideoOpen = () => {
+        setVideoOpen(true);
+    }
+
+    const handleVideoClose = () => {
+        setVideoOpen(false);
+    }
+
+    const handleVideoEditOpen = () => {
+        setVideoEditOpen(true);
+    }
+
+    const handleVideoEditClose = () => {
+        setVideoEditOpen(false);
+    }
 
     const sectionModalBody = (
         <Box
@@ -81,13 +147,189 @@ function TeacherLectureInfo(props) {
             }}
         >
             <h2>Section 추가하기</h2>
-            <TextField fullWidth label="입력" variant="standard" />
+            <TextField fullWidth label="입력" variant="standard" value={newSectionName} onChange={(e) => setNewSectionName(e.target.value)} />
             <Box mt={2}>
-                <Button onClick={handleSectionClose} color="primary">확인</Button>
+                <Button color="primary"
+                    onClick={() => {
+                        if(section && !newSectionName !== ""){
+                            let seq = section.length;
+                            addSection(parseInt(params.value), newSectionName, seq, 1).then((res) => {
+                                getSectionInfo(params.value); // Section 정보 다시 불러옴
+                                handleSectionClose(); // 완료시 닫음
+                                setNewSectionName(""); // 입력값 초기화
+                            })
+                        }
+                    }}
+                >확인</Button>
                 <Button onClick={handleSectionClose} color="secondary" sx={{ ml: 1 }}>취소</Button>
             </Box>
         </Box>
     );
+
+    const sectionNameEditBody = (
+        <Box
+            sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '80vw',
+                maxWidth: 400,
+                bgcolor: 'background.paper',
+                border: '1px solid #e0e0e0',
+                borderRadius: 2,
+                boxShadow: 24,
+                p: 3,
+            }}
+        >
+            <h2>Section명 수정</h2>
+            <TextField fullWidth label="입력" variant="standard" value={newSectionName} onChange={(e) => setNewSectionName(e.target.value)} />
+            <Box mt={2}>
+                <Button color="primary"
+                        onClick={() => {
+                            if(section && !newSectionName !== ""){
+                                updateSectionName(sectionId, newSectionName).then((res) => {
+                                    getSectionInfo(params.value); // Section 정보 다시 불러옴
+                                    handleSectionNameEditClose(); // 완료시 닫음
+                                    setNewSectionName(""); // 입력값 초기화
+                                })
+                            }
+                        }}
+                >확인</Button>
+                <Button onClick={() => handleSectionNameEditClose()} color="secondary" sx={{ ml: 1 }}>취소</Button>
+            </Box>
+        </Box>
+    );
+    // Video add modal body
+    const newVideoBody = (
+        <Box
+            sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '80vw',
+                maxWidth: 400,
+                bgcolor: 'background.paper',
+                border: '1px solid #e0e0e0',
+                borderRadius: 2,
+                boxShadow: 24,
+                p: 3,
+            }}
+        >
+            <h2>영상 추가</h2>
+            <Grid container sx={{width:"100%"}}>
+                    <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                    <Typography>영상 제목</Typography>
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                    <TextField fullWidth label="입력" variant="standard" value={videoName} onChange={(e) => setVideoName(e.target.value)} />
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                    <Typography>미리보기 여부</Typography>
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                    <RadioGroup
+                        row
+                        aria-labelledby="demo-radio-buttons-group-label"
+                        defaultValue="female"
+                        name="radio-buttons-group"
+                    >
+                        <FormControlLabel checked={preview === 1} value={1} control={<Radio />} label="가능" onChange={(e) => setPreview(e.target.value)}/>
+                        <FormControlLabel checked={preview === 0} value={0} control={<Radio />} label="불가능" onChange={(e) => setPreview(e.target.value)}/>
+                    </RadioGroup>
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                    <Typography>영상 설명</Typography>
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                    <TextField fullWidth label="입력" variant="standard" value={videoDescription} onChange={(e) => setVideoDescription(e.target.value)} />
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                    <Typography>영상 썸네일</Typography>
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                    <Button
+                        variant="contained"
+                        component="label"
+                        sx={{
+                            background: '#0B401D',
+                            borderRadius: '10px',
+                            '&:hover': {
+                                background: "green",
+                            }
+                        }}
+                    >
+                        <Typography sx={{ color: "#FFFFFF" }}>파일업로드</Typography>
+                        <input
+                            accept={"image/*"}
+                            type="file"
+                            hidden
+                            onChange={(e) => setVideoThumb(e.target.files)}
+                        />
+                    </Button>
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                    <Typography>영상 파일</Typography>
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                    <Button
+                        variant="contained"
+                        component="label"
+                        sx={{
+                            background: '#0B401D',
+                            borderRadius: '10px',
+                            '&:hover': {
+                                background: "green",
+                            }
+                        }}
+                    >
+                        <Typography sx={{ color: "#FFFFFF" }}>파일업로드</Typography>
+                        <input
+                            accept={"video/*"}
+                            type="file"
+                            hidden
+                            onChange={(e) => setVideoFile(e.target.files)}
+                        />
+                    </Button>
+                </Grid>
+            </Grid>
+            <Box mt={2}>
+                <Button color="primary"
+                        onClick={() => {
+                            if(videoName !== "" && videoDescription !== "" && videoThumb !== null && videoFile !== null){
+                                addVideo(sectionId, videoName, videoDescription, videoThumb, videoFile).then((res) => {
+                                    getSectionInfo(params.value); // Section 정보 다시 불러옴
+                                    setVideoName(""); // 입력값 초기화
+                                    setVideoDescription(""); // 입력값 초기화
+                                    setVideoThumb(null); // 입력값 초기화
+                                    setVideoFile(null); // 입력값 초기화
+                                    handleVideoClose(); // 완료시 닫음
+                                })
+                            }
+                        }}
+                >확인</Button>
+                <Button onClick={handleVideoClose} color="secondary" sx={{ ml: 1 }}>취소</Button>
+            </Box>
+        </Box>
+    );
+
+
+    // Section 이름 수정
+    const updateSectionName = async (id, name) => { // id: 강의아이디, name: 강의명
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/update/name`,
+            {
+                id: id,
+                name: name,
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                },
+            }
+        )
+    }
 
 
     // 강의 정보 가져오기 1
@@ -122,6 +364,10 @@ function TeacherLectureInfo(props) {
         ).then((res) => {
             console.log(res)
             res.data && setSection(res.data);
+            // Section의 갯수만큼 expanded에 false 넣기
+            const array = new Array(res.data.length).fill(false); // 배열생성
+            setExpanded(array); // expanded state에 할당
+            setEditTimetaken(array) // editTimetaken state 에 할당
         })
     }
 
@@ -223,6 +469,91 @@ function TeacherLectureInfo(props) {
         )
     }
 
+    // Section 삭제하기
+    const delSection = async(sectionId) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/delete`,
+            {
+                id: sectionId,
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        )
+    }
+
+    // Section up
+    const upSection = async(sectionId) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/sequence/up`,
+            {
+                id: sectionId,
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        )
+    }
+
+    // Section down
+    const downSection = async(sectionId) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/sequence/down`,
+            {
+                id: sectionId,
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        )
+    }
+
+    // timetaken 수정
+    const editSectionTimeTaken = async(sectionId, timeTaken) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/update/time_taken`,
+            {
+                id: sectionId,
+                timeTaken: timeTaken
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        )
+    }
+
+    // 영상추가
+    const addVideo = async(sectionId, name, description, thumb, video) => {
+        const fd = new FormData();
+        fd.append("sectionId", sectionId);
+        fd.append("name", name);
+        fd.append("description", description);
+        fd.append("preview", parseInt(preview)); // preview여부
+        Object.values(thumb).forEach((file) => {
+            fd.append("thumb", file);
+        }); // 파일 임포트
+        Object.values(video).forEach((file) => {
+            fd.append("video", file);
+        }); // 파일 임포트
+        const response = await axios.post(
+            `http://localhost:8099/lecture/video/add`,
+            fd,
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        )
+    }
+
 
     const theme = createTheme({ // Theme
         typography: {
@@ -243,7 +574,7 @@ function TeacherLectureInfo(props) {
         <ThemeProvider theme={theme}>
             <DashTop/>
 
-            {/* Section Modal **/}
+            {/* New Section Modal **/}
             <Modal
                 open={sectionOpen}
 
@@ -252,6 +583,39 @@ function TeacherLectureInfo(props) {
                 aria-describedby="modal-description"
             >
                 {sectionModalBody}
+            </Modal>
+
+            {/* Edit Section Modal **/}
+            <Modal
+                open={sectionNameEditOpen}
+
+                onClose={handleSectionNameEditClose}
+                aria-labelledby="modal-title"
+                aria-describedby="modal-description"
+            >
+                {sectionNameEditBody}
+            </Modal>
+
+            {/* New Video Modal **/}
+            <Modal
+                open={videoOpen}
+
+                onClose={handleVideoClose}
+                aria-labelledby="modal-title"
+                aria-describedby="modal-description"
+            >
+                {newVideoBody}
+            </Modal>
+
+            {/* Edit Video Modal **/}
+            <Modal
+                open={videoEditOpen}
+
+                onClose={handleVideoEditClose}
+                aria-labelledby="modal-title"
+                aria-describedby="modal-description"
+            >
+                {sectionNameEditBody}
             </Modal>
 
             <Grid container sx={{width:"100%", mb:"10rem"}}>
@@ -481,12 +845,18 @@ function TeacherLectureInfo(props) {
                         <Grid item
                               sx={{pt:5, pr:3, mx:0, display:"flex", justifyContent:"flex-start", alignItems:"center"}}
                               xs={6}>
-                            <Box display="flex"
+                            <Button display="flex"
                                  justifyContent="center"
                                  alignItems="center"
                                  sx={{ borderRadius: '1vw',
-                                     width:"100%", height:"2.5vw",
-                                     m:0, p:1,
+                                     width:"100%", height:"3vw",
+                                     '&:hover': {
+                                         backgroundColor: "#FFD700"  // 마우스 오버 시 변경될 배경색
+                                     },
+                                     '&:active': {
+                                         backgroundColor: "#FFC300"  // 클릭 시 변경될 배경색
+                                     },
+                                     m:0,
                                      border:0,
                                      background: "#FFE600"}}
                                  onClick={() => {
@@ -500,7 +870,7 @@ function TeacherLectureInfo(props) {
                                 <p className={styles.font_sugang}>
                                     강의삭제하기
                                 </p>
-                            </Box>
+                            </Button>
                         </Grid>
                         {/* 질문하기 버튼 **/}
                         <Grid item
@@ -527,8 +897,8 @@ function TeacherLectureInfo(props) {
                                         }
                                     }}
                                  sx={{ borderRadius: '1vw',
-                                     width:"100%", height:"2.5vw",
-                                     m:0, p:1,
+                                     width:"100%", height:"3vw",
+                                     m:0,
                                      border:0,
                                      background: "#FFE600",
                                      '&:hover': {
@@ -557,7 +927,7 @@ function TeacherLectureInfo(props) {
                       sx={{py:"5rem"}}
                 >
                     <Typography sx={{fontWeight:"900", fontSize:"3rem", color:"#000000"}}>
-                        내 커리큘럼
+                        커리큘럼
                     </Typography>
                 </Grid>
                 <Grid item xs={12}
@@ -569,14 +939,168 @@ function TeacherLectureInfo(props) {
                     <Container>
                         {section && section.map((item, idx) => {
                             return(
-                                <Accordion>
-                                    <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />}>
+                                <Accordion expanded={expanded[idx]} >
+                                    <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />} onClick={() => chgExpanded(idx)}>
                                         <span className={styles.font_curriculum_title}>{item.name}</span>
                                     </AccordionSummary>
+                                    <AccordionDetails>
+                                        <Grid container sx={{width:"100%", mb:"0.8rem"}} >
+                                            <Button
+                                                variant="contained"
+                                                onClick={() => {
+                                                    delSection(item.id).then((res) => {
+                                                        getSectionInfo(params.value); // Section 정보 다시 불러옴
+                                                    })
+                                                }}
+                                                sx={{
+                                                    backgroundColor: "#1B65FF",
+                                                    mr:2,
+                                                    '&:hover': {
+                                                        backgroundColor: "#145bd1",  // 약간 어둡게 설정
+                                                    },
+                                                    color: "#FFFFFF",               // 텍스트 색상을 흰색으로
+                                                    boxShadow: '0 3px 5px 2px rgba(27, 101, 255, .3)', // 버튼의 그림자 효과
+                                                    borderRadius: '4px',           // 버튼 모서리 둥글게
+                                                    fontWeight: 'bold',            // 글씨 굵게
+                                                }}
+                                            >
+                                                Section삭제
+                                            </Button>
+                                            <Button
+                                                variant="contained"
+                                                onClick={() => {
+                                                    setSectionId(item.id);
+                                                    handleSectionNameEditOpen();
+                                                }}
+                                                sx={{
+                                                    backgroundColor: "#1B65FF",
+                                                    mr:2,
+                                                    '&:hover': {
+                                                        backgroundColor: "#145bd1",  // 약간 어둡게 설정
+                                                    },
+                                                    color: "#FFFFFF",               // 텍스트 색상을 흰색으로
+                                                    boxShadow: '0 3px 5px 2px rgba(27, 101, 255, .3)', // 버튼의 그림자 효과
+                                                    borderRadius: '4px',           // 버튼 모서리 둥글게
+                                                    fontWeight: 'bold',            // 글씨 굵게
+                                                }}
+                                            >
+                                                Section명수정
+                                            </Button>
+                                            <Button
+                                                variant="contained"
+                                                onClick={() => {
+                                                    setSectionId(item.id);
+                                                    handleVideoOpen(); // 영상추가 modal open
+                                                }}
+                                                sx={{
+                                                    backgroundColor: "#1B65FF",
+                                                    mr:2,
+                                                    '&:hover': {
+                                                        backgroundColor: "#145bd1",  // 약간 어둡게 설정
+                                                    },
+                                                    color: "#FFFFFF",               // 텍스트 색상을 흰색으로
+                                                    boxShadow: '0 3px 5px 2px rgba(27, 101, 255, .3)', // 버튼의 그림자 효과
+                                                    borderRadius: '4px',           // 버튼 모서리 둥글게
+                                                    fontWeight: 'bold',            // 글씨 굵게
+                                                }}
+                                            >
+                                                영상추가
+                                            </Button>
+                                            <Button
+                                                variant="contained"
+                                                onClick={() => {
+                                                    upSection(item.id).then((res) => {
+                                                        getSectionInfo(params.value); // Section 정보 다시 불러옴
+                                                        closeExpanded(); // 아코디언 모두 닫기
+                                                    })
+                                                }}
+                                                sx={{
+                                                    backgroundColor: "#1B65FF",
+                                                    mr:2,
+                                                    '&:hover': {
+                                                        backgroundColor: "#145bd1",  // 약간 어둡게 설정
+                                                    },
+                                                    color: "#FFFFFF",               // 텍스트 색상을 흰색으로
+                                                    boxShadow: '0 3px 5px 2px rgba(27, 101, 255, .3)', // 버튼의 그림자 효과
+                                                    borderRadius: '4px',           // 버튼 모서리 둥글게
+                                                    fontWeight: 'bold',            // 글씨 굵게
+                                                }}
+                                            >
+                                                위로이동
+                                            </Button>
+                                            <Button
+                                                variant="contained"
+                                                onClick={() => {
+                                                    downSection(item.id).then((res) => {
+                                                        getSectionInfo(params.value); // Section 정보 다시 불러옴
+                                                        closeExpanded(); // 아코디언 모두 닫기
+                                                    })
+                                                }}
+                                                sx={{
+                                                    backgroundColor: "#1B65FF",
+                                                    '&:hover': {
+                                                        backgroundColor: "#145bd1",  // 약간 어둡게 설정
+                                                    },
+                                                    color: "#FFFFFF",               // 텍스트 색상을 흰색으로
+                                                    boxShadow: '0 3px 5px 2px rgba(27, 101, 255, .3)', // 버튼의 그림자 효과
+                                                    borderRadius: '4px',           // 버튼 모서리 둥글게
+                                                    fontWeight: 'bold',            // 글씨 굵게
+                                                }}
+                                            >
+                                                아래로이동
+                                            </Button>
+                                        </Grid>
+                                        <Grid container sx={{width:"100%", mb:"0.8rem",
+                                            display:"flex", justifyContent:"flex-start", alignItems:"center"
+                                        }} >
+                                            <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                소요시간 :
+                                            </Typography>
+                                            {editTimetaken[idx] && (
+                                                <TextField type={"number"} variant={"standard"} value={newTimeTaken} onChange={(e) => setNewTimeTaken(e.target.value)} />
+                                            )}
+                                            {!editTimetaken[idx] && (
+                                                <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>{item.timeTaken}</Typography>
+                                            )}
+                                            <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>주
+                                                {!editTimetaken[idx] && (
+                                                    <EditIcon
+                                                        onClick={() => {
+                                                            // 클릭시 해당 idx의 editTimetaken을 true로 변경
+                                                            let array = JSON.parse(JSON.stringify(editTimetaken)); // 깊은 복사
+                                                            array[idx] = true;
+                                                            setEditTimetaken(array);
+                                                            setNewTimeTaken(item.timeTaken); // newTimetaken를 기존의 timeTaken으로 초기화
+                                                        }}
+                                                    />
+                                                )}
+                                                {editTimetaken[idx] && (
+                                                    <ClearIcon
+                                                        onClick={() => {
+                                                            // 클릭시 해당 idx의 editTimetaken을 true로 변경
+                                                            let array = JSON.parse(JSON.stringify(editTimetaken)); // 깊은 복사
+                                                            array[idx] = false;
+                                                            setEditTimetaken(array);
+                                                        }}
+                                                    />
+                                                )}
+                                                {editTimetaken[idx] && (
+                                                    <CheckIcon
+                                                        onClick={() => {
+                                                            editSectionTimeTaken(item.id, newTimeTaken).then((res) => {
+                                                                getSectionInfo(params.value); // Section 정보 다시 불러옴
+                                                            }
+                                                            )
+                                                        }}
+                                                    />
+                                                )}
+
+                                            </Typography>
+                                        </Grid>
                                     {item.videoDTOList && item.videoDTOList.map((subItem, idx) => {
                                         return(
-                                            <AccordionDetails>
-                                                <Grid container sx={{width:"100%"}}>
+
+                                                <Grid item container sx={{width:"100%"}}>
                                                     <Grid item xs={9} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
                                                         <div style={{display: 'flex', alignItems: 'center', flexGrow: 1, width:"60%"}}>
                                                             <Box position="relative" sx={{width:"100px", aspectRatio:"16/9", overflow:"hidden"}}>
@@ -601,9 +1125,10 @@ function TeacherLectureInfo(props) {
                                                     </Grid>
                                                 </Grid>
 
-                                            </AccordionDetails>
+
                                         )
                                     }) }
+                                    </AccordionDetails>
                                 </Accordion>
                             )
                         })}
