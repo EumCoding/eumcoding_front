@@ -25,6 +25,26 @@ import CheckIcon from '@mui/icons-material/Check'; // 확인 아이콘
 import ClearIcon from '@mui/icons-material/Clear'; // 취소 아이콘
 import AddCircleIcon from '@mui/icons-material/AddCircle'; // 증가
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import ReactPlayer from "react-player";
+import {ChangeCircle} from "@mui/icons-material";
+
+
+// modal에 적용할 style
+const modalStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: "60vw",
+    bgcolor: 'background.paper',
+    boxShadow: 24,
+    p: 4,
+    borderRadius:"1vw",
+};
+
 
 // 강사 side의 강의 정보를 표시하고 수정합니다.
 function TeacherLectureInfo(props) {
@@ -67,12 +87,23 @@ function TeacherLectureInfo(props) {
     // Video 추가용 modal
     const [videoOpen, setVideoOpen] = useState(false);
 
-    // Video 추가용 state들
+    // Video 추가용 state들 - Video 수정에서도 사용함
     const [videoName, setVideoName] = useState(""); // Video 이름
     const [videoFile, setVideoFile] = useState(null); // Video 파일
     const [videoDescription, setVideoDescription] = useState(""); // Video 설명
     const [videoThumb, setVideoThumb] = useState(null); // Video 썸네일
-    const [preview, setPreview] = useState(0); // video 미리보기 가능 여부... 0:false 1:true
+    const [preview, setPreview] = useState("0"); // video 미리보기 가능 여부... 0:false 1:true
+    const [fileName, setFileName] = useState(''); // 파일명을 저장할 state
+
+    // Video 수정용 state들
+    const [videoId, setVideoId] = useState(""); // Video 아이디 - 이 state로 Video 정보를 가져옴
+    const [videoResult, setVideoResult] = useState(null); // 동영상 정보 담을 곳
+
+    // Video 정보 수정용 state들...
+    const [editVideoName, setEditVideoName] = useState(false); // Video 이름 수정 활성화 여부
+    const [editVideoDescription, setEditVideoDescription] = useState(false); // Video 설명 수정 활성화 여부
+    const [editVideoThumb, setEditVideoThumb] = useState(false); // Video 썸네일 수정 활성화 여부
+
 
     // Video 수정용 modal
     const [videoEditOpen, setVideoEditOpen] = useState(false);
@@ -235,8 +266,8 @@ function TeacherLectureInfo(props) {
                         defaultValue="female"
                         name="radio-buttons-group"
                     >
-                        <FormControlLabel checked={preview === 1} value={1} control={<Radio />} label="가능" onChange={(e) => setPreview(e.target.value)}/>
-                        <FormControlLabel checked={preview === 0} value={0} control={<Radio />} label="불가능" onChange={(e) => setPreview(e.target.value)}/>
+                        <FormControlLabel checked={preview === "1"} value={"1"} control={<Radio />} label="가능" onChange={(e) => setPreview(e.target.value)}/>
+                        <FormControlLabel checked={preview === "0"} value={"0"} control={<Radio />} label="불가능" onChange={(e) => setPreview(e.target.value)}/>
                     </RadioGroup>
                 </Grid>
                 <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
@@ -269,6 +300,13 @@ function TeacherLectureInfo(props) {
                         />
                     </Button>
                 </Grid>
+                {videoThumb && (
+                    <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                        <Box sx={{width:"50%", aspectRatio:"16/9", overflow:"hidden"}}>
+                            <img src={URL.createObjectURL(videoThumb[0])} style={{width:"100%", height:"100%", objectFit:"cover", objectPosition: "center center"}} />
+                        </Box>
+                    </Grid>
+                )}
                 <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
                     <Typography>영상 파일</Typography>
                 </Grid>
@@ -289,28 +327,84 @@ function TeacherLectureInfo(props) {
                             accept={"video/*"}
                             type="file"
                             hidden
-                            onChange={(e) => setVideoFile(e.target.files)}
+                            onChange={(e) => {
+                                if (e.target.files.length > 0) {
+                                    setVideoFile(e.target.files[0]);
+                                    setFileName(e.target.files[0].name); // 파일 이름 설정
+                                }
+                            }}
                         />
                     </Button>
                 </Grid>
+                {fileName &&
+                    (
+                        <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                            <Typography variant="body2" sx={{ marginTop: 2 }}>{fileName}</Typography>
+                        </Grid>
+                    )
+                }
             </Grid>
             <Box mt={2}>
                 <Button color="primary"
                         onClick={() => {
                             if(videoName !== "" && videoDescription !== "" && videoThumb !== null && videoFile !== null){
                                 addVideo(sectionId, videoName, videoDescription, videoThumb, videoFile).then((res) => {
-                                    getSectionInfo(params.value); // Section 정보 다시 불러옴
-                                    setVideoName(""); // 입력값 초기화
-                                    setVideoDescription(""); // 입력값 초기화
-                                    setVideoThumb(null); // 입력값 초기화
-                                    setVideoFile(null); // 입력값 초기화
-                                    handleVideoClose(); // 완료시 닫음
+                                    const array = JSON.parse(JSON.stringify(expanded)); // 깊은복사
+                                    getSectionInfo(params.value).then((res) => {
+                                        // Section 정보 불러온 후 다시 아코디언 확장
+                                        setExpanded(array); // expanded state에 할당
+                                        setVideoName(""); // 입력값 초기화
+                                        setVideoDescription(""); // 입력값 초기화
+                                        setVideoThumb(null); // 입력값 초기화
+                                        setVideoFile(null); // 입력값 초기화
+                                        handleVideoClose(); // 완료시 닫음
+                                    }).catch((res) => {
+                                        alert("영상 추가 실패");
+                                    })
+
                                 })
                             }
                         }}
                 >확인</Button>
                 <Button onClick={handleVideoClose} color="secondary" sx={{ ml: 1 }}>취소</Button>
             </Box>
+        </Box>
+    );
+
+    // Video edit modal body
+    const editVideoBody = (
+        <Box sx={modalStyle} >
+            {videoResult && (
+                <Grid container sx={{width:"100%"}} display={"flex"} justifyContent={"center"} alignItems={"center"}>
+                    <Grid item xs={12} display={"flex"} justifyContent={"center"} alignItems={"center"} sx={{mb:"2rem"}}>
+                        <Typography id="modal-modal-description" fullWidth sx={{ fontSize:"1.5rem", fontWeight:"900" }}>
+                            {!editVideoName && videoResult && videoResult.name}
+                        </Typography>
+                        {editVideoName && (
+                            <TextField variant={"standard"} size={"small"} value={videoName} onChange={(e) => setVideoName(e.target.value)} />
+                        )}
+                        {!editVideoName && (
+                            <EditIcon onClick={() => setEditVideoName(true)} />
+                        )}
+                        {editVideoName && (
+                            <CheckIcon />
+                        )}
+                        {editVideoName && (
+                            <ClearIcon onClick={() => {
+                                if(videoResult){
+                                    setEditVideoName(false);
+                                    setVideoName(videoResult.name); // 취소 시 원래 이름으로
+                                }
+                            }} />)
+                        }
+                    </Grid>
+                    <Grid item xs={12} display={"flex"} justifyContent={"center"} alignItems={"center"} sx={{pt:"3rem"}}
+                          sx={{width:"100%", aspectRatio:"16/9"}}
+                    >
+                        <ReactPlayer url={videoResult.path} playing controls={true} width='100%' height="100%"/>
+                    </Grid>
+                </Grid>
+            )}
         </Box>
     );
 
@@ -541,10 +635,10 @@ function TeacherLectureInfo(props) {
             fd.append("thumb", file);
         }); // 파일 임포트
         Object.values(video).forEach((file) => {
-            fd.append("video", file);
+            fd.append("videoFile", file);
         }); // 파일 임포트
         const response = await axios.post(
-            `http://localhost:8099/lecture/video/add`,
+            `http://localhost:8099/lecture/section/video/upload`,
             fd,
             {
                 headers:{
@@ -552,6 +646,67 @@ function TeacherLectureInfo(props) {
                 }
             }
         )
+    }
+
+    // 영상 삭제
+    const delVideo = async(videoId) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/video/delete`,
+            {
+                id: videoId,
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        )
+    }
+
+    // 영상 위로
+    const upVideo = async(videoId) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/video/sequence/up`,
+            {
+                id: videoId,
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        )
+    }
+
+    // 영상 아래로
+    const downVideo = async(videoId) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/video/sequence/down`,
+            {
+                id: videoId,
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        )
+    }
+
+    // 영상 정보 불러오기
+    const getVideoInfo = async(videoId) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/video/view?id=${videoId}`,
+            {},
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        ).then((res) => {
+            console.log(res);
+            setVideoResult(res.data);
+        })
     }
 
 
@@ -615,7 +770,7 @@ function TeacherLectureInfo(props) {
                 aria-labelledby="modal-title"
                 aria-describedby="modal-description"
             >
-                {sectionNameEditBody}
+                {editVideoBody}
             </Modal>
 
             <Grid container sx={{width:"100%", mb:"10rem"}}>
@@ -1101,7 +1256,7 @@ function TeacherLectureInfo(props) {
                                         return(
 
                                                 <Grid item container sx={{width:"100%"}}>
-                                                    <Grid item xs={9} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
+                                                    <Grid item xs={7} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
                                                         <div style={{display: 'flex', alignItems: 'center', flexGrow: 1, width:"60%"}}>
                                                             <Box position="relative" sx={{width:"100px", aspectRatio:"16/9", overflow:"hidden"}}>
                                                                 <img src={subItem.thumb} style={{width:"100%", height:"100%", objectFit:"cover"}}/>
@@ -1109,20 +1264,111 @@ function TeacherLectureInfo(props) {
                                                             <span className={styles.font_curriculum_content}>{subItem.name}</span>
                                                         </div>
                                                     </Grid>
-                                                    <Grid item xs={3} display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
-                                                        <Button variant="outlined" color="primary" sx={{borderColor:"#000000"}}
-                                                                onClick={() => {
-                                                                    if(accessToken){
-                                                                        navigate(`/my/lecture/video?id=${subItem.id}`)
-                                                                    }else{
-                                                                        //로그인 안된 상태면 alert
-                                                                        alert("로그인이 필요한 서비스입니다.")
-                                                                    }
-                                                                }}
+                                                    <Grid item xs={5} display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
+
+                                                        <Button
+                                                            variant="contained"
+                                                            sx={{
+                                                                background: '#4caf50', // Greenish color for upwards movement
+                                                                borderRadius: '10px',
+                                                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                                                                width:"40px",
+                                                                height: '40px',
+                                                                '&:hover': {
+                                                                    background: "#388e3c", // Darker green on hover
+                                                                }
+                                                            }}
+                                                            onClick={() => {
+                                                                // 위로 이동하는 로직
+                                                                upVideo(subItem.id).then((res) => {
+                                                                    // 기존의 section 확장 배열을 기억
+                                                                    let array = JSON.parse(JSON.stringify(expanded)); // 깊은 복사
+                                                                    getSectionInfo(params.value).then((res) => {
+                                                                        // section 정보 다시 불러온 뒤 section 아코디언 다시 확장
+                                                                        setExpanded(array);
+                                                                    })
+                                                                })
+                                                            }}
+                                                        ><ArrowUpwardIcon sx={{ color: "#FFFFFF" }} /></Button>
+
+                                                        <Button
+                                                            variant="contained"
+                                                            sx={{
+                                                                ml:1,
+                                                                background: '#4caf50', // Greenish color for upwards movement
+                                                                borderRadius: '10px',
+                                                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                                                                width:"40px",
+                                                                height: '40px',
+                                                                '&:hover': {
+                                                                    background: "#388e3c", // Darker green on hover
+                                                                }
+                                                            }}
+                                                            onClick={() => {
+                                                                // 아래로 이동하는 로직
+                                                                downVideo(subItem.id).then((res) => {
+                                                                    // 기존의 section 확장 배열을 기억
+                                                                    let array = JSON.parse(JSON.stringify(expanded)); // 깊은 복사
+                                                                    getSectionInfo(params.value).then((res) => {
+                                                                        // section 정보 다시 불러온 뒤 section 아코디언 다시 확장
+                                                                        setExpanded(array);
+                                                                    })
+                                                                })
+                                                            }}
+                                                        ><ArrowDownwardIcon sx={{ color: "#FFFFFF" }} /></Button>
+                                                        <Button
+                                                            variant="contained"
+                                                            onClick={() => {
+                                                                // 해당 Video의 정보를 가져옴
+                                                                getVideoInfo(subItem.id).then((res) => {
+                                                                        setVideoName(videoResult.name)
+                                                                        setVideoDescription(videoResult.description)
+                                                                        setVideoThumb(videoResult.thumb)
+                                                                    handleVideoEditOpen(); // Video 수정용 Modal open
+                                                                })
+                                                            }}
+                                                            startIcon={<EditIcon sx={{ color: "#FFFFFF" }} />} // 아이콘의 색상을 흰색으로 설정
+                                                            sx={{
+                                                                ml:1,
+                                                                background: '#ffa726',
+                                                                borderRadius: '10px',
+                                                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', // 그림자 추가
+                                                                height: '40px', // 높이 설정
+                                                                '&:hover': {
+                                                                    background: "#ff8f00",
+                                                                }
+                                                            }}
                                                         >
-                                                            <Typography sx={{color:"#000000"}}>시청하기</Typography>
+                                                            <Typography sx={{ color: "#FFFFFF" }}>수정</Typography>
+                                                        </Button>
+                                                        <Button
+                                                            variant="contained"
+                                                            startIcon={<DeleteIcon />}
+                                                            onClick={() => {
+                                                                delVideo(subItem.id).then((res) => {
+                                                                    // 기존의 section 확장 배열을 기억
+                                                                    let array = JSON.parse(JSON.stringify(expanded)); // 깊은 복사
+                                                                    getSectionInfo(params.value).then((res) => {
+                                                                        // section 정보 다시 불러온 뒤 section 아코디언 다시 확장
+                                                                        setExpanded(array);
+                                                                    })
+                                                                })
+                                                            }}
+                                                            sx={{
+                                                                ml:1,
+                                                                background: '#e53935',
+                                                                borderRadius: '10px',
+                                                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', // 그림자 추가
+                                                                height: '40px', // 높이 설정
+                                                                '&:hover': {
+                                                                    background: "#b71c1c",
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Typography sx={{ color: "#FFFFFF" }}>삭제</Typography>
                                                         </Button>
                                                     </Grid>
+
                                                 </Grid>
 
 
