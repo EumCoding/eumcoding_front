@@ -7,7 +7,8 @@ import {
     createTheme,
     Divider, FormControlLabel,
     Grid, Modal, Radio, RadioGroup, TextField,
-    ThemeProvider
+    ThemeProvider,
+    LinearProgress
 } from "@mui/material";
 import TopBar from "../component/TopNav";
 import DashTop from "../component/DashTop";
@@ -86,6 +87,9 @@ function TeacherLectureInfo(props) {
 
     // Video 추가용 modal
     const [videoOpen, setVideoOpen] = useState(false);
+
+    // Video 추가용 진행률 상태
+    const [progress, setProgress] = useState(0); // 진행률 상태 관리
 
     // Video 추가용 state들 - Video 수정에서도 사용함
     const [videoName, setVideoName] = useState(""); // Video 이름
@@ -328,13 +332,19 @@ function TeacherLectureInfo(props) {
                             type="file"
                             hidden
                             onChange={(e) => {
-                                if (e.target.files.length > 0) {
-                                    setVideoFile(e.target.files[0]);
-                                    setFileName(e.target.files[0].name); // 파일 이름 설정
-                                }
+                                setVideoFile(e.target.files);
+                                setFileName(e.target.files[0].name); // 파일 이름 설정
                             }}
                         />
                     </Button>
+                    <div>
+                        {uploadProgress > 0 && (
+                            <div>
+                                <progress value={uploadProgress} max="100"></progress>
+                                {uploadProgress}% uploaded
+                            </div>
+                        )}
+                    </div>
                 </Grid>
                 {fileName &&
                     (
@@ -344,11 +354,18 @@ function TeacherLectureInfo(props) {
                     )
                 }
             </Grid>
+            <Grid item xs={12}>
+                {progress > 0 && progress < 100 && (
+                    <LinearProgress variant="determinate" value={progress} />
+                )}
+            </Grid>
             <Box mt={2}>
                 <Button color="primary"
                         onClick={() => {
-                            if(videoName !== "" && videoDescription !== "" && videoThumb !== null && videoFile !== null){
-                                addVideo(sectionId, videoName, videoDescription, videoThumb, videoFile).then((res) => {
+                            console.log(videoFile);
+                            console.log("동영상업로드 수행...")
+                            if(videoFile && videoName !== "" && videoDescription !== "" && videoThumb !== null && videoFile !== null){
+                                addVideo(sectionId,videoName ,preview, videoDescription, videoThumb, videoFile).then((res) => {
                                     const array = JSON.parse(JSON.stringify(expanded)); // 깊은복사
                                     getSectionInfo(params.value).then((res) => {
                                         // Section 정보 불러온 후 다시 아코디언 확장
@@ -358,11 +375,12 @@ function TeacherLectureInfo(props) {
                                         setVideoThumb(null); // 입력값 초기화
                                         setVideoFile(null); // 입력값 초기화
                                         handleVideoClose(); // 완료시 닫음
-                                    }).catch((res) => {
-                                        alert("영상 추가 실패");
                                     })
 
-                                })
+                                }).catch((res) => {alert("동영상 업로드 실패")})
+                                
+                            }else if(!videoFile) {
+                                alert("동영상 파일을 선택해주세요")
                             }
                         }}
                 >확인</Button>
@@ -402,6 +420,42 @@ function TeacherLectureInfo(props) {
                           sx={{width:"100%", aspectRatio:"16/9"}}
                     >
                         <ReactPlayer url={videoResult.path} playing controls={true} width='100%' height="100%"/>
+                    </Grid>
+                    <Grid item xs={12} display={"flex"} justifyContent={"flex-start"} alignItems={"center"} sx={{mb:"2rem"}}>
+                        <Typography id="modal-modal-description" fullWidth sx={{ fontSize:"1rem", fontWeight:"700" }}>
+                            {!editVideoDescription && videoResult && videoResult.description}
+                        </Typography>
+                        {editVideoDescription && (
+                            <TextField fullWidth variant={"outlined"} size={"small"} value={videoDescription} onChange={(e) => setVideoDescription(e.target.value)} multiline />
+                        )}
+                        {!editVideoDescription && (
+                            <EditIcon onClick={() => setEditVideoDescription(true)} />
+                        )}
+                        {editVideoDescription && (
+                            <CheckIcon />
+                        )}
+                        {editVideoDescription && (
+                            <ClearIcon onClick={() => {
+                                if(videoResult){
+                                    setEditVideoDescription(false);
+                                    setVideoDescription(videoResult.description); // 취소 시 원래 설명으로 변경
+                                }
+                            }} />)
+                        }
+                    </Grid>
+                    <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                        <Typography>미리보기 여부</Typography>
+                    </Grid>
+                    <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                        <RadioGroup
+                            row
+                            aria-labelledby="demo-radio-buttons-group-label"
+                            defaultValue="female"
+                            name="radio-buttons-group"
+                        >
+                            <FormControlLabel checked={preview === "1"} value={"1"} control={<Radio />} label="가능" onChange={(e) => setPreview(e.target.value)}/>
+                            <FormControlLabel checked={preview === "0"} value={"0"} control={<Radio />} label="불가능" onChange={(e) => setPreview(e.target.value)}/>
+                        </RadioGroup>
                     </Grid>
                 </Grid>
             )}
@@ -624,29 +678,76 @@ function TeacherLectureInfo(props) {
         )
     }
 
-    // 영상추가
-    const addVideo = async(sectionId, name, description, thumb, video) => {
-        const fd = new FormData();
-        fd.append("sectionId", sectionId);
-        fd.append("name", name);
-        fd.append("description", description);
-        fd.append("preview", parseInt(preview)); // preview여부
-        Object.values(thumb).forEach((file) => {
-            fd.append("thumb", file);
-        }); // 파일 임포트
-        Object.values(video).forEach((file) => {
-            fd.append("videoFile", file);
-        }); // 파일 임포트
-        const response = await axios.post(
-            `http://localhost:8099/lecture/section/video/upload`,
-            fd,
-            {
-                headers:{
-                    Authorization: `${accessToken}`,
-                }
+    const [uploadProgress, setUploadProgress] = useState(0);
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onprogress = (event) => {
+            if (event.lengthComputable) {
+                const percentLoaded = Math.round((event.loaded / event.total) * 100);
+                setUploadProgress(percentLoaded);
             }
-        )
-    }
+        };
+
+        reader.onloadend = () => {
+            setVideoFile(file);
+            setFileName(file.name);
+        };
+
+        reader.readAsDataURL(file);
+    };
+
+    // 동영상 업로드 함수
+    const addVideo = async (sectionId, name, preview,videoDescription, videoThumb, videoFile) => {
+        const formData = new FormData();
+        formData.append('sectionId', sectionId);
+        formData.append('name', name);
+        formData.append('videoDescription', videoDescription);
+        formData.append('preview', parseInt(preview));
+        formData.append('description', videoDescription);
+        Object.values(videoThumb).forEach((file1) => {
+            formData.append('thumb', file1);
+        }); // 파일 임포트
+        console.log("videoFile 임포트 시작")
+        console.log(videoFile);
+        console.log(typeof videoFile)
+        Object.values(videoFile).forEach((file) => {
+            formData.append('videoFile', file);
+        }); // 파일 임포트
+
+        const config = {
+            // 업로드 중의 진행 상황을 추적하는 이벤트 핸들러
+            onUploadProgress: function(progressEvent) {
+                // progressEvent.loaded: 현재까지 업로드된 바이트
+                // progressEvent.total: 전체 업로드할 바이트
+                // 위 두 값을 사용하여 업로드 진행률을 백분율로 계산
+                const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+
+                // setProgress 함수로 업로드 진행률을 상태에 업데이트
+                setProgress(percentCompleted);
+            },
+            headers: {
+                // 요청 헤더에 'multipart/form-data' 타입을 지정하여,
+                // 서버에 파일과 함께 다른 데이터도 전송할 수 있도록 설정
+                'Content-Type': 'multipart/form-data',
+
+                // Authorization 헤더에 토큰 값을 포함시켜 인증 정보를 전송
+                Authorization: `${accessToken}`
+            }
+        };
+
+        try {
+            console.log(formData.get('videoFile'));
+            const response = await axios.post(`http://localhost:8099/lecture/section/video/uploadWithProgress`, formData, config);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    };
 
     // 영상 삭제
     const delVideo = async(videoId) => {
@@ -705,8 +806,29 @@ function TeacherLectureInfo(props) {
             }
         ).then((res) => {
             console.log(res);
-            setVideoResult(res.data);
+            if(res.data){
+                setVideoResult(res.data);
+                setVideoName(res.data.name)
+                setVideoDescription(res.data.description)
+                setVideoThumb(res.data.thumb)
+            }
         })
+    }
+
+    // 영상 제목 수정
+    const updateVideoName = async(videoId, name) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/video/update/name`,
+            {
+                id: videoId,
+                name: name,
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        )
     }
 
 
@@ -1321,9 +1443,6 @@ function TeacherLectureInfo(props) {
                                                             onClick={() => {
                                                                 // 해당 Video의 정보를 가져옴
                                                                 getVideoInfo(subItem.id).then((res) => {
-                                                                        setVideoName(videoResult.name)
-                                                                        setVideoDescription(videoResult.description)
-                                                                        setVideoThumb(videoResult.thumb)
                                                                     handleVideoEditOpen(); // Video 수정용 Modal open
                                                                 })
                                                             }}
