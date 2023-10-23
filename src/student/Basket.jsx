@@ -115,7 +115,7 @@ function Basket(props) {
                                         <Box sx={{width:"100%", aspectRatio:"16:9", overflow:"hidden", borderRadius:"1rem"}}
                                             onClick={() => navigate(`/lecture/${item.lectureId}`)}
                                         >
-                                            <img src={`http://localhost:8099/eumCodingImgs/lecture/thumb/${item.thumb}`} style={{width:"100%", objectFit:"cover"}}/>
+                                            <img src={`${item.thumb}`} style={{width:"100%", objectFit:"cover"}}/>
                                         </Box>
                                     </Grid>
                                     <Grid xs={7} item container display={"flex"} justifyContent={"center"} alignItems={"center"} sx={{pl:"1rem"}}>

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
     Accordion,
     AccordionDetails,
@@ -52,6 +52,9 @@ function TeacherLectureInfo(props) {
     const [newSectionName, setNewSectionName] = useState(""); // 새로운 Section 이름
 
     const navigate = useNavigate();
+
+    const inputRef = useRef(null);
+
 
     const accessToken = useSelector((state) => state.accessToken);
 
@@ -131,6 +134,24 @@ function TeacherLectureInfo(props) {
         temp[idx] = !temp[idx];
         // state에 할당
         setExpanded(temp);
+    }
+
+    // 강의 썸네일 수정
+    const updateLectureThumb = async (id, files) => { // id: 강의아이디, thumb: 썸네일
+        const fd = new FormData();
+        fd.append('id', id);
+        Object.values(files).forEach((file1) => {
+            fd.append('thumb', file1);
+        }); // 파일 임포트
+        const response = await axios.post(
+            `http://localhost:8099/lecture/update/thumb`,
+            fd,
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        )
     }
 
     const handleSectionOpen = () => {
@@ -908,9 +929,35 @@ function TeacherLectureInfo(props) {
                               justifyContent="left"
                               alignItems="center"
                         >
-                            <div className={styles.image_thumb}>
-                                <img className={styles.image} src={result && result.thumb} />
-                            </div>
+                            <Box sx={{
+                                width: "100%",
+                                aspectRatio: "16/9",
+                                background: "#cccccc",
+                                overflow: "hidden",
+                                borderRadius: "1vw",
+                                position: "relative", // 추가
+                                '&:hover img': { // 이미지 어두워지는 효과 추가
+                                    opacity: 0.5,
+                                    transition: "opacity 0.3s"
+                                }
+                            }}
+                                 onClick={() => {
+                                     // inputRef를 사용하여 input 요소를 클릭하는 것처럼 트리거함
+                                     inputRef.current.click();
+                                 }}
+                            >
+                                <img  src={result && result.thumb} style={{width:"100%", height:"100%", top:"0", left:"0", objectFit:"cover",
+                                    position: "absolute" // 추가된 부분
+                                }} />
+                                <input type="file"
+                                       ref={inputRef} // useRef를 사용하여 input에 참조를 부여
+                                       accept={"image/*"} hidden onChange={(e) => {
+                                        updateLectureThumb(parseInt(params.value), e.target.files).then((res) => {
+                                            // 강의정보 다시 로드
+                                            getLectureInfo(params.value);
+                                        })
+                                }} />
+                            </Box>
                         </Grid>
                     </Grid>
                     {/* 요약 오른쪽 **/}

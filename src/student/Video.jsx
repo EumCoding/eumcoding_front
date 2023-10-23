@@ -52,7 +52,7 @@ function ValueLabelComponent(props) {
 function Video(props) {
     const navigate = useNavigate();
 
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
@@ -357,7 +357,7 @@ function Video(props) {
         <ThemeProvider theme={theme}>
             <DashTop/>
             {/* 문제풀이용 Modal **/}
-            {videoTest && (
+            {videoTest && videoTest.length >0 && (
                 <Modal
                     open={open}
                     aria-labelledby="modal-modal-title"

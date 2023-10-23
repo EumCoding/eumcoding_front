@@ -5,8 +5,8 @@ import {
     AccordionSummary,
     Box, Button,
     createTheme,
-    Divider,
-    Grid,
+    Divider, FormControlLabel,
+    Grid, LinearProgress, Modal, Radio, RadioGroup, TextField,
     ThemeProvider
 } from "@mui/material";
 import TopBar from "../component/TopNav";
@@ -35,6 +35,125 @@ function LectureInfo(props) {
     const [teacher, setTeacher] = useState(null); // 강사 정보 넣을곳
 
     const [section, setSection] = useState(null);
+
+    const [file, setFile] = useState(null); // 파일 올릴 state
+
+    // modal state
+    const [openWriteQuestionModal, setOpenWriteQuestionModal] = useState(false); // 질문작성 모달
+
+    const openWriteQuestionModalHandler = () => {
+        setOpenWriteQuestionModal(true);
+    }
+
+    const closeWriteQuestionModalHandler = () => {
+        setOpenWriteQuestionModal(false);
+    }
+
+    const writeQuestion = async(id, title, content, image) => {
+        // form data에 data 로드
+        const fd = new FormData();
+        fd.append('title', title);
+        fd.append('content', content);
+        fd.append('lectureId', id);
+        Object.values(image).forEach((file) => {
+            fd.append('imgRequest', file);
+        });
+        // api 호출...
+        const response = await axios.post(
+            `http://localhost:8099/lecture/question/write`,
+            fd,
+            {
+                headers:{Authorization: `${accessToken}`,}
+            }
+        )
+    }
+
+    // 질문작성 state
+    // 질문 작성 Modal Body
+    const writeQuestionModalBody = (
+        <Box
+            sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '80vw',
+                maxWidth: 400,
+                bgcolor: 'background.paper',
+                border: '1px solid #e0e0e0',
+                borderRadius: 2,
+                boxShadow: 24,
+                p: 3,
+            }}
+        >
+            <h2>질문 작성</h2>
+            <Grid container sx={{width:"100%"}}>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                    <Typography>제목</Typography>
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                    <TextField id={'writeQuestionTitle'} fullWidth  variant="standard" />
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center" sx={{mt:2}}>
+                    <Typography>내용</Typography>
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                    <TextField fullWidth rows={6} multiline variant="outlined" id={'writeQuestionContent'} />
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center" sx={{mt:2}}>
+                    <Typography>이미지 업로드</Typography>
+                </Grid>
+                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                    <Button
+                        variant="contained"
+                        component="label"
+                        sx={{
+                            background: '#0B401D',
+                            borderRadius: '10px',
+                            '&:hover': {
+                                background: "green",
+                            }
+                        }}
+                    >
+                        <Typography sx={{ color: "#FFFFFF" }}>파일업로드</Typography>
+                        <input
+                            accept={"image/*"}
+                            type="file"
+                            hidden
+                            onChange={(e) => setFile(e.target.files)}
+                        />
+                    </Button>
+                </Grid>
+                {file && (
+                    <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
+                        <Box sx={{width:"50%", aspectRatio:"16/9", overflow:"hidden"}}>
+                            <img src={URL.createObjectURL(file[0])} style={{width:"100%", height:"100%", objectFit:"cover", objectPosition: "center center"}} />
+                        </Box>
+                    </Grid>
+                )}
+            <Box mt={2}>
+                <Button color="primary"
+                    onClick={() => {
+                        // 각 요소의 id를 이용해 값을 가져옵니다.
+                        const title = document.getElementById('writeQuestionTitle').value;
+                        const content = document.getElementById('writeQuestionContent').value;
+                        console.log(title + " , " + content + " 의 내용을 전송합니다.")
+                        writeQuestion(parseInt(params.value), title, content, file).then((res) => {
+                            // 성공 시 질문리스트 다시 불러옴(추후 추가)
+                            // state 초기화
+                            setFile(null);
+                            // 모달 닫음
+                            closeWriteQuestionModalHandler();
+                        }).catch((err) => {
+                            alert("작성 실패. 잠시 후 다시 시도해 주세요.")
+                        })
+                    }}
+                >확인</Button>
+                <Button onClick={() => closeWriteQuestionModalHandler()} color="secondary" sx={{ ml: 1 }}>취소</Button>
+            </Box>
+            </Grid>
+        </Box>
+    );
 
     // 강의 정보 가져오기 1
     const getLectureInfo = async (id) => { // id: 강의아이디
@@ -66,6 +185,13 @@ function LectureInfo(props) {
         })
     }
 
+    // 질문리스트 가져오기
+    const getQuestionList = async (id, page) => {
+        const response = await axios.get(
+            `http://localhost:8099/lecture/question/unauth/list?lectureId=${id}&page=${page}`
+        )
+    }
+
 
     const theme = createTheme({ // Theme
         typography: {
@@ -85,6 +211,17 @@ function LectureInfo(props) {
     return (
         <ThemeProvider theme={theme}>
             <DashTop/>
+            {/* New Question Modal **/}
+            <Modal
+                open={openWriteQuestionModal}
+
+                onClose={() => closeWriteQuestionModalHandler()}
+                aria-labelledby="modal-title"
+                aria-describedby="modal-description"
+            >
+                {writeQuestionModalBody}
+            </Modal>
+
             {/* TopBar 띄우기 위한 Box*/}
             <Grid container sx={{width:"100%", mb:"10rem"}}>
                 <Grid xs={12} item container display={"flex"} justtifyContent={"center"} alignItems={"stretch"}
@@ -160,18 +297,25 @@ function LectureInfo(props) {
                               alignItems="center"
                               sx={{pt:5}}
                               xs={6}>
-                            <Box display="flex"
+                            <Button display="flex"
                                  justifyContent="center"
                                  alignItems="center"
                                  sx={{ borderRadius: '1vw',
-                                     width:"50vw", height:"2.5vw",
-                                     m:0, p:1,
+                                     width:"100%", height:"3vw",
+                                     m:0,
                                      border:0,
-                                     background: "#FFE600"}}>
+                                     background: "#FFE600",
+                                     '&:hover': {
+                                         backgroundColor: "#FFD700"  // 마우스 오버 시 변경될 배경색
+                                     },
+                                     '&:active': {
+                                         backgroundColor: "#FFC300"  // 클릭 시 변경될 배경색
+                                     }
+                                 }}>
                                 <p className={styles.font_sugang}>
                                     이어서 수강하기
                                 </p>
-                            </Box>
+                            </Button>
                         </Grid>
                         {/* 질문하기 버튼 **/}
                         <Grid item
@@ -180,18 +324,26 @@ function LectureInfo(props) {
                               alignItems="center"
                               sx={{pt:5}}
                               xs={6}>
-                            <Box display="flex"
+                            <Button display="flex"
                                  justifyContent="center"
                                  alignItems="center"
+                                    onClick={() => openWriteQuestionModalHandler()}
                                  sx={{ borderRadius: '1vw',
-                                     width:"50vw", height:"2.5vw",
-                                     m:0, p:1,
+                                     width:"100%", height:"3vw",
+                                     m:0,
                                      border:0,
-                                     background: "#FFE600"}}>
+                                     background: "#FFE600",
+                                     '&:hover': {
+                                         backgroundColor: "#FFD700"  // 마우스 오버 시 변경될 배경색
+                                     },
+                                     '&:active': {
+                                         backgroundColor: "#FFC300"  // 클릭 시 변경될 배경색
+                                     }
+                                 }}>
                                 <p className={styles.font_sugang}>
                                     질문하기
                                 </p>
-                            </Box>
+                            </Button>
                         </Grid>
                     </Grid>
                 </Grid>
