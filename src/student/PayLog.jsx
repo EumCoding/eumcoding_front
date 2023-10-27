@@ -307,7 +307,7 @@ function PayLog(props) {
                                                         <Typography sx={{fontSize:"1.3rem", fontWeight:"700"}}>{subItem.name}</Typography>
                                                     </Grid>
                                                     <Grid xs={12} item sx={{mt:"1rem"}}>
-                                                        <Typography sx={{fontWeight:"700"}}>{subItem.price}</Typography>
+                                                        <Typography sx={{fontWeight:"700"}}>결제금액 : {subItem.price}원</Typography>
                                                     </Grid>
                                                 </Grid>
                                                 <Grid xs={3} item container

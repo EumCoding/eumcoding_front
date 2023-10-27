@@ -38,6 +38,10 @@ function LectureInfo(props) {
 
     const [file, setFile] = useState(null); // 파일 올릴 state
 
+    const [questionResult, setQuestionResult] = useState(null); // 질문리스트 결과
+    const [questionMore, setQuestionMore] = useState(true); // 더 결과가 있는지
+    const [questionPage, setQuestionPage] = useState(1); // 더 결과가 있는지
+
     // modal state
     const [openWriteQuestionModal, setOpenWriteQuestionModal] = useState(false); // 질문작성 모달
 
@@ -139,9 +143,11 @@ function LectureInfo(props) {
                         const content = document.getElementById('writeQuestionContent').value;
                         console.log(title + " , " + content + " 의 내용을 전송합니다.")
                         writeQuestion(parseInt(params.value), title, content, file).then((res) => {
-                            // 성공 시 질문리스트 다시 불러옴(추후 추가)
+                            // 성공 시 질문 리스트 다시 불러옴
+                            getQuestionList(params.value, 1);
                             // state 초기화
                             setFile(null);
+                            setQuestionPage(1);
                             // 모달 닫음
                             closeWriteQuestionModalHandler();
                         }).catch((err) => {
@@ -189,7 +195,21 @@ function LectureInfo(props) {
     const getQuestionList = async (id, page) => {
         const response = await axios.get(
             `http://localhost:8099/lecture/question/unauth/list?lectureId=${id}&page=${page}`
-        )
+        ).then((res) => {
+            console.log("질문리스트..")
+            console.log(res)
+            // 페이징처리
+            if(page > 0){ // 1페이지가 아닌경우
+                // 깊은복사
+                const temp = JSON.parse(JSON.stringify(questionResult))
+                res && res.data && setQuestionResult(temp.concat(res.data));
+                if(res && (res.data.length < 10)){
+                    setQuestionMore(false); // 더이상 가져올 데이터가 없음
+                }
+            }else{
+                res && res.data && setQuestionResult(res.data);
+            }
+        })
     }
 
 
@@ -201,6 +221,8 @@ function LectureInfo(props) {
 
     useEffect(() => {
         getLectureInfo(params.value) // 첫번째 정보 가져옴
+        // 질문리스트 가져옴
+        getQuestionList(params.value, 1);
     },[])
 
     useEffect(() => {
@@ -422,6 +444,33 @@ function LectureInfo(props) {
                 >
                     <Divider fullWidth sx={{border:2, borderColor:"#000000"}}/>
                 </Grid>
+                {/* 질문리스트 **/}
+                {questionResult && questionResult.map((item, idx) => {
+                    return(
+                        <Grid xs={12} item container
+                              sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"2rem",}}
+                        >
+                            <Grid item xs={9} sx={{pl:"2rem"}}
+                                  display={"flex"} justtifyContent={"flex-start"} alignItems={"center"}
+                            >
+                                <Typography sx={{fontWeight:"700", fontSize:"1.3rem"}}>
+                                    {item.title}
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={3}
+                                  sx={{pr:"2rem", }}
+                                  display={"flex"} justifyContent={"flex-end"} alignItems={"center"}
+                            >
+                                <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D"}}>
+                                    {item.createDate}
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={12} sx={{pt:"2rem"}}>
+                                <Divider/>
+                            </Grid>
+                        </Grid>
+                    )
+                })}
 
                 <Grid xs={12} item container
                       sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"2rem",}}
