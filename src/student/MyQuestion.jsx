@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {Button, createTheme, Divider, Grid, TextField, ThemeProvider} from "@mui/material";
+import React, {useEffect, useState} from 'react';
+import {Button, Collapse, createTheme, Divider, Grid, TextField, ThemeProvider} from "@mui/material";
 import DashTop from "../component/DashTop";
 import {DesktopDatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import dayjs from "dayjs";
@@ -9,8 +9,31 @@ import StarIcon from "@mui/icons-material/Star";
 import FaceIcon from "@mui/icons-material/Face6";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import axios from "axios";
+import {useSelector} from "react-redux";
+import {useNavigate} from "react-router-dom";
 
 function MyQuestion(props) {
+    const accessToken = useSelector((state) => state.accessToken);
+    const role = useSelector((state) => state.role);
+    const navigate = useNavigate();
+
+    const [result, setResult] = useState(null); // 결과담을 state
+    const [more, setMore] = useState(true); // 더 결과가 있는지
+
+    // question collapse state
+    const [isQuestionCollapseOpen, setIsQuestionCollapseOpen] = useState([]); // Collapse 제어를 위한 상태
+
+    const handleQuestionCollapseToggle = (idx) => {
+        // 해당 idx의 상태값만 반대값으로 변경
+        const newIsQuestionCollapseOpen = [...isQuestionCollapseOpen];
+        newIsQuestionCollapseOpen[idx] = !newIsQuestionCollapseOpen[idx];
+        setIsQuestionCollapseOpen(newIsQuestionCollapseOpen);
+    };
+
+    const defaultSize = 10;
+    const [page, setPage] = useState(1);
+
     const theme = createTheme({ // Theme
         typography: {
             fontFamily: 'NanumSquareNeo',
@@ -38,8 +61,46 @@ function MyQuestion(props) {
         },
     });
 
-    const [startDate, setStartDate] = useState(dayjs());
     const [endDate, setEndDate] = useState(dayjs());
+    //startDate는 6개월 전으로 설정
+    const [startDate, setStartDate] = useState(dayjs().subtract(6, "month"));
+
+    // 내 질문 목록 가져오기
+    const getMyQuestion = async (end, start, page, size) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/question/mylist?page=${page}&size=${size}&end=${end.format("YYYY-MM-DD").toString()}&start=${start.format("YYYY-MM-DD").toString()}`,
+            {},
+            {
+                headers:{Authorization: `${accessToken}`,}
+            }
+        ).catch((err) => {
+            console.log(err)
+        }).then((res) => {
+            console.log(res)
+            if(res && res.data){
+                // page가 1보다 크면 기존 데이터에 추가
+                if(page > 1){
+                    // 깊은복사
+                    const temp = JSON.parse(JSON.stringify(result))
+                    setResult(temp.concat(res.data));
+                    // collapse 관리 state 이어붙이기
+                    const tempArr = Array(res.data.length).fill(false);
+                    // 기존의 isQuestionCollapseOpen에 이어붙이기
+                    setIsQuestionCollapseOpen(prev => prev.concat(tempArr));
+                }else{
+                    setResult(res.data);
+                    // collapse 관리 state 초기화
+                    const tempArr = Array(res.data.length).fill(false);
+                    setIsQuestionCollapseOpen(tempArr);
+                }
+
+                if(res.data.length < defaultSize){
+                    setMore(false);
+                }
+            }
+
+        })
+    }
 
     // 날짜체크
     const dateCheck = (t, e) => {
@@ -71,6 +132,15 @@ function MyQuestion(props) {
         console.log('검사문제없음');
         return true;
     };
+
+    useEffect(() => {
+        if(accessToken === ""){
+            navigate("/login");
+        }
+        // 내 질문 목록 최초 가져옴
+        getMyQuestion(endDate, startDate, 1, defaultSize);
+
+    },[])
 
     return (
         <ThemeProvider theme={theme}>
@@ -113,8 +183,99 @@ function MyQuestion(props) {
                             renderInput={(params) => <TextField {...params} />}
                         />
                     </LocalizationProvider>
+                    {/* 검색버튼 **/}
+                    <Button
+                        variant="outlined"
+                        sx={{
+                            borderRadius:"0.5vw",
+                            backgroundColor:"#FFFFFF",
+                            borderColor:"#000000",
+                            ml:"1rem",
+                            py:"1rem",
+                        }}
+                        onClick={() => {
+                            // 날짜가 올바르게 들어왔는지 체크합니다.
+                            if (startDate > endDate) {
+                                alert("날짜를 다시 선택해주세요.");
+                                return;
+                            }
+                            getMyQuestion(endDate, startDate, 1, defaultSize);
+                            setPage(1);
+                        }}
+                    >
+                        <Typography sx={{fontWeight:"700", fontSize:"1rem", color:"#000000"}}>
+                            검색
+                        </Typography>
+                    </Button>
                 </Grid>
-                <Grid container item xs={12} sx={{pt:"3rem", mt:0, px:{xs:"5%", md:"20%"}}}>
+                <Grid container item xs={12}>
+                    {/* result가 있을 때만 질문 목록을 출력합니다.**/}
+                    {/* 질문리스트 **/}
+                    {result && result.map((item, idx) => {
+                        return(
+                            <Grid xs={12} item container
+                                  sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"2rem"}}
+                            >
+                                <Grid item container xs={12} sx={{justifyContent:"space-between"}} onClick={() => handleQuestionCollapseToggle(idx)}>
+                                    <Box sx={{fontWeight:"700", fontSize:"1.3rem", display:"inline", pl:"1rem"}}>
+                                        <Typography sx={{fontWeight:"700", fontSize:"1.3rem"}}>
+                                            {item.title}
+                                        </Typography>
+                                        <Typography sx={{fontWeight:"700", fontSize:"1rem", color:"#A2A2A2"}}>
+                                            작성자 : {item.nickname}
+                                        </Typography>
+                                    </Box>
+                                    <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D", display:"inline", pr:"1rem"}}>
+                                        {item.date} | {item.answer === 0 ? "미답변" : "답변완료"}
+                                    </Typography>
+                                </Grid>
+                                <Collapse in={isQuestionCollapseOpen[idx]} sx={{ width: '100%' }}>
+                                    <Grid item container xs={12} sx={{px: "2rem", py: "2rem", display: "flex", width: '100%'}}>
+                                        <Box
+                                            sx={{
+                                                width: "100%",
+                                                border: 1,
+                                                borderRadius: "15px", // 라운드를 약간 더 높임
+                                                borderColor: "#A2A2A2",
+                                                p: "1.5rem", // 패딩 조정
+                                                backgroundColor: "#F7F7F7", // 배경색 추가
+                                                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" // 그림자 추가
+                                            }}
+                                        >
+                                            <Typography sx={{fontSize: "1rem", fontWeight: "500"}}>
+                                                {item.content}
+                                            </Typography>
+                                        </Box>
+
+                                        {item.answer !== 0 && (
+                                            <Typography>
+                                                답변: {item.answer}
+                                            </Typography>
+                                        )}
+                                    </Grid>
+                                </Collapse>
+                                <Grid item xs={12} sx={{pt:"2rem"}}>
+                                    <Divider/>
+                                </Grid>
+                            </Grid>
+                        )
+                    })}
+                    {/* 더 있을때만 표시 **/}
+                    {more && (
+                        <Grid item xs={12} sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"5rem",}}>
+                            <Button variant="outlined" fullWidth sx={{borderColor:'#000000', borderRadius:'10px'}}
+                                    onClick={() => {
+                                        // 질문리스트 가져옴
+                                        getMyQuestion(endDate, startDate, page+1, defaultSize);
+                                        setPage(page+1);
+
+                                    }}
+                            >
+                                <span className={styles.font_review_more}>질문 더보기</span>
+                            </Button>
+                        </Grid>
+                    )}
+
 
                     {/* 리뷰목록 **/}
                     <Grid

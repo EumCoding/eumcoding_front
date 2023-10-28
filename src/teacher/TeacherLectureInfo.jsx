@@ -8,7 +8,7 @@ import {
     Divider, FormControlLabel,
     Grid, Modal, Radio, RadioGroup, TextField,
     ThemeProvider,
-    LinearProgress
+    LinearProgress, Collapse
 } from "@mui/material";
 import TopBar from "../component/TopNav";
 import DashTop from "../component/DashTop";
@@ -24,6 +24,7 @@ import axios from "axios";
 import {useSelector} from "react-redux";
 import CheckIcon from '@mui/icons-material/Check'; // 확인 아이콘
 import ClearIcon from '@mui/icons-material/Clear'; // 취소 아이콘
+import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import AddCircleIcon from '@mui/icons-material/AddCircle'; // 증가
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -65,6 +66,31 @@ function TeacherLectureInfo(props) {
     const [teacher, setTeacher] = useState(null); // 강사 정보 넣을곳
 
     const [section, setSection] = useState(null);
+
+    // 질문 목록 보기위한 state
+    const [questionResult, setQuestionResult] = useState(null); // 질문리스트 결과
+    const [questionMore, setQuestionMore] = useState(true); // 더 결과가 있는지
+    const [questionPage, setQuestionPage] = useState(1); // 더 결과가 있는지
+
+    // question collapse state
+    const [isQuestionCollapseOpen, setIsQuestionCollapseOpen] = useState([]); // Collapse 제어를 위한 상태
+
+    // answer collapse state
+    const [isAnswerCollapseOpen, setIsAnswerCollapseOpen] = useState([]); // Collapse 제어를 위한 상태
+
+    const handleQuestionCollapseToggle = (idx) => {
+        // 해당 idx의 상태값만 반대값으로 변경
+        const newIsQuestionCollapseOpen = [...isQuestionCollapseOpen];
+        newIsQuestionCollapseOpen[idx] = !newIsQuestionCollapseOpen[idx];
+        setIsQuestionCollapseOpen(newIsQuestionCollapseOpen);
+    };
+
+    const handleAnswerCollapseToggle = (idx) => {
+        // 해당 idx의 상태값만 반대값으로 변경
+        const newIsAnswerCollapseOpen = [...isAnswerCollapseOpen];
+        newIsAnswerCollapseOpen[idx] = !newIsAnswerCollapseOpen[idx];
+        setIsAnswerCollapseOpen(newIsAnswerCollapseOpen);
+    }
 
     // 수정하기 위한 state들
     const [price, setPrice] = useState(0); // 가격
@@ -152,6 +178,42 @@ function TeacherLectureInfo(props) {
                 }
             }
         )
+    }
+
+    // 질문리스트 가져오기
+    const getQuestionList = async (id, page) => {
+        const response = await axios.get(
+            `http://localhost:8099/lecture/question/unauth/list?lectureId=${id}&page=${page}`
+        ).then((res) => {
+            console.log("질문리스트..")
+            console.log(res)
+            if(res && res.data){
+                // 페이징처리
+                if(page > 1){ // 1페이지가 아닌경우
+                    // 깊은복사
+                    const temp = JSON.parse(JSON.stringify(questionResult))
+                    if(questionResult){
+                        setQuestionResult(temp.concat(res.data));
+                    }
+                    // collapse 관리 state 이어붙이기
+                    const tempArr = Array(res.data.length).fill(false);
+                    // 기존의 isQuestionCollapseOpen에 이어붙이기
+                    setIsQuestionCollapseOpen(prev => prev.concat(tempArr));
+                    // 기존의 isAnswerCollapseOpen에 이어붙이기
+                    setIsAnswerCollapseOpen(prev => prev.concat(tempArr));
+
+                }else{
+                    setQuestionResult(res.data);
+                    // collapse 관리 state 초기화
+                    const tempArr = Array(res.data.length).fill(false);
+                    setIsQuestionCollapseOpen(tempArr);
+                    setIsAnswerCollapseOpen(tempArr);
+                }
+                if(res.data.length < 10){
+                    setQuestionMore(false); // 더이상 가져올 데이터가 없음
+                }
+            }
+        })
     }
 
     const handleSectionOpen = () => {
@@ -861,6 +923,8 @@ function TeacherLectureInfo(props) {
 
     useEffect(() => {
         getLectureInfo(params.value) // 첫번째 정보 가져옴
+        // 첫번째 페이지의 질문리스트 가져옴
+        getQuestionList(params.value, 1);
     },[])
 
     useEffect(() => {
@@ -946,7 +1010,7 @@ function TeacherLectureInfo(props) {
                                      inputRef.current.click();
                                  }}
                             >
-                                <img  src={result && result.thumb} style={{width:"100%", height:"100%", top:"0", left:"0", objectFit:"cover",
+                                <img loading={"lazy"} src={result && result.thumb} style={{width:"100%", height:"100%", top:"0", left:"0", objectFit:"cover",
                                     position: "absolute" // 추가된 부분
                                 }} />
                                 <input type="file"
@@ -1428,7 +1492,7 @@ function TeacherLectureInfo(props) {
                                                     <Grid item xs={7} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
                                                         <div style={{display: 'flex', alignItems: 'center', flexGrow: 1, width:"60%"}}>
                                                             <Box position="relative" sx={{width:"100px", aspectRatio:"16/9", overflow:"hidden"}}>
-                                                                <img src={subItem.thumb} style={{width:"100%", height:"100%", objectFit:"cover"}}/>
+                                                                <img loading={"lazy"} src={subItem.thumb} style={{width:"100%", height:"100%", objectFit:"cover"}}/>
                                                             </Box>
                                                             <span className={styles.font_curriculum_content}>{subItem.name}</span>
                                                         </div>
@@ -1590,80 +1654,186 @@ function TeacherLectureInfo(props) {
                     <Divider fullWidth sx={{border:2, borderColor:"#000000"}}/>
                 </Grid>
 
-                <Grid xs={12} item container
-                      sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"2rem",}}
-                >
-                    <Grid item xs={9} sx={{pl:"2rem"}}
-                          display={"flex"} justtifyContent={"flex-start"} alignItems={"center"}
-                    >
-                        <Typography sx={{fontWeight:"700", fontSize:"1.3rem"}}>
-                            어제 저녁 뭐 드셨어요?
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={3}
-                          sx={{pr:"2rem", }}
-                          display={"flex"} justifyContent={"flex-end"} alignItems={"center"}
-                    >
-                        <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D"}}>
-                            2022-03-18
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sx={{pt:"2rem"}}>
-                        <Divider/>
-                    </Grid>
-                </Grid>
+                {/* 질문리스트 **/}
+                {questionResult && questionResult.map((item, idx) => {
+                    return(
+                        <Grid xs={12} item container
+                              sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"2rem"}}
+                        >
+                            <Grid item container xs={12} sx={{justifyContent:"space-between",pl:"1rem", alignItems:"center"}} onClick={() => handleQuestionCollapseToggle(idx)}>
+                                <Box sx={{fontWeight:"700", fontSize:"1.3rem", display:"inline", }}>
+                                    <Typography sx={{fontWeight:"700", fontSize:"1.3rem"}}>
+                                        {item.title}
+                                    </Typography>
+                                    <Typography sx={{fontWeight:"700", fontSize:"1rem", color:"#A2A2A2"}}>
+                                        작성자 : {item.nickname}
+                                    </Typography>
+                                </Box>
+                                <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D", display:"inline", pr:"1rem", alignItems:"center"}}>
+                                    {item.date} | {item.answer === 0 ? "미답변" : "답변완료"}
+                                </Typography>
+                            </Grid>
+                            <Collapse in={isQuestionCollapseOpen[idx]} sx={{ width: '100%' }}>
+                                <Grid item container xs={12} sx={{px: "2rem", py:"2rem", display: "flex", width: '100%'}}>
+                                    <Grid item xs={12} sx={{pr:"4rem", display: "flex", width: '100%', justifyContent:"flex-start"}}>
+                                        <Box
+                                            sx={{
+                                                position: 'relative',
+                                                width: "100%",
+                                                border: 1,
+                                                borderRadius: "15px",
+                                                borderColor: "#A2A2A2",
+                                                p: "1.5rem",
+                                                backgroundColor: "#F7F7F7",
+                                                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                                                overflow: "visible",
+                                                '&::before': {  // 대표적인 border색 삼각형
+                                                    content: '""',
+                                                    position: 'absolute',
+                                                    bottom: '-11px',  // 삼각형 위치를 약간 조정
+                                                    left: '19px',
+                                                    borderLeft: '11px solid transparent',
+                                                    borderRight: '11px solid transparent',
+                                                    borderTop: '11px solid #A2A2A2',
+                                                },
+                                                '&::after': {  // 배경색 삼각형
+                                                    content: '""',
+                                                    position: 'absolute',
+                                                    bottom: '-10px',
+                                                    left: '20px',
+                                                    borderLeft: '10px solid transparent',
+                                                    borderRight: '10px solid transparent',
+                                                    borderTop: '10px solid #F7F7F7',
+                                                }
+                                            }}
+                                        >
+                                            <Typography sx={{fontSize: "1rem", fontWeight: "500"}}>
+                                                {item.content}
+                                            </Typography>
+                                        </Box>
+                                    </Grid>
+                                    {/* collapse와 답변작성 필드들 **/}
+                                    <Collapse in={isAnswerCollapseOpen[idx]} sx={{ width: '100%', mt:"1rem"}}>
+                                        <Grid item xs={12} sx={{pl:"4rem", width:"100%", display:"flex" ,justifyContent:"flex-end"}}>
+                                            <TextField
+                                                variant="outlined"
+                                                multiline
+                                                placeholder="여기에 작성"  // 안내 문자 추가
+                                                fullWidth
+                                                rows={4}
+                                                sx={{
+                                                    position: 'relative',
+                                                    borderRadius: "15px",
+                                                    borderColor: "#A2A2A2",
+                                                    p: "1.5rem",
+                                                    backgroundColor: "#FFE066", // 노란색 계열로 변경
+                                                    border: "1px solid #A2A2A2", // 테두리 선 추가
+                                                    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", // 그림자 추가
+                                                    '& .MuiOutlinedInput-notchedOutline': {
+                                                        border: "none",  // 기존의 outlined 선을 없애줍니다.
+                                                    },
+                                                    '&::before': {
+                                                        content: '""',
+                                                        position: 'absolute',
+                                                        bottom: '-11px',
+                                                        right: '19px',  // 삼각형을 오른쪽으로 이동
+                                                        borderLeft: '11px solid transparent',
+                                                        borderRight: '11px solid transparent',
+                                                        borderTop: '11px solid #A2A2A2',
+                                                    },
+                                                    '&::after': {
+                                                        content: '""',
+                                                        position: 'absolute',
+                                                        bottom: '-10px',
+                                                        right: '20px',  // 삼각형을 오른쪽으로 이동
+                                                        borderLeft: '10px solid transparent',
+                                                        borderRight: '10px solid transparent',
+                                                        borderTop: '10px solid #FFE066',
+                                                    }
+                                                }}
+                                            />
+                                        </Grid>
+                                    </Collapse>
+                                    {/* answercollapse가 열렸을 때만 답변을 작성할 textfield를 보여줍니다. **/}
+                                    <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-end", mt:"1rem"}}>
+                                        {/* 답변달기 버튼을 노출합니다. **/}
+                                        <Button
+                                            variant="contained"
+                                            startIcon={isAnswerCollapseOpen ? <ClearIcon/> : <QuestionAnswerIcon/>}
+                                            sx={{
+                                                width: "10rem",
+                                                height: "3rem",
+                                                background: "#FFFFFF",
+                                                borderColor: "#007BFF",  // 파란계열 테두리
+                                                color: "#007BFF",       // 파란계열 글씨
+                                                border: "1px solid",
+                                                '&:hover': {
+                                                    backgroundColor: "#007BFF",  // hover 시 파란색계열 배경
+                                                    color: "#FFFFFF",           // hover 시 흰색 글씨
+                                                },
+                                                '&:active': {
+                                                    backgroundColor: "#0056b3",  // 클릭 시 더 진한 파란색계열 배경
+                                                    color: "#FFFFFF",           // 클릭 시 흰색 글씨
+                                                }
+                                            }}
+                                            onClick={() => {
+                                                handleAnswerCollapseToggle(idx);
+                                            }}
+                                        >
+                                            {isAnswerCollapseOpen[idx] ? "답변취소" : "답변달기"}
+                                        </Button>
+                                        {/* 작성완료 버튼을 노출합니다. **/}
+                                        {isAnswerCollapseOpen[idx] && (
+                                            <Button
+                                                variant="contained"
+                                                startIcon={<CheckIcon/>}
+                                                sx={{
+                                                    ml:"1rem",
+                                                    width: "10rem",
+                                                    height: "3rem",
+                                                    background: "#FFFFFF",
+                                                    borderColor: "#007BFF",  // 파란계열 테두리
+                                                    color: "#007BFF",       // 파란계열 글씨
+                                                    border: "1px solid",
+                                                    '&:hover': {
+                                                        backgroundColor: "#007BFF",  // hover 시 파란색계열 배경
+                                                        color: "#FFFFFF",           // hover 시 흰색 글씨
+                                                    },
+                                                    '&:active': {
+                                                        backgroundColor: "#0056b3",  // 클릭 시 더 진한 파란색계열 배경
+                                                        color: "#FFFFFF",           // 클릭 시 흰색 글씨
+                                                    }
+                                                }}
+                                            >
+                                                작성완료
+                                            </Button>
+                                        )}
+                                    </Grid>
+                                </Grid>
+                            </Collapse>
+                            <Grid item xs={12} sx={{pt:"2rem"}}>
+                                <Divider/>
+                            </Grid>
+                        </Grid>
+                    )
+                })}
+                {/* 더 있을때만 표시 **/}
+                {questionMore && (
+                    <Grid item xs={12} sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"5rem",}}>
+                        <Button variant="outlined" fullWidth sx={{borderColor:'#000000', borderRadius:'10px'}}
+                                onClick={() => {
+                                    // 질문리스트 가져옴
+                                    getQuestionList(params.value, questionPage+1).then((res) => {
+                                        //page 증가
+                                        setQuestionPage(questionPage+1);
+                                    });
 
-                <Grid xs={12} item container
-                      sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"2rem",}}
-                >
-                    <Grid item xs={9} sx={{pl:"2rem"}}
-                          display={"flex"} justtifyContent={"flex-start"} alignItems={"center"}
-                    >
-                        <Typography sx={{fontWeight:"700", fontSize:"1.3rem"}}>
-                            어제 저녁 뭐 드셨어요?
-                        </Typography>
+                                }}
+                        >
+                            <span className={styles.font_review_more}>질문 더보기</span>
+                        </Button>
                     </Grid>
-                    <Grid item xs={3}
-                          sx={{pr:"2rem", }}
-                          display={"flex"} justifyContent={"flex-end"} alignItems={"center"}
-                    >
-                        <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D"}}>
-                            2022-03-18
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sx={{pt:"2rem"}}>
-                        <Divider/>
-                    </Grid>
-                </Grid>
-
-                <Grid xs={12} item container
-                      sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"2rem",}}
-                >
-                    <Grid item xs={9} sx={{pl:"2rem"}}
-                          display={"flex"} justtifyContent={"flex-start"} alignItems={"center"}
-                    >
-                        <Typography sx={{fontWeight:"700", fontSize:"1.3rem"}}>
-                            어제 저녁 뭐 드셨어요?
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={3}
-                          sx={{pr:"2rem", }}
-                          display={"flex"} justifyContent={"flex-end"} alignItems={"center"}
-                    >
-                        <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D"}}>
-                            2022-03-18
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sx={{pt:"2rem"}}>
-                        <Divider/>
-                    </Grid>
-                </Grid>
-
-                <Grid item xs={12} sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"5rem",}}>
-                    <Button variant="outlined" fullWidth sx={{borderColor:'#000000', borderRadius:'10px'}}>
-                        <span className={styles.font_review_more}>수강평 더보기</span>
-                    </Button>
-                </Grid>
+                )}
             </Grid>
         </ThemeProvider>
     );

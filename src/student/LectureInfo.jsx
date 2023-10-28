@@ -3,7 +3,7 @@ import {
     Accordion,
     AccordionDetails,
     AccordionSummary,
-    Box, Button,
+    Box, Button, Collapse,
     createTheme,
     Divider, FormControlLabel,
     Grid, LinearProgress, Modal, Radio, RadioGroup, TextField,
@@ -42,6 +42,16 @@ function LectureInfo(props) {
     const [questionMore, setQuestionMore] = useState(true); // 더 결과가 있는지
     const [questionPage, setQuestionPage] = useState(1); // 더 결과가 있는지
 
+    // question collapse state
+    const [isQuestionCollapseOpen, setIsQuestionCollapseOpen] = useState([]); // Collapse 제어를 위한 상태
+
+    const handleQuestionCollapseToggle = (idx) => {
+        // 해당 idx의 상태값만 반대값으로 변경
+        const newIsQuestionCollapseOpen = [...isQuestionCollapseOpen];
+        newIsQuestionCollapseOpen[idx] = !newIsQuestionCollapseOpen[idx];
+        setIsQuestionCollapseOpen(newIsQuestionCollapseOpen);
+    };
+
     // modal state
     const [openWriteQuestionModal, setOpenWriteQuestionModal] = useState(false); // 질문작성 모달
 
@@ -53,6 +63,7 @@ function LectureInfo(props) {
         setOpenWriteQuestionModal(false);
     }
 
+    // 질문 작성하기
     const writeQuestion = async(id, title, content, image) => {
         // form data에 data 로드
         const fd = new FormData();
@@ -82,12 +93,12 @@ function LectureInfo(props) {
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
                 width: '80vw',
-                maxWidth: 400,
-                bgcolor: 'background.paper',
+                maxWidth: 450,
+                bgcolor: 'background.default',
                 border: '1px solid #e0e0e0',
-                borderRadius: 2,
-                boxShadow: 24,
-                p: 3,
+                borderRadius: 4,
+                boxShadow: "0 8px 20px 0 rgba(0, 0, 0, 0.12)",
+                p: 4,
             }}
         >
             <h2>질문 작성</h2>
@@ -198,16 +209,28 @@ function LectureInfo(props) {
         ).then((res) => {
             console.log("질문리스트..")
             console.log(res)
-            // 페이징처리
-            if(page > 0){ // 1페이지가 아닌경우
-                // 깊은복사
-                const temp = JSON.parse(JSON.stringify(questionResult))
-                res && res.data && setQuestionResult(temp.concat(res.data));
-                if(res && (res.data.length < 10)){
+            if(res && res.data){
+                // 페이징처리
+                if(page > 1){ // 1페이지가 아닌경우
+                    // 깊은복사
+                    const temp = JSON.parse(JSON.stringify(questionResult))
+                    if(questionResult){
+                        setQuestionResult(temp.concat(res.data));
+                    }
+                    // collapse 관리 state 이어붙이기
+                    const tempArr = Array(res.data.length).fill(false);
+                    // 기존의 isQuestionCollapseOpen에 이어붙이기
+                    setIsQuestionCollapseOpen(prev => prev.concat(tempArr));
+
+                }else{
+                    setQuestionResult(res.data);
+                    // collapse 관리 state 초기화
+                    const tempArr = Array(res.data.length).fill(false);
+                    setIsQuestionCollapseOpen(tempArr);
+                }
+                if(res.data.length < 10){
                     setQuestionMore(false); // 더이상 가져올 데이터가 없음
                 }
-            }else{
-                res && res.data && setQuestionResult(res.data);
             }
         })
     }
@@ -448,104 +471,69 @@ function LectureInfo(props) {
                 {questionResult && questionResult.map((item, idx) => {
                     return(
                         <Grid xs={12} item container
-                              sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"2rem",}}
+                              sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"2rem"}}
                         >
-                            <Grid item xs={9} sx={{pl:"2rem"}}
-                                  display={"flex"} justtifyContent={"flex-start"} alignItems={"center"}
-                            >
-                                <Typography sx={{fontWeight:"700", fontSize:"1.3rem"}}>
-                                    {item.title}
+                            <Grid item container xs={12} sx={{justifyContent:"space-between"}} onClick={() => handleQuestionCollapseToggle(idx)}>
+                                <Box sx={{fontWeight:"700", fontSize:"1.3rem", display:"inline", pl:"1rem"}}>
+                                    <Typography sx={{fontWeight:"700", fontSize:"1.3rem"}}>
+                                        {item.title}
+                                    </Typography>
+                                    <Typography sx={{fontWeight:"700", fontSize:"1rem", color:"#A2A2A2"}}>
+                                        작성자 : {item.nickname}
+                                    </Typography>
+                                </Box>
+                                <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D", display:"inline", pr:"1rem"}}>
+                                    {item.date} | {item.answer === 0 ? "미답변" : "답변완료"}
                                 </Typography>
                             </Grid>
-                            <Grid item xs={3}
-                                  sx={{pr:"2rem", }}
-                                  display={"flex"} justifyContent={"flex-end"} alignItems={"center"}
-                            >
-                                <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D"}}>
-                                    {item.createDate}
-                                </Typography>
-                            </Grid>
+                            <Collapse in={isQuestionCollapseOpen[idx]} sx={{ width: '100%' }}>
+                                <Grid item container xs={12} sx={{px: "2rem", py: "2rem", display: "flex", width: '100%'}}>
+                                    <Box
+                                        sx={{
+                                            width: "100%",
+                                            border: 1,
+                                            borderRadius: "15px", // 라운드를 약간 더 높임
+                                            borderColor: "#A2A2A2",
+                                            p: "1.5rem", // 패딩 조정
+                                            backgroundColor: "#F7F7F7", // 배경색 추가
+                                            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" // 그림자 추가
+                                        }}
+                                    >
+                                        <Typography sx={{fontSize: "1rem", fontWeight: "500"}}>
+                                            {item.content}
+                                        </Typography>
+                                    </Box>
+
+                                    {item.answer !== 0 && (
+                                        <Typography>
+                                            답변: {item.answer}
+                                        </Typography>
+                                    )}
+                                </Grid>
+                            </Collapse>
                             <Grid item xs={12} sx={{pt:"2rem"}}>
                                 <Divider/>
                             </Grid>
                         </Grid>
                     )
                 })}
+                {/* 더 있을때만 표시 **/}
+                {questionMore && (
+                    <Grid item xs={12} sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"5rem",}}>
+                        <Button variant="outlined" fullWidth sx={{borderColor:'#000000', borderRadius:'10px'}}
+                                onClick={() => {
+                                    // 질문리스트 가져옴
+                                    getQuestionList(params.value, questionPage+1).then((res) => {
+                                        //page 증가
+                                        setQuestionPage(questionPage+1);
+                                    });
 
-                <Grid xs={12} item container
-                      sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"2rem",}}
-                >
-                    <Grid item xs={9} sx={{pl:"2rem"}}
-                        display={"flex"} justtifyContent={"flex-start"} alignItems={"center"}
-                    >
-                        <Typography sx={{fontWeight:"700", fontSize:"1.3rem"}}>
-                            어제 저녁 뭐 드셨어요?
-                        </Typography>
+                                }}
+                        >
+                            <span className={styles.font_review_more}>질문 더보기</span>
+                        </Button>
                     </Grid>
-                    <Grid item xs={3}
-                          sx={{pr:"2rem", }}
-                          display={"flex"} justifyContent={"flex-end"} alignItems={"center"}
-                    >
-                        <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D"}}>
-                            2022-03-18
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sx={{pt:"2rem"}}>
-                        <Divider/>
-                    </Grid>
-                </Grid>
-
-                <Grid xs={12} item container
-                      sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"2rem",}}
-                >
-                    <Grid item xs={9} sx={{pl:"2rem"}}
-                          display={"flex"} justtifyContent={"flex-start"} alignItems={"center"}
-                    >
-                        <Typography sx={{fontWeight:"700", fontSize:"1.3rem"}}>
-                            어제 저녁 뭐 드셨어요?
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={3}
-                          sx={{pr:"2rem", }}
-                          display={"flex"} justifyContent={"flex-end"} alignItems={"center"}
-                    >
-                        <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D"}}>
-                            2022-03-18
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sx={{pt:"2rem"}}>
-                        <Divider/>
-                    </Grid>
-                </Grid>
-
-                <Grid xs={12} item container
-                      sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"2rem",}}
-                >
-                    <Grid item xs={9} sx={{pl:"2rem"}}
-                          display={"flex"} justtifyContent={"flex-start"} alignItems={"center"}
-                    >
-                        <Typography sx={{fontWeight:"700", fontSize:"1.3rem"}}>
-                            어제 저녁 뭐 드셨어요?
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={3}
-                          sx={{pr:"2rem", }}
-                          display={"flex"} justifyContent={"flex-end"} alignItems={"center"}
-                    >
-                        <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D"}}>
-                            2022-03-18
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} sx={{pt:"2rem"}}>
-                        <Divider/>
-                    </Grid>
-                </Grid>
-                
-                <Grid item xs={12} sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"5rem",}}>
-                    <Button variant="outlined" fullWidth sx={{borderColor:'#000000', borderRadius:'10px'}}>
-                        <span className={styles.font_review_more}>수강평 더보기</span>
-                    </Button>
-                </Grid>
+                )}
             </Grid>
         </ThemeProvider>
     );

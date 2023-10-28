@@ -367,6 +367,7 @@ function DashBoard(props) {
                                         background: "green",  // 호버시 버튼 배경색
                                     }
                                 }}
+                                onClick={() => navigate("/my/question")}
                             >
                                 <span className={styles.font_btn}>전체보기</span>
                             </Button>
