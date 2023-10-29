@@ -8,7 +8,7 @@ import {
     Divider, FormControlLabel,
     Grid, Modal, Radio, RadioGroup, TextField,
     ThemeProvider,
-    LinearProgress, Collapse
+    LinearProgress, Collapse, Fade
 } from "@mui/material";
 import TopBar from "../component/TopNav";
 import DashTop from "../component/DashTop";
@@ -69,11 +69,15 @@ function TeacherLectureInfo(props) {
 
     // 질문 목록 보기위한 state
     const [questionResult, setQuestionResult] = useState(null); // 질문리스트 결과
+    const [answerResult, setAnswerResult] = useState([]); // 답변리스트 결과
     const [questionMore, setQuestionMore] = useState(true); // 더 결과가 있는지
     const [questionPage, setQuestionPage] = useState(1); // 더 결과가 있는지
 
     // question collapse state
     const [isQuestionCollapseOpen, setIsQuestionCollapseOpen] = useState([]); // Collapse 제어를 위한 상태
+
+    // answer Fade state
+    const [isAnswerFadeOpen, setIsAnswerFadeOpen] = useState([]); // Fade 제어를 위한 상태
 
     // answer collapse state
     const [isAnswerCollapseOpen, setIsAnswerCollapseOpen] = useState([]); // Collapse 제어를 위한 상태
@@ -201,19 +205,48 @@ function TeacherLectureInfo(props) {
                     setIsQuestionCollapseOpen(prev => prev.concat(tempArr));
                     // 기존의 isAnswerCollapseOpen에 이어붙이기
                     setIsAnswerCollapseOpen(prev => prev.concat(tempArr));
+                    // fade
+                    setIsAnswerFadeOpen(prev => prev.concat(tempArr));
+                    // 총 길이만큼 빈 답변 리스트 이어붙이기
+                    setAnswerResult(prev => prev.concat(Array(res.data.length).fill([])));
 
                 }else{
                     setQuestionResult(res.data);
                     // collapse 관리 state 초기화
                     const tempArr = Array(res.data.length).fill(false);
                     setIsQuestionCollapseOpen(tempArr);
+                    // fade
+                    setIsAnswerFadeOpen(tempArr);
                     setIsAnswerCollapseOpen(tempArr);
+                    // 답변 리스트 초기화
+                    setAnswerResult(Array(res.data.length).fill([]));
                 }
                 if(res.data.length < 10){
                     setQuestionMore(false); // 더이상 가져올 데이터가 없음
                 }
             }
         })
+    }
+
+    // 답변 리스트 가져오기
+    const getAnswerList = async (id, idx) => {
+        const response = await axios.get(
+            `http://localhost:8099/lecture/question/comment/unauth/list?questionId=${id}`
+        ).then((res) => {
+            console.log("답변리스트..")
+            console.log(res)
+            if(res && res.data){
+                console.log(res);
+                // 해당하는 인덱스의 답변리스트 넣기
+                const temp = JSON.parse(JSON.stringify(answerResult)); // 깊은복사
+                temp[idx] = res.data;
+                setAnswerResult(temp);
+                // 로드가 완료되면 해당하는 인덱스의 fade를 true로
+                const tempFade = JSON.parse(JSON.stringify(isAnswerFadeOpen)); // 깊은복사
+                tempFade[idx] = true;
+                setIsAnswerFadeOpen(tempFade);
+            }
+        }).catch((err) => {console.log(err)})
     }
 
     const handleSectionOpen = () => {
@@ -752,6 +785,25 @@ function TeacherLectureInfo(props) {
             {
                 id: sectionId,
                 timeTaken: timeTaken
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        )
+    }
+
+    // 답변달기
+    const addAnswer = async(questionId, content) => {
+        console.log("답변달기")
+        console.log(questionId)
+        console.log(content)
+        const response = await axios.post(
+            `http://localhost:8099/lecture/question/comment/write`,
+            {
+                questionId:parseInt(questionId),
+                content:content
             },
             {
                 headers:{
@@ -1660,7 +1712,17 @@ function TeacherLectureInfo(props) {
                         <Grid xs={12} item container
                               sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, pt:"2rem"}}
                         >
-                            <Grid item container xs={12} sx={{justifyContent:"space-between",pl:"1rem", alignItems:"center"}} onClick={() => handleQuestionCollapseToggle(idx)}>
+                            <Grid item container xs={12} sx={{justifyContent:"space-between",pl:"1rem", alignItems:"center"}}
+                                  onClick={() => {
+                                      handleQuestionCollapseToggle(idx)
+                                      // answer가 0이 아니고 해당 collapse가 true가 아닐때
+                                      if(item.answer !== 0 && !isQuestionCollapseOpen[idx]){
+                                          console.log("getAnswerList + " + item.qnaId)
+                                          getAnswerList(item.qnaId) // 답변리스트 가져오기
+                                      }
+                                  }
+                            }
+                            >
                                 <Box sx={{fontWeight:"700", fontSize:"1.3rem", display:"inline", }}>
                                     <Typography sx={{fontWeight:"700", fontSize:"1.3rem"}}>
                                         {item.title}
@@ -1712,10 +1774,59 @@ function TeacherLectureInfo(props) {
                                             </Typography>
                                         </Box>
                                     </Grid>
+                                    {/* 해당하는 인덱스의 fade가 true가 되었을때 fade를 열도록 합니다. 내용은 답변 리스트를 출력합니다. **/}
+                                    <Fade in={isAnswerFadeOpen[idx]}>
+                                        <Grid item xs={12} sx={{pl:"4rem", width:"100%", display:"flex" ,justifyContent:"flex-end"}}>
+                                            <Box
+                                                sx={{
+                                                    position: 'relative',
+                                                    width: "100%",
+                                                    border: 1,
+                                                    borderRadius: "15px",
+                                                    borderColor: "#A2A2A2",
+                                                    p: "1.5rem",
+                                                    backgroundColor: "#F7F7F7",
+                                                    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                                                    overflow: "visible",
+                                                    '&::before': {  // 대표적인 border색 삼각형
+                                                        content: '""',
+                                                        position: 'absolute',
+                                                        bottom: '-11px',  // 삼각형 위치를 약간 조정
+                                                        left: '19px',
+                                                        borderLeft: '11px solid transparent',
+                                                        borderRight: '11px solid transparent',
+                                                        borderTop: '11px solid #A2A2A2',
+                                                    },
+                                                    '&::after': {  // 배경색 삼각형
+                                                        content: '""',
+                                                        position: 'absolute',
+                                                        bottom: '-10px',
+                                                        left: '20px',
+                                                        borderLeft: '10px solid transparent',
+                                                        borderRight: '10px solid transparent',
+                                                        borderTop: '10px solid #F7F7F7',
+                                                    }
+                                                }}
+                                            >
+                                                <Typography sx={{fontSize: "1rem", fontWeight: "500"}}>
+                                                    {item.answerList && item.answerList.map((subItem, idx) => {
+                                                        return(
+                                                            <div>
+                                                                <Typography sx={{fontSize: "1rem", fontWeight: "500"}}>답변 {idx+1}</Typography>
+                                                                <Typography sx={{fontSize: "1rem", fontWeight: "500"}}>{subItem.content}</Typography>
+                                                            </div>
+                                                        )
+                                                    }
+                                                    )}
+                                                </Typography>
+                                            </Box>
+                                        </Grid>
+                                    </Fade>
                                     {/* collapse와 답변작성 필드들 **/}
                                     <Collapse in={isAnswerCollapseOpen[idx]} sx={{ width: '100%', mt:"1rem"}}>
                                         <Grid item xs={12} sx={{pl:"4rem", width:"100%", display:"flex" ,justifyContent:"flex-end"}}>
                                             <TextField
+                                                id={"answerTextField" + item.qnaId}
                                                 variant="outlined"
                                                 multiline
                                                 placeholder="여기에 작성"  // 안내 문자 추가
@@ -1759,7 +1870,7 @@ function TeacherLectureInfo(props) {
                                         {/* 답변달기 버튼을 노출합니다. **/}
                                         <Button
                                             variant="contained"
-                                            startIcon={isAnswerCollapseOpen ? <ClearIcon/> : <QuestionAnswerIcon/>}
+                                            startIcon={isAnswerCollapseOpen[idx] ? <ClearIcon/> : <QuestionAnswerIcon/>}
                                             sx={{
                                                 width: "10rem",
                                                 height: "3rem",
@@ -1786,6 +1897,17 @@ function TeacherLectureInfo(props) {
                                         {isAnswerCollapseOpen[idx] && (
                                             <Button
                                                 variant="contained"
+                                                onClick={() => {
+                                                    console.log(item.qnaId);
+                                                    console.log(document.getElementById("answerTextField" + item.qnaId).value);
+                                                    // 답변 작성
+                                                    addAnswer(item.qnaId, document.getElementById("answerTextField" + item.qnaId).value).then((res) => {
+                                                        // 성공 시 해당 인덱스의 답변리스트 다시 불러옴
+                                                        getAnswerList(item.id, idx).then((res) => {
+                                                            handleAnswerCollapseToggle(idx); // 답변작성 collapse 닫기
+                                                        }).catch((err) => {alert("답변목록 불러오기에 실패했습니다.")})
+                                                    }).catch((err) => {alert("답변작성에 실패했습니다.")})
+                                                }}
                                                 startIcon={<CheckIcon/>}
                                                 sx={{
                                                     ml:"1rem",
