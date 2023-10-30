@@ -31,7 +31,6 @@
     "screenfull": "^3.3.3",
     "slick-carousel": "^1.8.1",
     "video.js": "^8.3.0",
-    "videojs-react-enhanced": "^0.3.1",
     "web-vitals": "^2.1.4",
     "yarn": "^1.22.19"
   },

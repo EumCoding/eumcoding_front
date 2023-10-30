@@ -32,6 +32,8 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ReactPlayer from "react-player";
 import {ChangeCircle} from "@mui/icons-material";
+import CloseIcon from "@mui/icons-material/Close";
+import IconButton from "@mui/material/IconButton";
 
 
 // modal에 적용할 style
@@ -215,8 +217,9 @@ function TeacherLectureInfo(props) {
                     // collapse 관리 state 초기화
                     const tempArr = Array(res.data.length).fill(false);
                     setIsQuestionCollapseOpen(tempArr);
-                    // fade
+                    // fade 초기화
                     setIsAnswerFadeOpen(tempArr);
+                    // answer collapse 초기화
                     setIsAnswerCollapseOpen(tempArr);
                     // 답변 리스트 초기화
                     setAnswerResult(Array(res.data.length).fill([]));
@@ -243,10 +246,29 @@ function TeacherLectureInfo(props) {
                 setAnswerResult(temp);
                 // 로드가 완료되면 해당하는 인덱스의 fade를 true로
                 const tempFade = JSON.parse(JSON.stringify(isAnswerFadeOpen)); // 깊은복사
+                // console.log("기존의 isAnswerFadeOpen")
+                // console.log(isAnswerFadeOpen);
                 tempFade[idx] = true;
+                // console.log("setIsAnswerFadeOpen")
+                // console.log(tempFade);
                 setIsAnswerFadeOpen(tempFade);
             }
         }).catch((err) => {console.log(err)})
+    }
+
+    // 답변 삭제하기
+    const deleteAnswer = async (id) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/question/comment/delete`,
+            {
+                questionCommentId: id,
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        ).catch((err) => console.log(err))
     }
 
     const handleSectionOpen = () => {
@@ -1718,7 +1740,7 @@ function TeacherLectureInfo(props) {
                                       // answer가 0이 아니고 해당 collapse가 true가 아닐때
                                       if(item.answer !== 0 && !isQuestionCollapseOpen[idx]){
                                           console.log("getAnswerList + " + item.qnaId)
-                                          getAnswerList(item.qnaId) // 답변리스트 가져오기
+                                          getAnswerList(item.qnaId, idx) // 답변리스트 가져오기
                                       }
                                   }
                             }
@@ -1741,7 +1763,7 @@ function TeacherLectureInfo(props) {
                                         <Box
                                             sx={{
                                                 position: 'relative',
-                                                width: "100%",
+                                                width: "80%",
                                                 border: 1,
                                                 borderRadius: "15px",
                                                 borderColor: "#A2A2A2",
@@ -1775,51 +1797,123 @@ function TeacherLectureInfo(props) {
                                         </Box>
                                     </Grid>
                                     {/* 해당하는 인덱스의 fade가 true가 되었을때 fade를 열도록 합니다. 내용은 답변 리스트를 출력합니다. **/}
-                                    <Fade in={isAnswerFadeOpen[idx]}>
-                                        <Grid item xs={12} sx={{pl:"4rem", width:"100%", display:"flex" ,justifyContent:"flex-end"}}>
-                                            <Box
-                                                sx={{
-                                                    position: 'relative',
-                                                    width: "100%",
-                                                    border: 1,
-                                                    borderRadius: "15px",
-                                                    borderColor: "#A2A2A2",
-                                                    p: "1.5rem",
-                                                    backgroundColor: "#F7F7F7",
-                                                    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                                                    overflow: "visible",
-                                                    '&::before': {  // 대표적인 border색 삼각형
-                                                        content: '""',
-                                                        position: 'absolute',
-                                                        bottom: '-11px',  // 삼각형 위치를 약간 조정
-                                                        left: '19px',
-                                                        borderLeft: '11px solid transparent',
-                                                        borderRight: '11px solid transparent',
-                                                        borderTop: '11px solid #A2A2A2',
-                                                    },
-                                                    '&::after': {  // 배경색 삼각형
-                                                        content: '""',
-                                                        position: 'absolute',
-                                                        bottom: '-10px',
-                                                        left: '20px',
-                                                        borderLeft: '10px solid transparent',
-                                                        borderRight: '10px solid transparent',
-                                                        borderTop: '10px solid #F7F7F7',
-                                                    }
-                                                }}
-                                            >
-                                                <Typography sx={{fontSize: "1rem", fontWeight: "500"}}>
-                                                    {item.answerList && item.answerList.map((subItem, idx) => {
-                                                        return(
-                                                            <div>
-                                                                <Typography sx={{fontSize: "1rem", fontWeight: "500"}}>답변 {idx+1}</Typography>
-                                                                <Typography sx={{fontSize: "1rem", fontWeight: "500"}}>{subItem.content}</Typography>
-                                                            </div>
-                                                        )
-                                                    }
-                                                    )}
-                                                </Typography>
-                                            </Box>
+                                    <Fade in={isAnswerFadeOpen[idx]} sx={{width: '100%', mt:"1rem", display:"flex", justifyContent:"flex-end"}}>
+                                        <Grid container sx={{width:"100%"}}>
+                                            {answerResult[idx] && answerResult[idx].map((subItem, subIdx) => {
+                                                return(
+                                                    <Grid item container xs={12} sx={{width:"100%"}}>
+                                                        {/*isWriter가 0인경우 노란말풍선**/}
+                                                        {subItem.isWriter === 0 && (
+                                                            <Grid item container xs={12} sx={{width:"100%", display:"flex" ,justifyContent:"flex-end", mt:"1rem"}}>
+                                                                <Box sx={{width:"20%", display:"flex", justifyContent:"flex-end",alignItems:"flex-end", pr:2}}>
+                                                                    <Typography
+                                                                        sx={{display:"flex", justifyContent:"flex-end", fontSize:"0.8rem", fontWeight:"300", alignItems:"flex-end"}}
+                                                                    >
+                                                                        {subItem.createDay}
+                                                                    </Typography>
+                                                                </Box>
+                                                                <Box
+                                                                    sx={{
+                                                                        display: 'flex', // flexbox 사용
+                                                                        justifyContent: 'space-between', // 내용을 양쪽 끝에 배치
+                                                                        alignItems: 'center', // 내용을 수직으로 가운데 정렬
+                                                                        width: "70%",
+                                                                        alignSelf: "flex-end",
+                                                                        position: 'relative',
+                                                                        borderRadius: "15px",
+                                                                        borderColor: "#A2A2A2",
+                                                                        p: "1.5rem",
+                                                                        backgroundColor: "#FFE066",
+                                                                        border: "1px solid #A2A2A2",
+                                                                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                                                                        '&::before': {
+                                                                            content: '""',
+                                                                            position: 'absolute',
+                                                                            bottom: '-11px',
+                                                                            right: '19px',
+                                                                            borderLeft: '11px solid transparent',
+                                                                            borderRight: '11px solid transparent',
+                                                                            borderTop: '11px solid #A2A2A2',
+                                                                        },
+                                                                        '&::after': {
+                                                                            content: '""',
+                                                                            position: 'absolute',
+                                                                            bottom: '-10px',
+                                                                            right: '20px',
+                                                                            borderLeft: '10px solid transparent',
+                                                                            borderRight: '10px solid transparent',
+                                                                            borderTop: '10px solid #FFE066',
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <Typography sx={{fontSize: "1rem", fontWeight: "500"}}>{subItem.content}</Typography>
+                                                                    <IconButton onClick={() => {
+                                                                        // 삭제 후 답변 목록 다시 불러옴
+                                                                        deleteAnswer(subItem.id).then((res) => {
+                                                                            getAnswerList(item.qnaId, idx).catch((err) => alert("답변 목록 다시 불러오기 실패"))
+                                                                        }).catch((err) => alert("답변 삭제 실패"))
+                                                                        }}
+                                                                    >
+                                                                        <CloseIcon />
+                                                                    </IconButton>
+                                                                </Box>
+                                                            </Grid>
+                                                        )}
+                                                        {/*isWriter가 1인경우 회색 왼쪽 말풍선**/}
+                                                        {subItem.isWriter === 1 && (
+                                                            <Grid item container xs={12} sx={{display: "flex", width: '100%', justifyContent:"flex-start", mt:"1rem"}}>
+                                                                <Box
+                                                                    sx={{
+                                                                        display: 'flex', // flexbox 사용
+                                                                        justifyContent: 'space-between', // 내용을 양쪽 끝에 배치
+                                                                        alignItems: 'center', // 내용을 수직으로 가운데 정렬
+                                                                        position: 'relative',
+                                                                        width: "70%",
+                                                                        border: 1,
+                                                                        borderRadius: "15px",
+                                                                        borderColor: "#A2A2A2",
+                                                                        p: "1.5rem",
+                                                                        backgroundColor: "#F7F7F7",
+                                                                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                                                                        overflow: "visible",
+                                                                        '&::before': {  // 대표적인 border색 삼각형
+                                                                            content: '""',
+                                                                            position: 'absolute',
+                                                                            bottom: '-11px',  // 삼각형 위치를 약간 조정
+                                                                            left: '19px',
+                                                                            borderLeft: '11px solid transparent',
+                                                                            borderRight: '11px solid transparent',
+                                                                            borderTop: '11px solid #A2A2A2',
+                                                                        },
+                                                                        '&::after': {  // 배경색 삼각형
+                                                                            content: '""',
+                                                                            position: 'absolute',
+                                                                            bottom: '-10px',
+                                                                            left: '20px',
+                                                                            borderLeft: '10px solid transparent',
+                                                                            borderRight: '10px solid transparent',
+                                                                            borderTop: '10px solid #F7F7F7',
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <Typography sx={{fontSize: "1rem", fontWeight: "500"}}>
+                                                                        {item.content}
+                                                                    </Typography>
+                                                                </Box>
+                                                                <Box sx={{width:"20%", display:"flex", justifyContent:"flex-start",alignItems:"flex-end", pl:2}}>
+                                                                    <Typography
+                                                                        sx={{display:"flex", justifyContent:"flex-start", fontSize:"1rem", fontWeight:"300", alignItems:"flex-end"}}
+                                                                    >
+                                                                        {subItem.createDay}
+                                                                    </Typography>
+                                                                </Box>
+                                                            </Grid>
+                                                        )}
+                                                    </Grid>
+                                                )
+
+                                            })
+                                            }
                                         </Grid>
                                     </Fade>
                                     {/* collapse와 답변작성 필드들 **/}
@@ -1830,9 +1924,9 @@ function TeacherLectureInfo(props) {
                                                 variant="outlined"
                                                 multiline
                                                 placeholder="여기에 작성"  // 안내 문자 추가
-                                                fullWidth
                                                 rows={4}
                                                 sx={{
+                                                    width:"80%",
                                                     position: 'relative',
                                                     borderRadius: "15px",
                                                     borderColor: "#A2A2A2",
@@ -1901,10 +1995,12 @@ function TeacherLectureInfo(props) {
                                                     console.log(item.qnaId);
                                                     console.log(document.getElementById("answerTextField" + item.qnaId).value);
                                                     // 답변 작성
-                                                    addAnswer(item.qnaId, document.getElementById("answerTextField" + item.qnaId).value).then((res) => {
+                                                    addAnswer(item.qnaId, document.getElementById("answerTextField" + item.qnaId).value).then((res1) => {
                                                         // 성공 시 해당 인덱스의 답변리스트 다시 불러옴
-                                                        getAnswerList(item.id, idx).then((res) => {
+                                                        getAnswerList(item.qnaId, idx).then((res2) => {
                                                             handleAnswerCollapseToggle(idx); // 답변작성 collapse 닫기
+                                                            // 기존 textfield의 값 초기화
+                                                            document.getElementById("answerTextField" + item.qnaId).value = "";
                                                         }).catch((err) => {alert("답변목록 불러오기에 실패했습니다.")})
                                                     }).catch((err) => {alert("답변작성에 실패했습니다.")})
                                                 }}
