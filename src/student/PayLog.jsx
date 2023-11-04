@@ -78,6 +78,11 @@ function PayLog(props) {
 
     const [load, setLoad] = useState(false); // 로드중인지
 
+    // modal
+    const [modalLectureName, setModalLectureName] = useState("");
+    const [modalTeacherName, setModalTeacherName] = useState("");
+    const [modalLectureId, setModalLectureId] = useState(0);
+
 
 
     // 날짜체크
@@ -149,9 +154,32 @@ function PayLog(props) {
         }
     }
 
+    // 리뷰작성
+    const writeReview = async () => {
+        try {
+            const url = `http://localhost:8099/lecture/review/write`;
+
+            const response = await axios.post(url,
+                {
+                    lectureId:modalLectureId,
+                    content:document.getElementById("modalContent").value,
+                    rating:star,
+                },{
+                    headers: {
+                        Authorization: `${accessToken}`,
+                    }
+                });
+
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     useEffect(() => {
-        getPayLog(0); // 최초 로드 시 0페이지 로드
-    }, []);
+        if(accessToken){
+            getPayLog(0); // 최초 로드 시 0페이지 로드
+        }
+    }, [accessToken]);
 
     useEffect(() => {
         if(page > 0){
@@ -172,43 +200,74 @@ function PayLog(props) {
                 <Box sx={modalStyle} >
                     <Grid container sx={{width:"100%"}} display={"flex"} justifyContent={"center"} alignItems={"center"}>
                         <Grid item xs={12} display={"flex"} justifyContent={"center"} alignItems={"center"} sx={{mb:"2rem"}}>
-                            {reviewType === false && (
-                                <Typography id="modal-modal-description" fullWidth sx={{ fontSize:"1.5rem", fontWeight:"900" }}>
-                                    여행리뷰
-                                </Typography>
-                            )}
-                            {reviewType === true && (
-                                <Typography id="modal-modal-description" fullWidth sx={{ fontSize:"1.5rem", fontWeight:"900" }}>
-                                    가이드 리뷰
-                                </Typography>
-                            )}
+                            <Typography id="modal-modal-description" fullWidth sx={{ fontSize:"1.5rem", fontWeight:"900" }}>
+                                {modalLectureName}
+                            </Typography>
                         </Grid>
                         <Grid item xs={12} display={"flex"} justifyContent={"center"} alignItems={"center"}>
                             <Typography sx={{fontSize:"1rem", fontWeight:"700"}}>
-                                여행이름
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={12} display={"flex"} justifyContent={"center"} alignItems={"center"} sx={{mb:"1rem"}}>
-                            <Typography sx={{fontSize:"0.7rem", fontWeight:"700", fontColor:"#8D8D8D"}}>
-                                가이드명
+                                {modalTeacherName}
                             </Typography>
                         </Grid>
                         <Grid item xs={12} display={"flex"} justifyContent={"center"} alignItems={"center"} sx={{mb:"2rem"}}>
-                            <StarIcon sx={{ color: star > 0 ? "#6CB0FF" : "#888888", fontSize: '2rem' }} onClick={() => setStar(1)}/>
-                            <StarIcon sx={{ color: star > 1 ? "#6CB0FF" : "#888888", fontSize: '2rem' }} onClick={() => setStar(2)}/>
-                            <StarIcon sx={{ color: star > 2 ? "#6CB0FF" : "#888888", fontSize: '2rem' }} onClick={() => setStar(3)}/>
-                            <StarIcon sx={{ color: star > 3 ? "#6CB0FF" : "#888888", fontSize: '2rem' }} onClick={() => setStar(4)}/>
-                            <StarIcon sx={{ color: star > 4 ? "#6CB0FF" : "#888888", fontSize: '2rem' }} onClick={() => setStar(5)}/>
+                            <StarIcon sx={{ color: star > 0 ? "#1B65FF" : "#888888", fontSize: '2rem' }} onClick={() => setStar(1)}/>
+                            <StarIcon sx={{ color: star > 1 ? "#1B65FF" : "#888888", fontSize: '2rem' }} onClick={() => setStar(2)}/>
+                            <StarIcon sx={{ color: star > 2 ? "#1B65FF" : "#888888", fontSize: '2rem' }} onClick={() => setStar(3)}/>
+                            <StarIcon sx={{ color: star > 3 ? "#1B65FF" : "#888888", fontSize: '2rem' }} onClick={() => setStar(4)}/>
+                            <StarIcon sx={{ color: star > 4 ? "#1B65FF" : "#888888", fontSize: '2rem' }} onClick={() => setStar(5)}/>
                         </Grid>
                         <Grid item xs={12} display={"flex"} justifyContent={"center"} alignItems={"center"}>
                             <TextField
+                                id={"modalContent"}
                                 multiline
                                 rows={7}
                                 fullWidth
                             />
                         </Grid>
                         <Grid item xs={12} display={"flex"} justifyContent={"center"} alignItems={"center"} sx={{mt:"2rem"}}>
-                            <Button fullWidth sx={{backgroundColor:"#6CB0FF", border:0, borderRadius:"2vw", height:"200%"}}>
+                            <Button fullWidth
+                                    sx={{
+                                        backgroundColor: "#1B65FF",
+                                        border: 0,
+                                        borderRadius: "2vw",
+                                        height: "200%",
+                                        '&:hover': {
+                                            backgroundColor: "#3498db", // 호버 시 색상 변경
+                                            boxShadow: "0 3px 5px 2px rgba(50, 50, 50, .3)" // 호버 시 그림자 효과
+                                        },
+                                        '&:active': {
+                                            transform: "scale(0.98)" // 클릭 시 축소 효과
+                                        },
+                                        transition: "background-color 0.3s, transform 0.2s", // 부드러운 색상 및 변환 변화
+                                    }}
+                                    onClick={async () => { // async 키워드 추가
+                                        try {
+                                            console.log("리뷰작성 진행...")
+                                            await writeReview();
+                                            console.log("리뷰목록 다시 불러오기...")
+                                            // 0페이지부터 현재 페이지까지 리뷰목록 불러오기
+                                            let tempPage = 0;
+                                            while (true) {
+                                                await getPayLog(tempPage); // 현재 페이지의 결제 내역을 가져옵니다.
+                                                tempPage += 1; // 페이지를 증가시킵니다.
+                                                if (!more) { // 'more' 상태가 false면 루프를 종료합니다.
+                                                    break;
+                                                }
+                                            }
+                                            alert("리뷰작성 완료");
+                                            // state와 textfield 초기화
+                                            setStar(5);
+                                            document.getElementById("modalContent").value = "";
+                                            setModalTeacherName("");
+                                            setModalLectureName("");
+                                            setModalLectureId(0);
+                                            handleClose();
+                                        } catch (err) {
+                                            alert("리뷰작성 실패");
+                                            handleClose();
+                                        }
+                                    }}
+                            >
                                 <Typography sx={{color:"#FFFFFF"}}>
                                     작성완료
                                 </Typography>
@@ -228,7 +287,21 @@ function PayLog(props) {
                 <Grid item xs={12} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DesktopDatePicker
-                            sx={{mr:"2rem"}}
+                            sx={{
+                                mr: "2rem",
+                                '& .MuiInputLabel-root': { // 레이블 스타일
+                                    color: 'skyblue', // 레이블 기본 색상
+                                },
+                                '& .MuiInput-root:before': { // 입력 전 테두리 색상
+                                    borderBottomColor: 'lightgray',
+                                },
+                                '& .MuiInput-root:hover:not(.Mui-disabled):before': { // 마우스 호버 시 테두리 색상
+                                    borderBottomColor: 'skyblue',
+                                },
+                                '& .MuiInput-root:after': { // 입력 후 테두리 색상
+                                    borderBottomColor: 'blue',
+                                }
+                            }}
                             label="출발일"
                             inputFormat="MM-DD-YYYY"
                             value={startDate}
@@ -245,6 +318,20 @@ function PayLog(props) {
                     </LocalizationProvider>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DesktopDatePicker
+                            sx={{
+                                '& .MuiInputLabel-root': { // 레이블 스타일
+                                    color: 'skyblue', // 레이블 기본 색상
+                                },
+                                '& .MuiInput-root:before': { // 입력 전 테두리 색상
+                                    borderBottomColor: 'lightgray',
+                                },
+                                '& .MuiInput-root:hover:not(.Mui-disabled):before': { // 마우스 호버 시 테두리 색상
+                                    borderBottomColor: 'skyblue',
+                                },
+                                '& .MuiInput-root:after': { // 입력 후 테두리 색상
+                                    borderBottomColor: 'blue',
+                                }
+                            }}
                             label="종료일"
                             inputFormat="MM/DD/YYYY"
                             value={endDate}
@@ -262,7 +349,21 @@ function PayLog(props) {
                             renderInput={(params) => <TextField {...params} />}
                         />
                     </LocalizationProvider>
-                    <Button onClick={() => {
+                    <Button
+                        sx={{
+                            ml:"1rem",
+                            py:"1rem",
+                            backgroundColor: 'skyblue', // 기본 배경색
+                            color: 'white', // 텍스트 색상
+                            '&:hover': {
+                                backgroundColor: 'blue', // 호버 시 배경색
+                                // 'boxShadow'를 추가하여 효과를 더할 수도 있습니다.
+                            },
+                            '&:active': {
+                                backgroundColor: 'darkblue', // 클릭 시 배경색
+                            }
+                        }}
+                        onClick={() => {
                         setPage(0);
                         getPayLog(0);
                     }} >검색</Button>
@@ -272,10 +373,13 @@ function PayLog(props) {
                         return(
                             <Grid item container xs={12}>
                                 <Grid item xs={12}>
-                                    <Typography>{item.date}</Typography>
+                                    {/* item.data를 yyyy년mm월dd일 hh:mm:ss 의 양식에 맞게 출력합니다. **/}
+                                    <Typography sx={{fontSize:"1.2rem", fontWeight:"800", my:"1rem"}}>
+                                        {dayjs(item.data).format('YYYY년MM월DD일 HH:mm:ss')}
+                                    </Typography>
                                 </Grid>
                                 {/* 내용물 **/}
-                                {item.lectureDTOList && item.lectureDTOList.map((subItem) => {
+                                {item.lectureDTOList && item.lectureDTOList.map((subItem, idx) => {
                                     return(
                                         <Grid item container xs={12}>
                                             <Grid container item
@@ -299,14 +403,16 @@ function PayLog(props) {
                                                       alignItems={"center"}
                                                       sx={{pl:"1rem"}}
                                                 >
-                                                    <Grid xs={12} item sx={{mb:"1rem"}} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
-                                                        <span style={{fontFamily: 'NanumSquareNeo', fontWeight:"700", fontSize:"1.3rem", marginRight:"1rem"}}>결제완료</span>
-                                                        <span style={{fontFamily: 'NanumSquareNeo',color:"#888888", fontSize:"1rem"}}>5월 13일 ~ 5월 17일</span>
+                                                    <Grid xs={12} item sx={{my:"1rem"}} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
+                                                        <span style={{fontFamily: 'NanumSquareNeo', fontWeight:"700", fontSize:"1rem", marginRight:"1rem"}}>결제완료</span>
                                                     </Grid>
-                                                    <Grid xs={12} item>
+                                                    <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
                                                         <Typography sx={{fontSize:"1.3rem", fontWeight:"700"}}>{subItem.name}</Typography>
                                                     </Grid>
-                                                    <Grid xs={12} item sx={{mt:"1rem"}}>
+                                                    <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                        <span style={{fontFamily: 'NanumSquareNeo', fontWeight:"500", fontSize:"1rem", marginRight:"1rem"}}>{subItem.teacherName} 선생님</span>
+                                                    </Grid>
+                                                    <Grid xs={12} item sx={{my:"1rem"}}>
                                                         <Typography sx={{fontWeight:"700"}}>결제금액 : {subItem.price}원</Typography>
                                                     </Grid>
                                                 </Grid>
@@ -318,8 +424,24 @@ function PayLog(props) {
                                                 >
                                                     <Grid item xs={12} sx={{ px:"3rem"}}>
                                                         {subItem.reviewStatus !== "리뷰작성완료" && (
-                                                            <Button variant={"outlined"} sx={{borderColor:"#DDDDDD"}} fullWidth onClick={() => {
-                                                                setReviewType(false);
+                                                            <Button variant={"outlined"}
+                                                                    sx={{
+                                                                        borderColor: "#DDDDDD",
+                                                                        ':hover': {
+                                                                            backgroundColor: 'lightblue', // 마우스 오버 시 배경색 변경
+                                                                            borderColor: 'skyblue', // 마우스 오버 시 테두리 색 변경
+                                                                            // 'boxShadow' 또는 다른 스타일 속성을 추가하여 더 많은 효과를 줄 수 있습니다.
+                                                                        },
+                                                                        ':active': {
+                                                                            backgroundColor: 'blue', // 클릭 시 배경색 변경
+                                                                            borderColor: 'darkblue', // 클릭 시 테두리 색 변경
+                                                                            // 클릭 상태에서의 스타일 변경을 원한다면 여기에 추가합니다.
+                                                                        }
+                                                                    }}
+                                                                    fullWidth onClick={() => {
+                                                                setModalLectureId(subItem.id)
+                                                                setModalLectureName(subItem.name)
+                                                                setModalTeacherName(subItem.teacherName)
                                                                 handleOpen();
                                                             }}>
                                                                 <Typography sx={{color:"#000000"}}>리뷰 작성</Typography>

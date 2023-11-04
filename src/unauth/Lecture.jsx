@@ -43,6 +43,8 @@ function Lecture(props) {
 
     const accessToken = useSelector((state) => state.accessToken)
 
+    const memberId = useSelector((state) => state.memberId);
+
     const params = useParams();
 
     const [result, setResult] = useState(null); // 1번 정보(첫번째 호출하는 api에서 주는 정보) 넣기

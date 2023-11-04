@@ -348,9 +348,16 @@ function LectureInfo(props) {
 
     useEffect(() => {
         getLectureInfo(params.value) // 첫번째 정보 가져옴
-        // 질문리스트 가져옴
-        getQuestionList(params.value, 1);
     },[])
+
+    useEffect(() => {
+        // 질문리스트 가져옴
+        if(accessToken){
+            getQuestionList(params.value, 1).catch((err) => {
+                alert("질문리스트를 가져오는 데 실패했습니다.");
+            })
+        }
+    },[accessToken])
 
     useEffect(() => {
         result && getTeacherInfo(result.memberId);
@@ -582,7 +589,7 @@ function LectureInfo(props) {
                                       handleQuestionCollapseToggle(idx)
                                       // answer가 0이 아니고 해당 collapse가 true가 아닐때
                                       if(item.answer !== 0 && !isQuestionCollapseOpen[idx]){
-                                          console.log("getAnswerList + " + item.qnaId)
+                                          console.log("답변리스트 가져오기 getAnswerList + qnaId : " + item.qnaId)
                                           getAnswerList(item.qnaId, idx) // 답변리스트 가져오기
                                       }
                                   }
@@ -730,6 +737,9 @@ function LectureInfo(props) {
                                                                         }
                                                                     }}
                                                                 >
+                                                                    <Typography sx={{fontSize: "1rem", fontWeight: "500"}}>
+                                                                        {subItem.content}
+                                                                    </Typography>
                                                                     {subItem.isMyComment === 1 && (
                                                                         <IconButton onClick={() => {
                                                                             // 삭제 후 답변 목록 다시 불러옴
@@ -741,9 +751,6 @@ function LectureInfo(props) {
                                                                             <CloseIcon />
                                                                         </IconButton>
                                                                     )}
-                                                                    <Typography sx={{fontSize: "1rem", fontWeight: "500"}}>
-                                                                        {subItem.content}
-                                                                    </Typography>
                                                                 </Box>
                                                                 <Box sx={{width:"20%", display:"flex", justifyContent:"flex-start",alignItems:"flex-end", pl:2}}>
                                                                     <Typography
@@ -807,7 +814,7 @@ function LectureInfo(props) {
                                     </Collapse>
                                     {/* answercollapse가 열렸을 때만 답변을 작성할 textfield를 보여줍니다. **/}
                                     {/*내가 작성한 질문 일때만 노출**/}
-                                    {item.isMyQuestion == memberId && (
+                                    {item.isMyQuestion == 1 && (
                                         <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", mt:"1rem"}}>
                                             {/* 답변달기 버튼을 노출합니다. **/}
                                             <Button

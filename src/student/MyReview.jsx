@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Button, createTheme, Divider, Grid, TextField, ThemeProvider} from "@mui/material";
 import DashTop from "../component/DashTop";
 import {DesktopDatePicker, LocalizationProvider} from "@mui/x-date-pickers";
@@ -9,8 +9,13 @@ import StarIcon from "@mui/icons-material/Star";
 import FaceIcon from "@mui/icons-material/Face6";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import {useSelector} from "react-redux";
+import axios from "axios";
 
 function MyReview(props) {
+
+    const accessToken = useSelector((state) => state.accessToken);
+
     const theme = createTheme({ // Theme
         typography: {
             fontFamily: 'NanumSquareNeo',
@@ -38,8 +43,36 @@ function MyReview(props) {
         },
     });
 
-    const [startDate, setStartDate] = useState(dayjs());
     const [endDate, setEndDate] = useState(dayjs());
+    // startDate는 endDate보다 6개월 전
+    const [startDate, setStartDate] = useState(dayjs().subtract(6, 'month'));
+
+    // 리뷰목록 가져오는 api 호출
+    const getReviewList = async (pageParam) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/review/my_list?page=${pageParam}`,
+            {
+                endDate : endDate,
+                startDate : startDate
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            }
+        ).then((res) => {
+            console.log(res);
+        }).catch((err) => {
+            console.log(err);
+        })
+    }
+
+    useEffect(() => {
+        if(accessToken){
+            getReviewList(0);
+        }
+    }, [accessToken]);
+
 
     // 날짜체크
     const dateCheck = (t, e) => {
@@ -79,7 +112,6 @@ function MyReview(props) {
                 <Grid item xs={12}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DesktopDatePicker
-                            sx={{mr:"2rem"}}
                             label="출발일"
                             inputFormat="MM-DD-YYYY"
                             value={startDate}
@@ -99,8 +131,9 @@ function MyReview(props) {
                             label="종료일"
                             inputFormat="MM/DD/YYYY"
                             value={endDate}
-                            minDate={startDate} // 출발일 이후의 날짜만 선택 가능하도록 설정
-                            disablePast // 출발일 이전의 날짜는 선택할 수 없도록 설정
+                            minDate={startDate}
+                            disablePast
+                            sx={{ml:"1rem"}}
                             onChange={(e) => {
                                 console.log(e);
                                 if (startDate <= e) {
@@ -113,7 +146,22 @@ function MyReview(props) {
                             renderInput={(params) => <TextField {...params} />}
                         />
                     </LocalizationProvider>
-                    <Button>검색</Button>
+                    <Button
+                        variant="contained"
+                        sx={{
+                            py:"1rem",
+                            mx:"1rem",
+                            bgcolor: 'primary.main', // 버튼 배경색
+                            '&:hover': {
+                                bgcolor: 'primary.dark', // 호버 시 배경색 변경
+                            },
+                        }}
+                        onClick={() => {
+                            // 검색 버튼 클릭 시 로직...
+                        }}
+                    >
+                        검색
+                    </Button>
                 </Grid>
                 <Grid container item xs={12} sx={{pt:"3rem", mt:0, px:{xs:"5%", md:"20%"}}}>
 
