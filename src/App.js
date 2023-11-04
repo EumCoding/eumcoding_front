@@ -15,7 +15,7 @@ import Basket from "./student/Basket";
 import PayLog from "./student/PayLog";
 import LectureInfo from "./student/LectureInfo";
 import Video from "./student/Video";
-import {setAccessToken, setRole} from "./redux/actions";
+import {setAccessToken, setMemberId, setRole} from "./redux/actions";
 import Cookies from "js-cookie"
 import {useDispatch, useSelector} from "react-redux";
 import Search from "./unauth/Search";
@@ -43,6 +43,8 @@ function App() {
                         dispatch(setAccessToken(Cookies.get('accessToken')));
                 if(Cookies.get('role'))
                         dispatch(setRole(Cookies.get('role')));
+                if(Cookies.get('memberId'))
+                        dispatch(setMemberId(Cookies.get('memberId')));
                 if(!accessToken && !Cookies.get('accessToken')){
                         navigate("/login");
                 }

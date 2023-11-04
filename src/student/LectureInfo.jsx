@@ -35,6 +35,8 @@ function LectureInfo(props) {
 
     const params = useParams();
 
+    const memberId = useSelector((state) => state.memberId); // 멤버아이디
+
     const [result, setResult] = useState(null); // 1번 정보(첫번째 호출하는 api에서 주는 정보) 넣기
 
     const [teacher, setTeacher] = useState(null); // 강사 정보 넣을곳
@@ -42,6 +44,8 @@ function LectureInfo(props) {
     const [section, setSection] = useState(null);
 
     const [file, setFile] = useState(null); // 파일 올릴 state
+
+    const memeberId = useSelector((state) => state.memberId); // 멤버아이디
 
     // 질문 목록 보기위한 state
     const [questionResult, setQuestionResult] = useState(null); // 질문리스트 결과
@@ -194,7 +198,12 @@ function LectureInfo(props) {
     // 질문리스트 가져오기
     const getQuestionList = async (id, page) => {
         const response = await axios.get(
-            `http://localhost:8099/lecture/question/unauth/list?lectureId=${id}&page=${page}`
+            `http://localhost:8099/lecture/question/auth/list?lectureId=${id}&page=${page}`,
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
         ).then((res) => {
             console.log("질문리스트..")
             console.log(res)
@@ -754,7 +763,7 @@ function LectureInfo(props) {
                                     </Fade>
                                     {/* collapse와 답변작성 필드들 **/}
                                     <Collapse in={isAnswerCollapseOpen[idx]} sx={{ width: '100%', mt:"1rem"}}>
-                                        <Grid item xs={12} sx={{pl:"4rem", width:"100%", display:"flex" ,justifyContent:"flex-end"}}>
+                                        <Grid item xs={12} sx={{pr:"4rem", width:"100%", display:"flex" ,justifyContent:"flex-start"}}>
                                             <TextField
                                                 id={"answerTextField" + item.qnaId}
                                                 variant="outlined"
@@ -762,22 +771,20 @@ function LectureInfo(props) {
                                                 placeholder="여기에 작성"  // 안내 문자 추가
                                                 rows={4}
                                                 sx={{
-                                                    width:"80%",
                                                     position: 'relative',
+                                                    width: "80%",
+                                                    border: 1,
                                                     borderRadius: "15px",
                                                     borderColor: "#A2A2A2",
                                                     p: "1.5rem",
-                                                    backgroundColor: "#FFE066", // 노란색 계열로 변경
-                                                    border: "1px solid #A2A2A2", // 테두리 선 추가
-                                                    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", // 그림자 추가
-                                                    '& .MuiOutlinedInput-notchedOutline': {
-                                                        border: "none",  // 기존의 outlined 선을 없애줍니다.
-                                                    },
+                                                    backgroundColor: "#F7F7F7",
+                                                    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                                                    overflow: "visible",
                                                     '&::before': {
                                                         content: '""',
                                                         position: 'absolute',
                                                         bottom: '-11px',
-                                                        right: '19px',  // 삼각형을 오른쪽으로 이동
+                                                        left: '19px',
                                                         borderLeft: '11px solid transparent',
                                                         borderRight: '11px solid transparent',
                                                         borderTop: '11px solid #A2A2A2',
@@ -786,19 +793,22 @@ function LectureInfo(props) {
                                                         content: '""',
                                                         position: 'absolute',
                                                         bottom: '-10px',
-                                                        right: '20px',  // 삼각형을 오른쪽으로 이동
+                                                        left: '20px',
                                                         borderLeft: '10px solid transparent',
                                                         borderRight: '10px solid transparent',
-                                                        borderTop: '10px solid #FFE066',
-                                                    }
+                                                        borderTop: '10px solid #F7F7F7',
+                                                    },
+                                                    '& .MuiOutlinedInput-notchedOutline': {
+                                                        border: "none",
+                                                    },
                                                 }}
                                             />
                                         </Grid>
                                     </Collapse>
                                     {/* answercollapse가 열렸을 때만 답변을 작성할 textfield를 보여줍니다. **/}
                                     {/*내가 작성한 질문 일때만 노출**/}
-                                    {item.isMyQuestion === 1 && (
-                                        <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-end", mt:"1rem"}}>
+                                    {item.isMyQuestion == memberId && (
+                                        <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", mt:"1rem"}}>
                                             {/* 답변달기 버튼을 노출합니다. **/}
                                             <Button
                                                 variant="contained"

@@ -153,6 +153,8 @@ function TeacherLectureInfo(props) {
     // 아코디언의 확장 상태 관리
     const [expanded, setExpanded] = useState([]);
 
+    const [uploadProgress, setUploadProgress] = useState(0);
+
     // 아코디언 모두 닫기
     const closeExpanded = () => {
         const array = new Array(8).fill(false); // 배열생성
@@ -234,7 +236,12 @@ function TeacherLectureInfo(props) {
     // 답변 리스트 가져오기
     const getAnswerList = async (id, idx) => {
         const response = await axios.get(
-            `http://localhost:8099/lecture/question/comment/unauth/list?questionId=${id}`
+            `http://localhost:8099/lecture/question/comment/auth/list?questionId=${id}`,
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
         ).then((res) => {
             console.log("답변리스트..")
             console.log(res)
@@ -835,7 +842,7 @@ function TeacherLectureInfo(props) {
         )
     }
 
-    const [uploadProgress, setUploadProgress] = useState(0);
+
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];

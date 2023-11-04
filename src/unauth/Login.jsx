@@ -65,6 +65,7 @@ function Login(props) {
             // 쿠키에 저장(임시)
             Cookies.set('accessToken', res.data.token, { sameSite: 'lax' })
             Cookies.set('role', res.data.role, { sameSite: 'lax' })
+            Cookies.set('memberId', res.data.id, { sameSite: 'lax' });
             dispatch(setAccessToken(res.data.token))
             // role이 0인 경우 (일반 회원인 경우)
             if(res.data.role === 0){

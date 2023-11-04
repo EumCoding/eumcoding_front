@@ -21,6 +21,11 @@ const reducer = (state = initialState, action) => {
                 ...state,
                 role: action.payload,
             };
+            case 'SET_MEMBER_ID':
+                return{
+                    ...state,
+                    memberId: action.payload,
+                };
         default:
             return state;
     }
