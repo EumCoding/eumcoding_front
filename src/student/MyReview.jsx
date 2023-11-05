@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Button, createTheme, Divider, Grid, TextField, ThemeProvider} from "@mui/material";
+import {Button, createTheme, Divider, Grid, Link, TextField, ThemeProvider} from "@mui/material";
 import DashTop from "../component/DashTop";
 import {DesktopDatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import dayjs from "dayjs";
@@ -11,8 +11,13 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import {useSelector} from "react-redux";
 import axios from "axios";
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+
+
 
 function MyReview(props) {
+    const defaultSize = 10; // 한 페이지에 보여줄 리뷰 개수
 
     const accessToken = useSelector((state) => state.accessToken);
 
@@ -47,21 +52,46 @@ function MyReview(props) {
     // startDate는 endDate보다 6개월 전
     const [startDate, setStartDate] = useState(dayjs().subtract(6, 'month'));
 
+    const [more, setMore] = useState(false); // 결과가 더 있는지
+
+    const [result, setResult] = useState(null); // 리뷰목록
+
     // 리뷰목록 가져오는 api 호출
     const getReviewList = async (pageParam) => {
+        // endDate와 startDate를 yyyy-mm-dd hh:mm:ss 에 맞게 포맷팅
+        const end = endDate.format('YYYY-MM-DD 23:59:59');
+        const start = startDate.format('YYYY-MM-DD 00:00:00');
+        const data = {
+            endDate : end,
+            startDate : start
+        }
+        console.log("리뷰목록 가져오기...")
+        console.log(data);
         const response = await axios.post(
-            `http://localhost:8099/lecture/review/my_list?page=${pageParam}`,
-            {
-                endDate : endDate,
-                startDate : startDate
-            },
+            `http://localhost:8099/lecture/review/my_list?page=${pageParam}`, // defaultSize가 10이므로 따로 보내지 않음
+            data,
             {
                 headers: {
-                    Authorization: `Bearer ${accessToken}`,
+                    Authorization: `${accessToken}`,
                 },
             }
         ).then((res) => {
             console.log(res);
+            if(pageParam < 1){
+                setResult(res.data);
+                if(res.data.length < defaultSize) {
+                    setMore(false);
+                }else{
+                    setMore(true);
+                }
+            }else{
+                setResult(result.concat(res.data));
+                if(res.data.length < defaultSize) {
+                    setMore(false);
+                }else{
+                    setMore(true);
+                }
+            }
         }).catch((err) => {
             console.log(err);
         })
@@ -165,6 +195,7 @@ function MyReview(props) {
                 </Grid>
                 <Grid container item xs={12} sx={{pt:"3rem", mt:0, px:{xs:"5%", md:"20%"}}}>
 
+
                     {/* 리뷰목록 **/}
                     <Grid
                         container
@@ -174,338 +205,176 @@ function MyReview(props) {
                         alignItems="center"
                         sx={{mt:'1rem'}}
                     >
-                        <Grid container item xs={12} sx={{mt:'0.3vw'}}>
-                            <Grid item xs={12} display="flex" justifyContent={"flex-start"} alignContent={"center"}>
-                                <Box item
-                                     display="flex"
-                                     justifyContent="flex-start"
-                                     alignItems="center"
-                                     sx={{pr:'1vw'}}>
-                                    <FaceIcon sx={{fontSize:'4rem'}}/>
-                                </Box>
-                                <Grid
-                                    container
-                                    display="flex"
-                                    justifyContent="flex-start"
-                                    alignItems="center"
-                                    sx={{pl:"1rem"}}
-                                >
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        display="flex"
-                                        justifyContent="flex-start"
-                                        alignItems="flex-end"
-                                    >
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
+
+                        {/* 리뷰목록 map **/}
+                        {result && result.map((item, idx) => {
+                            return(
+                                <Grid container item xs={12} sx={{mt:'0.3vw'}}>
+                                    <Grid item xs={12} container display="flex" justifyContent={"flex-start"} alignContent={"center"}>
+                                        <Grid item xs={12} sx={{
+                                            p: "5px",
+                                            transition: '0.3s',
+                                            borderRadius: '10px',
+                                            '&:hover': {
+                                                backgroundColor: 'action.hover',
+                                                cursor: 'pointer',
+                                            },
+                                            '&:active': {
+                                                backgroundColor: 'action.selected',
+                                                boxShadow: 'none',
+                                            }
+                                        }}>
+                                            <Link to={`/lecture/${item.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+                                                <Box sx={{
+                                                    width: 100, // 고정 가로 크기
+                                                    aspectRatio: '16 / 9', // 비율 유지
+                                                    overflow: 'hidden',
+                                                    borderRadius: '10px',
+                                                    marginRight: 2
+                                                }}>
+                                                    <img src={item.lectureThumbnail} alt="강의썸네일" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+                                                </Box>
+                                                <Typography sx={{ display: 'inline', fontWeight: "700", fontSize: "1rem" }}>{item.lectureName}▶</Typography>
+                                            </Link>
+                                        </Grid>
+                                        <Grid
+                                            container
+                                            display="flex"
+                                            justifyContent="flex-start"
+                                            alignItems="center"
+                                            sx={{mt:"0.5rem"}}
+                                        >
+                                            <Grid
+                                                item
+                                                xs={12}
+                                                display="flex"
+                                                justifyContent="space-between"
+                                                alignItems="flex-end"
+                                            >
+                                                <Box display="flex" alignItems="center">
+                                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
+                                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
+                                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
+                                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
+                                                    <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
+                                                    <Typography sx={{ml: '1rem', color: "#8D8D8D"}}>{dayjs(item.createdDay).format("YYYY년 MM월 DD일 HH:mm:ss")}</Typography>
+                                                </Box>
+                                                <Box display ="flex" alignItems={"center"}>
+                                                    <Button
+                                                        variant="contained"
+                                                        sx={{
+                                                            backgroundColor: '#4CAF50', // CSS 색상 코드로 초록색 배경
+                                                            color: 'white', // 흰색 텍스트
+                                                            '&:hover': {
+                                                                backgroundColor: '#43A047', // 호버 시 더 밝은 초록색
+                                                            },
+                                                            '&:active': {
+                                                                backgroundColor: '#388E3C', // 클릭 시 더 어두운 초록색
+                                                            },
+                                                            fontSize: "0.7rem",
+                                                            marginLeft: "8px" // 버튼 간의 간격 조정
+                                                        }}
+                                                        startIcon={<EditIcon />} // 수정 아이콘 추가
+                                                        onClick={() => {
+                                                            // 수정 로직을 여기에 넣으세요.
+                                                        }}
+                                                    >
+                                                        <Typography sx={{fontSize:"0.7rem"}}>수정</Typography>
+                                                    </Button>
+                                                    <Button
+                                                    variant="contained"
+                                                    sx={{
+                                                        ml:"1rem",
+                                                        backgroundColor: 'grey.400', // 회색 배경
+                                                        color: 'white', // 흰색 텍스트
+                                                        '&:hover': {
+                                                            backgroundColor: 'grey.500', // 호버 시 더 어두운 회색
+                                                        },
+                                                        '&:active': {
+                                                            backgroundColor: 'grey.600', // 클릭 시 더 어두운 회색
+                                                        },
+                                                        fontSize: "0.7rem"
+                                                    }}
+                                                    startIcon={<DeleteIcon />}
+                                                    onClick={() => {
+                                                        // 삭제 로직을 여기에 넣으세요.
+                                                    }}
+                                                >
+                                                    <Typography sx={{fontSize:"0.7rem"}}>삭제</Typography>
+                                                </Button>
+                                                </Box>
+                                            </Grid>
+                                        </Grid>
                                     </Grid>
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        display="flex"
-                                        justifyContent="flex-start"
-                                        alignItems="center"
-                                        sx={{pl:0}}
-                                    >
-                                        <span className={styles.font_review_nickname}>닉네임</span>
+
+                                    <Grid item
+                                          display="flex"
+                                          justifyContent="flex-start"
+                                          alignItems="center"
+                                          xs={12} sx={{mt:'1vw', pl:"0.3rem"}}>
+                                <span className={styles.font_review_content}>
+                                    {item.content}
+                                </span>
+                                    </Grid>
+                                    <Grid item
+                                          xs={12} sx={{mt:'2rem', mb:'2rem'}}>
+                                        <Divider fullWidth/>
+                                        <br/>
                                     </Grid>
                                 </Grid>
-                            </Grid>
-
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
-                                <span className={styles.font_review_content}>
-                                    내용내용내용내용내용내용내용
-                                </span>
-                            </Grid>
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
-                                <span className={styles.font_review_date}>
-                                    2022-03-18 ♥2
-                                </span>
-                                <br/>
-                            </Grid>
-                            <Grid item
-                                  xs={12} sx={{mt:'2vw', mb:'1vw'}}>
-                                <Divider fullWidth/>
-                                <br/>
-                            </Grid>
-                        </Grid>
-                        <Grid container item xs={12} sx={{mt:'0.3vw'}}>
-                            <Grid item xs={12} display="flex" justifyContent={"flex-start"} alignContent={"center"}>
-                                <Box item
-                                     display="flex"
-                                     justifyContent="flex-start"
-                                     alignItems="center"
-                                     sx={{pr:'1vw'}}>
-                                    <FaceIcon sx={{fontSize:'4rem'}}/>
-                                </Box>
-                                <Grid
-                                    container
-                                    display="flex"
-                                    justifyContent="flex-start"
-                                    alignItems="center"
-                                    sx={{pl:"1rem"}}
-                                >
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        display="flex"
-                                        justifyContent="flex-start"
-                                        alignItems="flex-end"
-                                    >
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    </Grid>
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        display="flex"
-                                        justifyContent="flex-start"
-                                        alignItems="center"
-                                        sx={{pl:0}}
-                                    >
-                                        <span className={styles.font_review_nickname}>닉네임</span>
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
-                                <span className={styles.font_review_content}>
-                                    내용내용내용내용내용내용내용
-                                </span>
-                            </Grid>
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
-                                <span className={styles.font_review_date}>
-                                    2022-03-18 ♥2
-                                </span>
-                                <br/>
-                            </Grid>
-                            <Grid item
-                                  xs={12} sx={{mt:'2vw', mb:'1vw'}}>
-                                <Divider fullWidth/>
-                                <br/>
-                            </Grid>
-                        </Grid>
-
-                        <Grid container item xs={12} sx={{mt:'0.3vw'}}>
-                            <Grid item xs={12} display="flex" justifyContent={"flex-start"} alignContent={"center"}>
-                                <Box item
-                                     display="flex"
-                                     justifyContent="flex-start"
-                                     alignItems="center"
-                                     sx={{pr:'1vw'}}>
-                                    <FaceIcon sx={{fontSize:'4rem'}}/>
-                                </Box>
-                                <Grid
-                                    container
-                                    display="flex"
-                                    justifyContent="flex-start"
-                                    alignItems="center"
-                                    sx={{pl:"1rem"}}
-                                >
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        display="flex"
-                                        justifyContent="flex-start"
-                                        alignItems="flex-end"
-                                    >
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    </Grid>
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        display="flex"
-                                        justifyContent="flex-start"
-                                        alignItems="center"
-                                        sx={{pl:0}}
-                                    >
-                                        <span className={styles.font_review_nickname}>닉네임</span>
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
-                                <span className={styles.font_review_content}>
-                                    내용내용내용내용내용내용내용
-                                </span>
-                            </Grid>
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
-                                <span className={styles.font_review_date}>
-                                    2022-03-18 ♥2
-                                </span>
-                                <br/>
-                            </Grid>
-                            <Grid item
-                                  xs={12} sx={{mt:'2vw', mb:'1vw'}}>
-                                <Divider fullWidth/>
-                                <br/>
-                            </Grid>
-                        </Grid>
-
-                        <Grid container item xs={12} sx={{mt:'0.3vw'}}>
-                            <Grid item xs={12} display="flex" justifyContent={"flex-start"} alignContent={"center"}>
-                                <Box item
-                                     display="flex"
-                                     justifyContent="flex-start"
-                                     alignItems="center"
-                                     sx={{pr:'1vw'}}>
-                                    <FaceIcon sx={{fontSize:'4rem'}}/>
-                                </Box>
-                                <Grid
-                                    container
-                                    display="flex"
-                                    justifyContent="flex-start"
-                                    alignItems="center"
-                                    sx={{pl:"1rem"}}
-                                >
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        display="flex"
-                                        justifyContent="flex-start"
-                                        alignItems="flex-end"
-                                    >
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                        <StarIcon sx={{ color: '#F2D857', fontSize: '1.5rem' }}/>
-                                    </Grid>
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        display="flex"
-                                        justifyContent="flex-start"
-                                        alignItems="center"
-                                        sx={{pl:0}}
-                                    >
-                                        <span className={styles.font_review_nickname}>닉네임</span>
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
-                                <span className={styles.font_review_content}>
-                                    내용내용내용내용내용내용내용
-                                </span>
-                            </Grid>
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
-                                <span className={styles.font_review_date}>
-                                    2022-03-18 ♥2
-                                </span>
-                                <br/>
-                            </Grid>
-                            <Grid item
-                                  xs={12} sx={{mt:'2vw', mb:'1vw'}}>
-                                <Divider fullWidth/>
-                                <br/>
-                            </Grid>
-                        </Grid>
-
+                            )
+                        })}
                         {/* 답변 **/}
                         <Grid container item xs={12} sx={{mt:'0.3vw', pl:{xs:"3rem", md:"5rem"}}}>
-                            <Grid item xs={12} display="flex" justifyContent={"flex-start"} alignContent={"center"}>
-                                <Box item
-                                     display="flex"
-                                     justifyContent="flex-start"
-                                     alignItems="center"
-                                     sx={{pr:'1vw'}}>
-                                    <FaceIcon sx={{fontSize:'4rem'}}/>
-                                </Box>
-                                <Grid
-                                    container
-                                    display="flex"
-                                    justifyContent="flex-start"
-                                    alignItems="center"
-                                    sx={{pl:"1rem"}}
-                                >
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        display="flex"
-                                        justifyContent="flex-start"
-                                        alignItems="center"
-                                        sx={{pl:0}}
-                                    >
-                                        <span className={styles.font_review_nickname}>답변자</span>
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
-                                <span className={styles.font_review_content}>
-                                    내용내용내용내용내용내용내용
-                                </span>
-                            </Grid>
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="flex-start"
-                                  alignItems="center"
-                                  xs={12} sx={{mt:'1vw'}}>
-                                <span className={styles.font_review_date}>
-                                    2022-03-18 ♥2
-                                </span>
-                                <br/>
-                            </Grid>
-                            <Grid item
-                                  xs={12} sx={{mt:'2vw', mb:'1vw'}}>
-                                <Divider fullWidth/>
-                                <br/>
-                            </Grid>
+                            <Box
+                                sx={{
+                                    position: 'relative',
+                                    backgroundColor: 'grey.300',
+                                    borderRadius: '4px',
+                                    padding: '8px',
+                                    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.25)', // 사각형 그림자
+                                    '&:before': { // 가짜 삼각형
+                                        content: '""',
+                                        position: 'absolute',
+                                        top: 10,
+                                        left: '30px',
+                                        width: 0,
+                                        height: 0,
+                                        border: '10px solid transparent',
+                                        borderBottomColor: 'grey.300',
+                                        borderTop: '0',
+                                        marginLeft: '-10px',
+                                        marginTop: '-20px',
+                                    },
+                                    '&:after': { // 가짜 삼각형 그림자
+                                        content: '""',
+                                        position: 'absolute',
+                                        top: 10,
+                                        left: '30px',
+                                        width: 0,
+                                        height: 0,
+                                        border: '10px solid transparent',
+                                        borderBottomColor: 'rgba(0, 0, 0, 0.25)',
+                                        borderTop: '0',
+                                        marginLeft: '-10px',
+                                        marginTop: '-20px',
+                                        zIndex: -1, // 사각형 뒤로 보내기
+                                        filter: 'blur(3px)', // 부드러운 그림자 효과
+                                    }
+                                }}
+                            >
+                                {/* Box 내용을 여기에 넣으세요. */}
+                                여기에 텍스트나 다른 컴포넌트를 넣을 수 있습니다.
+                            </Box>
                         </Grid>
                     </Grid>
-                    <Button fullWidth variant="outlined" sx={{borderRadius:"0.5vw", backgroundColor:"#FFFFFF", borderColor:"#000000", py:"1rem",}}>
-                        <Typography sx={{fontWeight:"700", fontSize:"1rem", color:"#000000"}}>
-                            더보기
-                        </Typography>
-                    </Button>
+                    {more && (
+                        <Button fullWidth variant="outlined" sx={{borderRadius:"0.5vw", backgroundColor:"#FFFFFF", borderColor:"#000000", py:"0.5rem",}}>
+                            <Typography sx={{fontWeight:"700", fontSize:"1rem", color:"#000000"}}>
+                                더보기
+                            </Typography>
+                        </Button>
+                    )}
                 </Grid>
             </Grid>
         </ThemeProvider>
