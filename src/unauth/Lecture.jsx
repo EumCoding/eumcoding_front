@@ -266,6 +266,9 @@ function Lecture(props) {
                               justifyContent="left"
                               alignItems="center"
                         >
+                            <Box style={{width:"50px", aspectRatio:"1/1", overflow:"hidden"}}>
+                                <img src={result && result.badge} style={{width:"100%", height:"100%", objectFit:"cover"}}/>
+                            </Box>
                             {result && result.score > 0 && <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>}
                             {result && result.score > 1 && <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>}
                             {result && result.score > 2 && <StarIcon sx={{ color: '#FFE600', fontSize: '2.5rem' }}/>}
@@ -575,6 +578,70 @@ function Lecture(props) {
                                 </span>
                                         <br/>
                                     </Grid>
+                                    {item.listCommentResponseDTO && (
+                                        <Grid xs={12} item sx={{width:"100%", display:"flex", justifyContent:"flex-end", alignItems:"center", mt:"1.5rem"}}>
+                                            <Box
+                                                sx={{
+                                                    width:"80%",
+                                                    position: 'relative',
+                                                    backgroundColor: 'grey.300',
+                                                    borderRadius: '4px',
+                                                    padding: '8px',
+                                                    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.25)', // 사각형 그림자
+                                                    '&:before': { // 가짜 삼각형
+                                                        content: '""',
+                                                        position: 'absolute',
+                                                        top: 10,
+                                                        left: '30px',
+                                                        width: 0,
+                                                        height: 0,
+                                                        border: '10px solid transparent',
+                                                        borderBottomColor: 'grey.300',
+                                                        borderTop: '0',
+                                                        marginLeft: '-10px',
+                                                        marginTop: '-20px',
+                                                    },
+                                                    '&:after': { // 가짜 삼각형 그림자
+                                                        content: '""',
+                                                        position: 'absolute',
+                                                        top: 10,
+                                                        left: '30px',
+                                                        width: 0,
+                                                        height: 0,
+                                                        border: '10px solid transparent',
+                                                        borderBottomColor: 'rgba(0, 0, 0, 0.25)',
+                                                        borderTop: '0',
+                                                        marginLeft: '-10px',
+                                                        marginTop: '-20px',
+                                                        zIndex: -1, // 사각형 뒤로 보내기
+                                                        filter: 'blur(3px)', // 부드러운 그림자 효과
+                                                    }
+                                                }}
+                                            >
+                                                <Grid container sx={{width:"100%", p:"1rem"}}>
+                                                    {/* 날짜 **/}
+                                                    <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                        <Typography sx={{fontSize:"0.8rem", color:"#8D8D8D"}}>{dayjs(item.listCommentResponseDTO.commentDay).format("YYYY년 MM월 DD일 HH:mm:ss")}</Typography>
+                                                    </Grid>
+                                                    {/* 강사프로필이미지 + 강사명 **/}
+                                                    <Grid item xs={12} sx={{display:"flex", alignItems:"center", mt:"1rem"}}>
+                                                        <Box sx={{width:"50px", aspectRatio:"1/1", borderRadius:"50%", overflow:"hidden", display:"inline-block", mr:"0.5rem"}}>
+                                                            <img src={item.listCommentResponseDTO.profileImg} alt="강사프로필이미지" style={{width:"100%", height:"100%", objectFit:"cover"}} />
+                                                        </Box>
+                                                        <Typography sx={{fontSize:"1rem", fontWeight:"700", display:"inline"}}>
+                                                            {item.listCommentResponseDTO.nickname}
+                                                        </Typography>
+                                                    </Grid>
+                                                    {/*내용**/}
+                                                    <Grid item xs={12} sx={{display:'flex', alignItems:'center', mt:"1rem"}}>
+                                                        <Typography sx={{fontSize:"1rem"}}>
+                                                            {item.listCommentResponseDTO.content}
+                                                        </Typography>
+                                                    </Grid>
+                                                </Grid>
+                                            </Box>
+                                        </Grid>
+                                    )}
                                     <Grid item
                                           xs={12} sx={{mt:3, mb:1}}>
                                         <Divider fullWidth/>

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Button, createTheme, Divider, Grid, Link, TextField, ThemeProvider} from "@mui/material";
+import {Button, createTheme, Divider, Grid, Link, Modal, TextField, ThemeProvider} from "@mui/material";
 import DashTop from "../component/DashTop";
 import {DesktopDatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import dayjs from "dayjs";
@@ -56,6 +56,8 @@ function MyReview(props) {
 
     const [result, setResult] = useState(null); // 리뷰목록
 
+    const [page, setPage] = useState(0); // 현재 페이지
+
     // 리뷰목록 가져오는 api 호출
     const getReviewList = async (pageParam) => {
         // endDate와 startDate를 yyyy-mm-dd hh:mm:ss 에 맞게 포맷팅
@@ -96,6 +98,172 @@ function MyReview(props) {
             console.log(err);
         })
     }
+
+    // 리뷰삭제
+    const deleteReview = async (reviewId) => {
+        console.log("리뷰삭제하기...")
+        try{
+            const response = await axios.post(
+                `http://localhost:8099/lecture/review/delete`,
+                {
+                    id: reviewId,
+                },
+                {
+                    headers: {
+                        Authorization: `${accessToken}`,
+                    },
+                }
+            )
+            // 삭제 후 리뷰목록 다시 가져오기
+            for(let i = 0 ; i < page + 1 ; i++){
+                await getReviewList(i);
+            }
+        }catch (e) {
+            alert("리뷰삭제에 실패했습니다.")
+        }
+    }
+
+    // 리뷰수정
+    const updateReview = async (reviewId, reviewContent, rating) => {
+        console.log("리뷰수정하기...")
+        try{
+            const response = await axios.post(
+                `http://localhost:8099/lecture/review/update`,
+                {
+                    id: reviewId,
+                    content: reviewContent,
+                    rating : rating
+                },
+                {
+                    headers: {
+                        Authorization: `${accessToken}`,
+                    },
+                }
+            )
+            // 수정 후 리뷰목록 다시 가져오기
+            for(let i = 0 ; i < page + 1 ; i++){
+                await getReviewList(i);
+            }
+            handleClose();
+        }catch (e) {
+            alert("리뷰수정에 실패했습니다.")
+        }
+    }
+
+    // 리뷰 수정용 modal 디자인
+    const [open, setOpen] = useState(false);
+    const [reviewContent, setReviewContent] = useState(null);
+    const [reviewId, setReviewId] = useState(null);
+    const [rating, setRating] = useState(5); // 별점
+
+    const handleOpen = (reviewId, reviewContent, reviewRating) => {
+        setReviewId(reviewId);
+        setReviewContent(reviewContent);
+        setOpen(true);
+        setRating(parseInt(reviewRating));
+    }
+
+    const handleClose = () => {
+        setOpen(false);
+    }
+
+const body = (
+    <Box sx={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 400,
+        bgcolor: 'background.paper',
+        boxShadow: 24,
+        p: 4,
+        borderRadius: '10px',
+        display:"flex",
+        flexDirection:"column",
+        justifyContent:"center",
+        alignItems:"center"
+    }}>
+        <Typography sx={{fontSize:"1.5rem", fontWeight:"800"}} >리뷰수정</Typography>
+        {/* 별모양 아이콘들 **/}
+        <Box sx={{display:"flex", justifyContent:"center", alignItems:"center", mt:"1rem"}}>
+            {rating >0 && (
+                <StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>
+            )}
+            {rating >1 && (
+                <StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>
+            )}
+            {rating >2 && (
+                <StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>
+            )}
+            {rating >3 && (
+                <StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>
+            )}
+            {rating >4 && (
+                <StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>
+            )}
+        </Box>
+        <TextField
+            sx={{mt:"3rem"}}
+            multiline
+            rows={4}
+            defaultValue={reviewContent}
+            variant="outlined"
+            fullWidth
+            onChange={(e) => {
+                setReviewContent(e.target.value);
+            }
+            }
+        />
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: "2rem" }}>
+            {/* 취소 버튼 */}
+            <Button
+                variant="outlined"
+                sx={{
+                    px: "3rem",
+                    py: "0.3rem",
+                    mx:"1rem",
+                    borderRadius: "20px",
+                    borderColor: 'error.main', // 빨간색 계열 테두리
+                    color: 'error.main', // 빨간색 계열 텍스트
+                    '&:hover': {
+                        bgcolor: 'error.light', // 호버 시 배경 살짝 빨간색
+                        borderColor: 'error.dark', // 호버 시 테두리 색상 더 진한 빨간색
+                    },
+                    textTransform: 'none',
+                }}
+                onClick={() => {
+                    // 취소 로직...
+                    handleClose();
+                }}
+            >
+                취소
+            </Button>
+
+            {/* 수정 버튼 */}
+            <Button
+                variant="contained"
+                sx={{
+                    px: "3rem",
+                    py: "0.3rem",
+                    mx:"1rem",
+                    borderRadius: "20px",
+                    bgcolor: 'primary.main', // 파란색 계열 배경
+                    '&:hover': {
+                        bgcolor: 'primary.dark', // 호버 시 더 진한 파란색
+                    },
+                    textTransform: 'none',
+                }}
+                onClick={() => {
+                    // 수정 로직...
+                    updateReview(reviewId, reviewContent, rating);
+                }}
+            >
+                수정
+            </Button>
+        </Box>
+    </Box>
+);
+
 
     useEffect(() => {
         if(accessToken){
@@ -138,6 +306,17 @@ function MyReview(props) {
     return (
         <ThemeProvider theme={theme}>
             <DashTop/>
+            {/* 리뷰 수정용 modal **/}
+            <Modal
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="simple-modal-title"
+                aria-describedby="simple-modal-description"
+                sx={{display:"flex", justifyContent:"center", alignItems:"center"}}
+            >
+                {body}
+            </Modal>
+
             <Grid container sx={{pr:{xs:"0rem", md:"2rem"}, pl:{xs:"2rem", md:"2rem"} , py:"2rem"}}>
                 <Grid item xs={12}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -224,7 +403,7 @@ function MyReview(props) {
                                                 boxShadow: 'none',
                                             }
                                         }}>
-                                            <Link to={`/lecture/${item.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+                                            <Link to={`/lecture/${item.lectureId}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
                                                 <Box sx={{
                                                     width: 100, // 고정 가로 크기
                                                     aspectRatio: '16 / 9', // 비율 유지
@@ -276,7 +455,8 @@ function MyReview(props) {
                                                         }}
                                                         startIcon={<EditIcon />} // 수정 아이콘 추가
                                                         onClick={() => {
-                                                            // 수정 로직을 여기에 넣으세요.
+                                                            // 리뷰 수정용 modal 열기
+                                                            handleOpen(item.id, item.content, item.rating);
                                                         }}
                                                     >
                                                         <Typography sx={{fontSize:"0.7rem"}}>수정</Typography>
@@ -297,7 +477,8 @@ function MyReview(props) {
                                                     }}
                                                     startIcon={<DeleteIcon />}
                                                     onClick={() => {
-                                                        // 삭제 로직을 여기에 넣으세요.
+                                                        //삭제 메서드
+                                                        deleteReview(item.id);
                                                     }}
                                                 >
                                                     <Typography sx={{fontSize:"0.7rem"}}>삭제</Typography>
@@ -316,60 +497,87 @@ function MyReview(props) {
                                     {item.content}
                                 </span>
                                     </Grid>
+                                    {item.listCommentResponseDTO && (
+                                        <Grid xs={12} item sx={{width:"100%", display:"flex", justifyContent:"flex-end", alignItems:"center", mt:"1.5rem"}}>
+                                            <Box
+                                                sx={{
+                                                    width:"80%",
+                                                    position: 'relative',
+                                                    backgroundColor: 'grey.300',
+                                                    borderRadius: '4px',
+                                                    padding: '8px',
+                                                    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.25)', // 사각형 그림자
+                                                    '&:before': { // 가짜 삼각형
+                                                        content: '""',
+                                                        position: 'absolute',
+                                                        top: 10,
+                                                        left: '30px',
+                                                        width: 0,
+                                                        height: 0,
+                                                        border: '10px solid transparent',
+                                                        borderBottomColor: 'grey.300',
+                                                        borderTop: '0',
+                                                        marginLeft: '-10px',
+                                                        marginTop: '-20px',
+                                                    },
+                                                    '&:after': { // 가짜 삼각형 그림자
+                                                        content: '""',
+                                                        position: 'absolute',
+                                                        top: 10,
+                                                        left: '30px',
+                                                        width: 0,
+                                                        height: 0,
+                                                        border: '10px solid transparent',
+                                                        borderBottomColor: 'rgba(0, 0, 0, 0.25)',
+                                                        borderTop: '0',
+                                                        marginLeft: '-10px',
+                                                        marginTop: '-20px',
+                                                        zIndex: -1, // 사각형 뒤로 보내기
+                                                        filter: 'blur(3px)', // 부드러운 그림자 효과
+                                                    }
+                                                }}
+                                            >
+                                                <Grid container sx={{width:"100%", p:"1rem"}}>
+                                                    {/* 날짜 **/}
+                                                    <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                        <Typography sx={{fontSize:"0.8rem", color:"#8D8D8D"}}>{dayjs(item.listCommentResponseDTO.commentDay).format("YYYY년 MM월 DD일 HH:mm:ss")}</Typography>
+                                                    </Grid>
+                                                    {/* 강사프로필이미지 + 강사명 **/}
+                                                    <Grid item xs={12} sx={{display:"flex", alignItems:"center", mt:"1rem"}}>
+                                                        <Box sx={{width:"50px", aspectRatio:"1/1", borderRadius:"50%", overflow:"hidden", display:"inline-block", mr:"0.5rem"}}>
+                                                            <img src={item.listCommentResponseDTO.profileImg} alt="강사프로필이미지" style={{width:"100%", height:"100%", objectFit:"cover"}} />
+                                                        </Box>
+                                                        <Typography sx={{fontSize:"1rem", fontWeight:"700", display:"inline"}}>
+                                                            {item.listCommentResponseDTO.nickname}
+                                                        </Typography>
+                                                    </Grid>
+                                                    {/*내용**/}
+                                                    <Grid item xs={12} sx={{display:'flex', alignItems:'center', mt:"1rem"}}>
+                                                        <Typography sx={{fontSize:"1rem"}}>
+                                                            {item.listCommentResponseDTO.content}
+                                                        </Typography>
+                                                    </Grid>
+                                                </Grid>
+                                            </Box>
+                                        </Grid>
+                                    )}
                                     <Grid item
-                                          xs={12} sx={{mt:'2rem', mb:'2rem'}}>
+                                          xs={12} sx={{mt:'2rem'}}>
                                         <Divider fullWidth/>
                                         <br/>
                                     </Grid>
                                 </Grid>
                             )
                         })}
-                        {/* 답변 **/}
-                        <Grid container item xs={12} sx={{mt:'0.3vw', pl:{xs:"3rem", md:"5rem"}}}>
-                            <Box
-                                sx={{
-                                    position: 'relative',
-                                    backgroundColor: 'grey.300',
-                                    borderRadius: '4px',
-                                    padding: '8px',
-                                    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.25)', // 사각형 그림자
-                                    '&:before': { // 가짜 삼각형
-                                        content: '""',
-                                        position: 'absolute',
-                                        top: 10,
-                                        left: '30px',
-                                        width: 0,
-                                        height: 0,
-                                        border: '10px solid transparent',
-                                        borderBottomColor: 'grey.300',
-                                        borderTop: '0',
-                                        marginLeft: '-10px',
-                                        marginTop: '-20px',
-                                    },
-                                    '&:after': { // 가짜 삼각형 그림자
-                                        content: '""',
-                                        position: 'absolute',
-                                        top: 10,
-                                        left: '30px',
-                                        width: 0,
-                                        height: 0,
-                                        border: '10px solid transparent',
-                                        borderBottomColor: 'rgba(0, 0, 0, 0.25)',
-                                        borderTop: '0',
-                                        marginLeft: '-10px',
-                                        marginTop: '-20px',
-                                        zIndex: -1, // 사각형 뒤로 보내기
-                                        filter: 'blur(3px)', // 부드러운 그림자 효과
-                                    }
-                                }}
-                            >
-                                {/* Box 내용을 여기에 넣으세요. */}
-                                여기에 텍스트나 다른 컴포넌트를 넣을 수 있습니다.
-                            </Box>
-                        </Grid>
                     </Grid>
                     {more && (
-                        <Button fullWidth variant="outlined" sx={{borderRadius:"0.5vw", backgroundColor:"#FFFFFF", borderColor:"#000000", py:"0.5rem",}}>
+                        <Button
+                            onClick={() => {
+                                const tempPage = page;
+                                setPage(tempPage + 1)
+                                getReviewList(tempPage + 1); // 다음페이지 불러오기
+                            }}
+                            fullWidth variant="outlined" sx={{borderRadius:"0.5vw", backgroundColor:"#FFFFFF", borderColor:"#000000", py:"0.5rem",}}>
                             <Typography sx={{fontWeight:"700", fontSize:"1rem", color:"#000000"}}>
                                 더보기
                             </Typography>

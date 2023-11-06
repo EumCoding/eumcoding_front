@@ -34,6 +34,8 @@ import ReactPlayer from "react-player";
 import {ChangeCircle} from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
+import FaceIcon from "@mui/icons-material/Face6";
+import dayjs from "dayjs";
 
 
 // modal에 적용할 style
@@ -69,11 +71,18 @@ function TeacherLectureInfo(props) {
 
     const [section, setSection] = useState(null);
 
+    const [review, setReview] = useState(null);
+
+    const [more, setMore] = useState(false);
+
+
     // 질문 목록 보기위한 state
     const [questionResult, setQuestionResult] = useState(null); // 질문리스트 결과
     const [answerResult, setAnswerResult] = useState([]); // 답변리스트 결과
     const [questionMore, setQuestionMore] = useState(true); // 더 결과가 있는지
-    const [questionPage, setQuestionPage] = useState(1); // 더 결과가 있는지
+    const [questionPage, setQuestionPage] = useState(1); // 더 결과가
+
+    const [reviewPage, setReviewPage] = useState(0);
 
     // question collapse state
     const [isQuestionCollapseOpen, setIsQuestionCollapseOpen] = useState([]); // Collapse 제어를 위한 상태
@@ -995,6 +1004,24 @@ function TeacherLectureInfo(props) {
         )
     }
 
+    // 리뷰 가져오기
+    const getReviewList = async (id, paramPage) => {
+        const response = await axios.get(
+            `http://localhost:8099/lecture/review/unauth/list?id=${id}&page=${paramPage}`
+        ).then((res) => {
+            console.log("리뷰가져옴")
+            console.log(res)
+            if(paramPage > 1){
+                // 깊은복사
+                const temp = JSON.parse(JSON.stringify(review))
+                setReview(temp.concat(res.data))
+            }else{
+                res.data && setReview(res.data);
+            }
+            res.data && res.data.length < 10 ? setMore(false) : setMore(true);
+        })
+    }
+
 
     const theme = createTheme({ // Theme
         typography: {
@@ -1006,6 +1033,8 @@ function TeacherLectureInfo(props) {
         getLectureInfo(params.value) // 첫번째 정보 가져옴
         // 첫번째 페이지의 질문리스트 가져옴
         getQuestionList(params.value, 1);
+        // 첫번째 페이지의 리뷰리스트 가져옴
+        getReviewList(params.value, 0);
     },[])
 
     useEffect(() => {
@@ -2059,6 +2088,216 @@ function TeacherLectureInfo(props) {
                         </Button>
                     </Grid>
                 )}
+                {/* 수강평 **/}
+                <Grid container item xs={12} sx={{px:'20%', pt:0, mt:0}}>
+                    <Grid item xs={12}
+                          display="flex"
+                          justifyContent="flex-start"
+                          alignItems="flex-end"
+                          sx={{pt:'7vw'}}
+                    >
+                        <Typography sx={{fontWeight:"900", fontSize:"2.5rem", display:"flex", alignItems:"flex-end"}}>수강평&nbsp;</Typography>
+                        <Typography sx={{fontWeight:"900", fontSize:"1.5rem", color:"#8D8D8D", display:"flex", alignItems:"flex-end"}}>총 {result && result.totalReview}개</Typography>
+                    </Grid>
+                    <Grid item xs={12}
+                          display="flex"
+                          justifyContent="flex-start"
+                          alignItems="center"
+                          sx={{pb:'7vw', mt:'1rem'}}
+                    >
+                        {result && result.score > 0 && (<StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>)}
+                        {result && result.score > 1 && (<StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>)}
+                        {result && result.score > 2 && (<StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>)}
+                        {result && result.score > 3 && (<StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>)}
+                        {result && result.score > 4 && (<StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>)}
+
+                        <span className={styles.font_review_score}>({result && result.score})</span>
+                    </Grid>
+                    {/* 리뷰 정렬 옵션 **/}
+                    <Grid container item xs={12}
+                          display="flex"
+                          justifyContent="flex-start"
+                          alignItems="center"
+                          sx={{mb:'0.5vw'}}
+                    >
+                        <span className={styles.font_review_sort_selected}>최신 순</span>
+                        <span className={styles.font_review_sort}>좋아요 순</span>
+                        <span className={styles.font_review_sort}>높은 평점 순</span>
+                        <span className={styles.font_review_sort}>낮은 평점 순</span>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Divider sx={{borderWidth:'0.1rem', borderColor:'#000000'}}/>
+                    </Grid>
+                    {/* 리뷰목록 **/}
+                    <Grid
+                        container
+                        item xs={12}
+                        display="flex"
+                        justifyContent="flex-start"
+                        alignItems="center"
+                        sx={{mt:'1rem'}}
+                    >
+                        {/* items **/}
+                        {review && review.map((item, idx) => {
+                            return(
+                                <Grid container item xs={12} sx={{mt:1}}>
+                                    <Grid item
+                                          display="flex"
+                                          justifyContent="flex-start"
+                                          alignItems="center"
+                                          xs={1} sx={{pr:'1vw'}}>
+                                        <FaceIcon sx={{fontSize:'4rem'}}/>
+                                    </Grid>
+                                    <Grid
+                                        item
+                                        container
+                                        display="flex"
+                                        justifyContent="flex-start"
+                                        alignItems="center"
+                                        xs={1}
+                                    >
+                                        <Grid
+                                            item
+                                            xs={12}
+                                            display="flex"
+                                            justifyContent="flex-start"
+                                            alignItems="flex-end"
+                                        >
+                                            {item.rating > 0 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+                                            {item.rating > 1 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+                                            {item.rating > 2 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+                                            {item.rating > 3 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+                                            {item.rating > 4 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+
+                                        </Grid>
+                                        <Grid
+                                            item
+                                            xs={12}
+                                            display="flex"
+                                            justifyContent="flex-start"
+                                            alignItems="center"
+                                            sx={{pl:0}}
+                                        >
+                                            {/* 추후 클릭시 해당 멤버 페이지로 이동하도록 함 **/}
+                                            <span className={styles.font_review_nickname}>{item.nickname}</span>
+                                        </Grid>
+                                    </Grid>
+                                    <Grid item
+                                          display="flex"
+                                          justifyContent="flex-start"
+                                          alignItems="center"
+                                          xs={12} sx={{mt:3}}>
+                                <span className={styles.font_review_content}>
+                                    {item.content}
+                                </span>
+                                    </Grid>
+                                    <Grid item
+                                          display="flex"
+                                          justifyContent="flex-start"
+                                          alignItems="center"
+                                          xs={12} sx={{mt:3}}>
+                                <span className={styles.font_review_date}>
+                                    {dayjs(item.createdDay).format('YYYY년MM월DD일 HH시mm분ss초')} ♥{item.heart}
+                                </span>
+                                        <br/>
+                                    </Grid>
+                                    {item.listCommentResponseDTO && (
+                                        <Grid xs={12} item sx={{width:"100%", display:"flex", justifyContent:"flex-end", alignItems:"center", mt:"1.5rem"}}>
+                                            <Box
+                                                sx={{
+                                                    width:"80%",
+                                                    position: 'relative',
+                                                    backgroundColor: 'grey.300',
+                                                    borderRadius: '4px',
+                                                    padding: '8px',
+                                                    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.25)', // 사각형 그림자
+                                                    '&:before': { // 가짜 삼각형
+                                                        content: '""',
+                                                        position: 'absolute',
+                                                        top: 10,
+                                                        left: '30px',
+                                                        width: 0,
+                                                        height: 0,
+                                                        border: '10px solid transparent',
+                                                        borderBottomColor: 'grey.300',
+                                                        borderTop: '0',
+                                                        marginLeft: '-10px',
+                                                        marginTop: '-20px',
+                                                    },
+                                                    '&:after': { // 가짜 삼각형 그림자
+                                                        content: '""',
+                                                        position: 'absolute',
+                                                        top: 10,
+                                                        left: '30px',
+                                                        width: 0,
+                                                        height: 0,
+                                                        border: '10px solid transparent',
+                                                        borderBottomColor: 'rgba(0, 0, 0, 0.25)',
+                                                        borderTop: '0',
+                                                        marginLeft: '-10px',
+                                                        marginTop: '-20px',
+                                                        zIndex: -1, // 사각형 뒤로 보내기
+                                                        filter: 'blur(3px)', // 부드러운 그림자 효과
+                                                    }
+                                                }}
+                                            >
+                                                <Grid container sx={{width:"100%", pb:"1rem", px:"1rem"}}>
+                                                    {/* 날짜 **/}
+                                                    <Grid item xs={12} sx={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                                                        <Typography sx={{fontSize:"0.8rem", color:"#8D8D8D"}}>{dayjs(item.listCommentResponseDTO.commentDay).format("YYYY년 MM월 DD일 HH:mm:ss")}</Typography>
+                                                        {/* x아이콘 추가 **/}
+                                                        <IconButton onClick={() => {
+                                                            // 삭제 후 리뷰 목록 다시 불러옴
+                                                        }}>
+                                                            <CloseIcon sx={{fontSize:"1rem"}}/>
+                                                        </IconButton>
+                                                    </Grid>
+                                                    {/* 강사프로필이미지 + 강사명 **/}
+                                                    <Grid item xs={12} sx={{display:"flex", alignItems:"center", mt:"1rem"}}>
+                                                        <Box sx={{width:"50px", aspectRatio:"1/1", borderRadius:"50%", overflow:"hidden", display:"inline-block", mr:"0.5rem"}}>
+                                                            <img src={item.listCommentResponseDTO.profileImg} alt="강사프로필이미지" style={{width:"100%", height:"100%", objectFit:"cover"}} />
+                                                        </Box>
+                                                        <Typography sx={{fontSize:"1rem", fontWeight:"700", display:"inline"}}>
+                                                            {item.listCommentResponseDTO.nickname}
+                                                        </Typography>
+                                                    </Grid>
+                                                    {/*내용**/}
+                                                    <Grid item xs={12} sx={{display:'flex', alignItems:'center', mt:"1rem"}}>
+                                                        <Typography sx={{fontSize:"1rem"}}>
+                                                            {item.listCommentResponseDTO.content}
+                                                        </Typography>
+                                                    </Grid>
+                                                </Grid>
+                                            </Box>
+                                        </Grid>
+                                    )}
+                                    <Grid item
+                                          xs={12} sx={{mt:3, mb:1}}>
+                                        <Divider fullWidth/>
+                                        <br/>
+                                    </Grid>
+                                </Grid>
+                            )
+                        })}
+
+                    </Grid>
+                    <Grid xs={12} item sx={{mt:'1vw', mb:'7vw'}}>
+                        {more === true && (
+                            <Button variant="outlined" fullWidth sx={{borderColor:'#000000', borderRadius:'10px'}}
+                                    onClick={() => {
+                                        // 다음페이지 로드
+                                        getReviewList(params.value, reviewPage+1).then((res) => {
+                                            setReviewPage(reviewPage+1);
+                                        });
+                                    }
+                            }
+                            >
+                                <span className={styles.font_review_more}>수강평 더보기</span>
+                            </Button>
+                        )}
+
+                    </Grid>
+                </Grid>
             </Grid>
         </ThemeProvider>
     );
