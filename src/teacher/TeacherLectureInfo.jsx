@@ -25,6 +25,7 @@ import {useSelector} from "react-redux";
 import CheckIcon from '@mui/icons-material/Check'; // 확인 아이콘
 import ClearIcon from '@mui/icons-material/Clear'; // 취소 아이콘
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
+import AddCommentIcon from '@mui/icons-material/AddComment';
 import AddCircleIcon from '@mui/icons-material/AddCircle'; // 증가
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -151,6 +152,9 @@ function TeacherLectureInfo(props) {
     const [editVideoName, setEditVideoName] = useState(false); // Video 이름 수정 활성화 여부
     const [editVideoDescription, setEditVideoDescription] = useState(false); // Video 설명 수정 활성화 여부
     const [editVideoThumb, setEditVideoThumb] = useState(false); // Video 썸네일 수정 활성화 여부
+
+    // 리뷰 답변 작성 collpase용 state
+    const [reviewCollapse, setReviewCollapse] = useState(false);
 
 
     // Video 수정용 modal
@@ -317,6 +321,13 @@ function TeacherLectureInfo(props) {
 
     const handleVideoEditClose = () => {
         setVideoEditOpen(false);
+    }
+
+    const handleReviewCollapseToggle = (idx) => {
+        // 해당하는 idx의 collapse의 상태값을 반대로
+        const temp = JSON.parse(JSON.stringify(reviewCollapse));
+        temp[idx] = !temp[idx];
+        setReviewCollapse(temp);
     }
 
     const sectionModalBody = (
@@ -1011,15 +1022,52 @@ function TeacherLectureInfo(props) {
         ).then((res) => {
             console.log("리뷰가져옴")
             console.log(res)
-            if(paramPage > 1){
+            if(paramPage > 0){
                 // 깊은복사
                 const temp = JSON.parse(JSON.stringify(review))
                 setReview(temp.concat(res.data))
+                // 리뷰 답변 작성용 state에도 추가
+                const array = new Array(res.data.length).fill(false); // 배열생성
+                setReviewCollapse(reviewCollapse.concat(array)); // editReviewComment state에 할당
             }else{
                 res.data && setReview(res.data);
+                // 리뷰 답변 작성용 state도 초기화
+                const array = new Array(res.data.length).fill(false); // 배열생성
+                setReviewCollapse(array); // editReviewComment state에 할당
             }
-            res.data && res.data.length < 10 ? setMore(false) : setMore(true);
+            res.data && (res.data.length < 10) ? setMore(false) : setMore(true);
         })
+    }
+
+    // 리뷰 답변 작성
+    const addReviewComment = async (reviewId, content) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/review/comment/write`,
+            {
+                reviewId: reviewId,
+                content: content,
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        )
+    }
+
+    // 리뷰 답변 삭제
+    const delReviewComment = async (commentId) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/review/comment/delete`,
+            {
+                id: commentId,
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        )
     }
 
 
@@ -2152,35 +2200,72 @@ function TeacherLectureInfo(props) {
                                         item
                                         container
                                         display="flex"
-                                        justifyContent="flex-start"
+                                        justifyContent="space-between"
                                         alignItems="center"
-                                        xs={1}
+                                        xs={11}
                                     >
-                                        <Grid
-                                            item
-                                            xs={12}
-                                            display="flex"
-                                            justifyContent="flex-start"
-                                            alignItems="flex-end"
-                                        >
-                                            {item.rating > 0 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
-                                            {item.rating > 1 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
-                                            {item.rating > 2 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
-                                            {item.rating > 3 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
-                                            {item.rating > 4 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+                                        <Box>
+                                            <Box
+                                                display="flex"
+                                                justifyContent="flex-start"
+                                                alignItems="flex-end"
+                                            >
+                                                {item.rating > 0 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+                                                {item.rating > 1 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+                                                {item.rating > 2 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+                                                {item.rating > 3 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
+                                                {item.rating > 4 && <StarIcon sx={{ color: '#FFE600', fontSize: '1.5rem' }}/>}
 
-                                        </Grid>
-                                        <Grid
-                                            item
-                                            xs={12}
-                                            display="flex"
-                                            justifyContent="flex-start"
-                                            alignItems="center"
-                                            sx={{pl:0}}
-                                        >
-                                            {/* 추후 클릭시 해당 멤버 페이지로 이동하도록 함 **/}
-                                            <span className={styles.font_review_nickname}>{item.nickname}</span>
-                                        </Grid>
+                                            </Box>
+                                            <Box
+                                                display="flex"
+                                                justifyContent="flex-start"
+                                                alignItems="center"
+                                                sx={{pl:0}}
+                                            >
+                                                {/* 추후 클릭시 해당 멤버 페이지로 이동하도록 함 **/}
+                                                <span className={styles.font_review_nickname}>{item.nickname}</span>
+                                            </Box>
+                                        </Box>
+                                        {!item.listCommentResponseDTO && (
+                                            <Box
+                                                display="flex"
+                                                justifyContent="flex-start"
+                                                alignItems="flex-end"
+                                            >
+
+                                                <Button
+                                                    variant="contained"
+                                                    onClick={() => {
+                                                        console.log("reviewId : " + item.id + " 답변작성 collapse toggle"); // 리뷰아이디
+                                                        // 해당하는 index의 collpase 열기
+                                                        handleReviewCollapseToggle(idx);
+                                                    }}
+                                                    startIcon={<AddCommentIcon/>}
+                                                    sx={{
+                                                        ml:"1rem",
+                                                        width: "10rem",
+                                                        height: "3rem",
+                                                        background: "#FFFFFF",
+                                                        borderColor: "#007BFF",  // 파란계열 테두리
+                                                        color: "#007BFF",       // 파란계열 글씨
+                                                        border: "1px solid",
+                                                        '&:hover': {
+                                                            backgroundColor: "#007BFF",  // hover 시 파란색계열 배경
+                                                            color: "#FFFFFF",           // hover 시 흰색 글씨
+                                                        },
+                                                        '&:active': {
+                                                            backgroundColor: "#0056b3",  // 클릭 시 더 진한 파란색계열 배경
+                                                            color: "#FFFFFF",           // 클릭 시 흰색 글씨
+                                                        }
+                                                    }}
+                                                >
+                                                    {/* 답변 toggle이 열려있으면 답변작성, 아니면 답변닫기 출력 **/}
+                                                    {reviewCollapse[idx] ? "답변닫기" : "답변작성"}
+                                                </Button>
+                                            </Box>
+                                        )}
+
                                     </Grid>
                                     <Grid item
                                           display="flex"
@@ -2201,6 +2286,104 @@ function TeacherLectureInfo(props) {
                                 </span>
                                         <br/>
                                     </Grid>
+                                    {/* 답변작성용 collapse **/}
+                                    <Collapse in={reviewCollapse[idx]} sx={{ width: '100%', mt:"1rem"}}>
+                                        <Grid
+                                            container
+                                            sx={{
+                                                width:"100%",
+                                                display:"flex",
+                                                justifyContent:"flex-end"
+                                            }}
+                                        >
+                                            <Grid
+                                                item
+                                                xs={12}
+                                                sx={{display:"flex", justifyContent:"flex-end"}}
+                                            >
+                                                <TextField
+                                                    id={"reviewCommentTextField" + item.id}
+                                                    variant="outlined"
+                                                    multiline
+                                                    placeholder="여기에 작성"  // 안내 문자 추가
+                                                    rows={4}
+                                                    sx={{
+                                                        width:"80%",
+                                                        position: 'relative',
+                                                        borderRadius: "15px",
+                                                        borderColor: "#A2A2A2",
+                                                        p: "1.5rem",
+                                                        backgroundColor: "#FFE066", // 노란색 계열로 변경
+                                                        border: "1px solid #A2A2A2", // 테두리 선 추가
+                                                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", // 그림자 추가
+                                                        '& .MuiOutlinedInput-notchedOutline': {
+                                                            border: "none",  // 기존의 outlined 선을 없애줍니다.
+                                                        },
+                                                        '&::before': {
+                                                            content: '""',
+                                                            position: 'absolute',
+                                                            bottom: '-11px',
+                                                            right: '19px',  // 삼각형을 오른쪽으로 이동
+                                                            borderLeft: '11px solid transparent',
+                                                            borderRight: '11px solid transparent',
+                                                            borderTop: '11px solid #A2A2A2',
+                                                        },
+                                                        '&::after': {
+                                                            content: '""',
+                                                            position: 'absolute',
+                                                            bottom: '-10px',
+                                                            right: '20px',  // 삼각형을 오른쪽으로 이동
+                                                            borderLeft: '10px solid transparent',
+                                                            borderRight: '10px solid transparent',
+                                                            borderTop: '10px solid #FFE066',
+                                                        }
+                                                    }}
+                                                />
+                                            </Grid>
+                                            <Grid
+                                                item
+                                                xs={12}
+                                                sx={{display:"flex", justifyContent:"flex-end", mt:"1rem"}}
+                                            >
+                                                <Button
+                                                    variant="contained"
+                                                    onClick={() => {
+                                                        console.log(`${item.id} 리뷰에 답변작성`);
+                                                        addReviewComment(item.id, document.getElementById("reviewCommentTextField" + item.id).value).then((res) => {
+                                                            // 성공 시 리뷰 리스트 1페이지부터 현재 페이지까지 다시 불러옴
+                                                            for(let i = 0 ; i < reviewPage + 1 ; i++){
+                                                                getReviewList(params.value, i).catch((err) => alert("리뷰 목록 다시 불러오기 실패"))
+                                                            }
+                                                        }
+                                                        ).catch((err) => alert("답변작성에 실패했습니다."))
+                                                    }}
+                                                    startIcon={<CheckIcon/>}
+                                                    sx={{
+                                                        ml:"1rem",
+                                                        width: "10rem",
+                                                        height: "3rem",
+                                                        background: "#FFFFFF",
+                                                        borderColor: "#007BFF",  // 파란계열 테두리
+                                                        color: "#007BFF",       // 파란계열 글씨
+                                                        border: "1px solid",
+                                                        '&:hover': {
+                                                            backgroundColor: "#007BFF",  // hover 시 파란색계열 배경
+                                                            color: "#FFFFFF",           // hover 시 흰색 글씨
+                                                        },
+                                                        '&:active': {
+                                                            backgroundColor: "#0056b3",  // 클릭 시 더 진한 파란색계열 배경
+                                                            color: "#FFFFFF",           // 클릭 시 흰색 글씨
+                                                        }
+                                                    }}
+                                                >
+                                                    작성완료
+                                                </Button>
+                                            </Grid>
+                                        </Grid>
+                                        {/* 작성완료버튼 **/}
+                                    </Collapse>
+
+
                                     {item.listCommentResponseDTO && (
                                         <Grid xs={12} item sx={{width:"100%", display:"flex", justifyContent:"flex-end", alignItems:"center", mt:"1.5rem"}}>
                                             <Box
@@ -2248,6 +2431,12 @@ function TeacherLectureInfo(props) {
                                                         {/* x아이콘 추가 **/}
                                                         <IconButton onClick={() => {
                                                             // 삭제 후 리뷰 목록 다시 불러옴
+                                                            delReviewComment(item.listCommentResponseDTO.id).then((res) => {
+                                                                for(let i = 0 ; i < reviewPage + 1 ; i++){
+                                                                    getReviewList(params.value, i).catch((err) => alert("리뷰 목록 다시 불러오기 실패"))
+                                                                }
+                                                            }
+                                                            ).catch((err) => alert("답변 삭제에 실패했습니다."))
                                                         }}>
                                                             <CloseIcon sx={{fontSize:"1rem"}}/>
                                                         </IconButton>

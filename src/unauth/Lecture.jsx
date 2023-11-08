@@ -6,7 +6,7 @@ import {
     Box, Button,
     createTheme,
     Divider,
-    Grid, Modal,
+    Grid, keyframes, Modal,
     ThemeProvider
 } from "@mui/material";
 import TopBar from "../component/TopNav";
@@ -24,6 +24,7 @@ import Typography from "@mui/material/Typography";
 import ReactPlayer from "react-player";
 import {useSelector} from "react-redux";
 import dayjs from "dayjs";
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 // modal에 적용할 style
 const modalStyle = {
@@ -38,6 +39,18 @@ const modalStyle = {
     borderRadius:"1vw",
 };
 
+// @emotion/react의 keyframes를 사용하여 애니메이션 정의
+const heartBurst = keyframes`
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+`;
+
 function Lecture(props) {
     const navigate = useNavigate();
 
@@ -46,6 +59,32 @@ function Lecture(props) {
     const memberId = useSelector((state) => state.memberId);
 
     const params = useParams();
+
+    const [liked, setLiked] = useState(false);
+
+    const [likedCount, setLikedCount] = useState(0); // 좋아요 갯수
+
+    const handleLikeClick = () => {
+        //setLiked(!liked);
+        // 여기서 애니메이션 상태를 관리하거나 트리거 할 수 있습니다.
+
+        // accessToken이 없는 경우 alert로 로그인 필요하다고 알려주기
+        if(!accessToken){
+            alert("로그인이 필요한 서비스입니다.")
+            navigate("/login")
+        }
+
+        // liked true인 경우 좋아요 삭제
+        if(liked){
+            console.log(params.value + "번 강의 좋아요 삭제")
+            deleteLike(params.value);
+        }
+        // liked false인 경우 좋아요 추가
+        else{
+            console.log(params.value + "번 강의 좋아요 추가")
+            addLike(params.value);
+        }
+    };
 
     const [result, setResult] = useState(null); // 1번 정보(첫번째 호출하는 api에서 주는 정보) 넣기
 
@@ -87,6 +126,34 @@ function Lecture(props) {
         ).then((res) => {
             console.log(res)
             res.data && setResult(res.data);
+        })
+    }
+
+    // 좋아요 추가
+    const addLike = async (id) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/heart/add`,
+            {
+                lectureId:id
+            },
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            // 좋아요 갯수 다시 가져오기
+            getLikeCountMember(id);
+        })
+    }
+
+    // 좋아요 삭제
+    const deleteLike = async (id) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/heart/delete`,
+            {
+                lectureId:id
+            },
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            // 좋아요 갯수 다시 가져오기
+            getLikeCountMember(id);
         })
     }
 
@@ -174,6 +241,35 @@ function Lecture(props) {
 
     }
 
+    // 좋아요 갯수 가져오기
+    const getLikeCount = async (id) => {
+        console.log("좋아요 갯수 가져오기(비회원)...")
+        const response = await axios.get(
+            `http://localhost:8099/lecture/heart/unauth/view?id=${id}`
+        ).then((res) => {
+            console.log(res)
+            if(res && res.data){
+                setLiked(false) // t,f
+                setLikedCount(res.data.interestCnt)
+            }
+        })
+    }
+
+    // 좋아요 갯수 가져오기(회원)
+    const getLikeCountMember = async (id) => {
+        console.log("좋아요 갯수 가져오기(회원)...")
+        const response = await axios.get(
+            `http://localhost:8099/lecture/heart/auth/view?id=${id}`,
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            console.log(res)
+            if(res && res.data){
+                setLiked(res.data.interest) // t,f
+                setLikedCount(res.data.interestCnt)
+            }
+        })
+    }
+
     useEffect(() => {
         getLectureInfo(params.value) // 첫번째 정보 가져옴
         getReviewList(params.value, 0);
@@ -183,6 +279,16 @@ function Lecture(props) {
         result && getTeacherInfo(result.memberId);
         result && getSectionInfo(params.value);
     }, [result])
+
+    useEffect(() => {
+        if(accessToken){
+            //로그인 된 경우엔 auth/view로 조회
+            getLikeCountMember(params.value);
+        }else{
+            //로그인 안된 경우엔 unauth/view로 조회
+            getLikeCount(params.value);
+        }
+    }, [accessToken])
 
     //리뷰다음페이지 가져오기
     useEffect(() => {
@@ -291,7 +397,17 @@ function Lecture(props) {
                               justifyContent="left"
                               alignItems="center"
                         >
-                            <p className={styles.font_teacher_name}>강사 <u>{teacher && teacher.teacherName}</u></p>
+                            <p className={styles.font_teacher_name}>{teacher && teacher.teacherName} 선생님</p>
+                            <FavoriteIcon
+                                onClick={handleLikeClick}
+                                sx={{
+                                    color: liked ? 'error.main' : 'grey.A400',
+                                    fontSize: '2.5rem',
+                                    animation: liked ? `${heartBurst} 0.5s ease-out` : 'none', // liked 상태가 true일 때만 애니메이션 적용
+                                    ml:"1rem"
+                                }}
+                            />
+                            <span className={styles.font_lecture_info_bold}>{likedCount}</span> {/* 좋아요 갯수 */}
                         </Grid>
                         <Grid item xs={12}
                               display="flex"
