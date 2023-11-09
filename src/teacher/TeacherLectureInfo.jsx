@@ -8,7 +8,7 @@ import {
     Divider, FormControlLabel,
     Grid, Modal, Radio, RadioGroup, TextField,
     ThemeProvider,
-    LinearProgress, Collapse, Fade
+    LinearProgress, Collapse, Fade, keyframes
 } from "@mui/material";
 import TopBar from "../component/TopNav";
 import DashTop from "../component/DashTop";
@@ -37,6 +37,19 @@ import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import FaceIcon from "@mui/icons-material/Face6";
 import dayjs from "dayjs";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+
+// @emotion/react의 keyframes를 사용하여 애니메이션 정의
+const heartBurst = keyframes`
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+`;
 
 
 // modal에 적용할 style
@@ -168,6 +181,10 @@ function TeacherLectureInfo(props) {
 
     const [uploadProgress, setUploadProgress] = useState(0);
 
+    const [liked, setLiked] = useState(false);
+
+    const [likedCount, setLikedCount] = useState(0); // 좋아요 갯수
+
     // 아코디언 모두 닫기
     const closeExpanded = () => {
         const array = new Array(8).fill(false); // 배열생성
@@ -290,6 +307,85 @@ function TeacherLectureInfo(props) {
             }
         ).catch((err) => console.log(err))
     }
+
+    // 좋아요 갯수 가져오기
+    const getLikeCount = async (id) => {
+        console.log("좋아요 갯수 가져오기(비회원)...")
+        const response = await axios.get(
+            `http://localhost:8099/lecture/heart/unauth/view?id=${id}`
+        ).then((res) => {
+            console.log(res)
+            if(res && res.data){
+                setLiked(false) // t,f
+                setLikedCount(res.data.interestCnt)
+            }
+        })
+    }
+
+    // 좋아요 갯수 가져오기(회원)
+    const getLikeCountMember = async (id) => {
+        console.log("좋아요 갯수 가져오기(회원)...")
+        const response = await axios.get(
+            `http://localhost:8099/lecture/heart/auth/view?id=${id}`,
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            console.log(res)
+            if(res && res.data){
+                setLiked(res.data.interest) // t,f
+                setLikedCount(res.data.interestCnt)
+            }
+        })
+    }
+
+    // 좋아요 추가
+    const addLike = async (id) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/heart/add`,
+            {
+                lectureId:id
+            },
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            // 좋아요 갯수 다시 가져오기
+            getLikeCountMember(id);
+        })
+    }
+
+    // 좋아요 삭제
+    const deleteLike = async (id) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/heart/delete`,
+            {
+                lectureId:id
+            },
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            // 좋아요 갯수 다시 가져오기
+            getLikeCountMember(id);
+        })
+    }
+
+    const handleLikeClick = () => {
+        //setLiked(!liked);
+        // 여기서 애니메이션 상태를 관리하거나 트리거 할 수 있습니다.
+
+        // accessToken이 없는 경우 alert로 로그인 필요하다고 알려주기
+        if(!accessToken){
+            alert("로그인이 필요한 서비스입니다.")
+            navigate("/login")
+        }
+
+        // liked true인 경우 좋아요 삭제
+        if(liked){
+            console.log(params.value + "번 강의 좋아요 삭제")
+            deleteLike(params.value);
+        }
+        // liked false인 경우 좋아요 추가
+        else{
+            console.log(params.value + "번 강의 좋아요 추가")
+            addLike(params.value);
+        }
+    };
 
     const handleSectionOpen = () => {
         setSectionOpen(true);
@@ -1262,7 +1358,17 @@ function TeacherLectureInfo(props) {
                             <span className={styles.font_lecture_info_bold}>{result && result.totalReview}개&nbsp;</span>
                             <span className={styles.font_lecture_info_normal}>의&nbsp;수강평&nbsp;|&nbsp;</span>
                             <span className={styles.font_lecture_info_bold}>{result && result.totalStudent}명</span>
-                            <span className={styles.font_lecture_info_normal}>&nbsp;의&nbsp;수강생</span>
+                            <span className={styles.font_lecture_info_normal}>&nbsp;의&nbsp;수강생&nbsp;|&nbsp;</span>
+                            <FavoriteIcon
+                                onClick={handleLikeClick}
+                                sx={{
+                                    color: liked ? 'error.main' : 'grey.A400',
+                                    fontSize: '2.5rem',
+                                    animation: liked ? `${heartBurst} 0.5s ease-out` : 'none', // liked 상태가 true일 때만 애니메이션 적용
+                                    ml:"1rem"
+                                }}
+                            />
+                            <span className={styles.font_lecture_info_bold}>{likedCount}</span> {/* 좋아요 갯수 */}
                         </Grid>
                         <Grid item xs={12}
                               sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}

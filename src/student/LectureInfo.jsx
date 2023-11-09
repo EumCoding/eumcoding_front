@@ -6,7 +6,7 @@ import {
     Box, Button, Collapse,
     createTheme,
     Divider, Fade, FormControlLabel,
-    Grid, LinearProgress, Modal, Radio, RadioGroup, TextField,
+    Grid, keyframes, LinearProgress, Modal, Radio, RadioGroup, TextField,
     ThemeProvider
 } from "@mui/material";
 import TopBar from "../component/TopNav";
@@ -27,6 +27,17 @@ import ClearIcon from "@mui/icons-material/Clear";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import CheckIcon from "@mui/icons-material/Check";
 
+// @emotion/react의 keyframes를 사용하여 애니메이션 정의
+const heartBurst = keyframes`
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+`;
 
 function LectureInfo(props) {
     const navigate = useNavigate();
@@ -61,6 +72,10 @@ function LectureInfo(props) {
 
     // answer collapse state
     const [isAnswerCollapseOpen, setIsAnswerCollapseOpen] = useState([]); // Collapse 제어를 위한 상태
+    const [liked, setLiked] = useState(false);
+
+    const [likedCount, setLikedCount] = useState(0); // 좋아요 갯수
+
 
     const handleQuestionCollapseToggle = (idx) => {
         // 해당 idx의 상태값만 반대값으로 변경
@@ -338,6 +353,85 @@ function LectureInfo(props) {
             }
         )
     }
+
+    // 좋아요 갯수 가져오기
+    const getLikeCount = async (id) => {
+        console.log("좋아요 갯수 가져오기(비회원)...")
+        const response = await axios.get(
+            `http://localhost:8099/lecture/heart/unauth/view?id=${id}`
+        ).then((res) => {
+            console.log(res)
+            if(res && res.data){
+                setLiked(false) // t,f
+                setLikedCount(res.data.interestCnt)
+            }
+        })
+    }
+
+    // 좋아요 갯수 가져오기(회원)
+    const getLikeCountMember = async (id) => {
+        console.log("좋아요 갯수 가져오기(회원)...")
+        const response = await axios.get(
+            `http://localhost:8099/lecture/heart/auth/view?id=${id}`,
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            console.log(res)
+            if(res && res.data){
+                setLiked(res.data.interest) // t,f
+                setLikedCount(res.data.interestCnt)
+            }
+        })
+    }
+
+    // 좋아요 추가
+    const addLike = async (id) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/heart/add`,
+            {
+                lectureId:id
+            },
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            // 좋아요 갯수 다시 가져오기
+            getLikeCountMember(id);
+        })
+    }
+
+    // 좋아요 삭제
+    const deleteLike = async (id) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/heart/delete`,
+            {
+                lectureId:id
+            },
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            // 좋아요 갯수 다시 가져오기
+            getLikeCountMember(id);
+        })
+    }
+
+    const handleLikeClick = () => {
+        //setLiked(!liked);
+        // 여기서 애니메이션 상태를 관리하거나 트리거 할 수 있습니다.
+
+        // accessToken이 없는 경우 alert로 로그인 필요하다고 알려주기
+        if(!accessToken){
+            alert("로그인이 필요한 서비스입니다.")
+            navigate("/login")
+        }
+
+        // liked true인 경우 좋아요 삭제
+        if(liked){
+            console.log(params.value + "번 강의 좋아요 삭제")
+            deleteLike(params.value);
+        }
+        // liked false인 경우 좋아요 추가
+        else{
+            console.log(params.value + "번 강의 좋아요 추가")
+            addLike(params.value);
+        }
+    };
 
 
     const theme = createTheme({ // Theme
