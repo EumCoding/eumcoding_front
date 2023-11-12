@@ -16,6 +16,7 @@ import {useDaumPostcodePopup} from "react-daum-postcode";
 
 function MyPage(props) {
     const accessToken = useSelector((state) => state.accessToken); // 엑세스 토큰
+    const role = useSelector((state) => state.role); // 역할
 
     const [profile, setProfile] = useState(null); // 프로필 저장될 부분
 
@@ -35,6 +36,11 @@ function MyPage(props) {
     const [nickEdit, setNickEdit] = useState(false);
     const [pwEdit, setPwEdit] = useState(false); // 비밀번호 편집 시 true
     const [telEdit, setTelEdit] = useState(false); // 전화번호 편집 시 true
+
+    // 학부모만 사용하는 state
+    const [childList, setChildList] = useState([]); // 자녀 리스트
+    const [isChild, setIsChild] = useState(false); // 자녀가 있는지 없는지 판별
+    const [isParent, setIsParent] = useState(false); // 학부모인지 아닌지 판별
 
 
     const theme = createTheme({ // Theme
@@ -183,6 +189,64 @@ function MyPage(props) {
             alert("비밀번호를 확인해주세요.")
         })
     }
+
+    // 학부모인 경우 호출할 자녀 리스트 api
+    const getChildList = async () => {
+        const response = await axios.get(
+            `http://localhost:8099/parent/children/list`, {
+                headers:{'Authorization': `${accessToken}`,}
+            }
+        ).then((res) => {
+                setChildList(res.data);
+                setIsChild(true); // 자녀가 있음
+                console.log(res);
+            }
+        ).catch((err) => {
+            setIsChild(false)
+            console.log(err);
+        })
+    }
+
+    // 이메일 인증번호 요청
+    const sendConfirmEmail = async (paramEmail) => {
+        const response = await axios.post(
+            `http://localhost:8099/parent/request?childEmail=${paramEmail}`,null, {
+                headers:{'Authorization': `${accessToken}`,}
+            }
+        ).then((res) => {
+                alert("자녀의 이메일로 인증번호를 보냈습니다.");
+            }
+        ).catch((err) => {
+            alert("가입되지 않았거나 이미 등록된 자녀입니다.")
+        })
+    }
+
+    // 인증번호 인증하기
+    const confirmEmail = async (paramEmail, paramCode) => {
+        // 인코딩
+        const tempEmail = encodeURIComponent(paramEmail);
+        const tempCode = encodeURIComponent(paramCode);
+        const response = await axios.post(
+            `http://localhost:8099/parent/verify?childEmail=${tempEmail}&verificationNumber=${tempCode}`,null, {
+                headers:{'Authorization': `${accessToken}`,}
+            }
+        ).then((res) => {
+                alert("인증되었습니다.");
+                // 자녀리스트 다시 가져오기
+                getChildList();
+            }
+        ).catch((err) => {
+            alert("인증번호가 틀렸습니다.")
+        })
+    }
+
+    useEffect(() => {
+        if(role === "3"){
+            console.log("학부모... 자녀리스트 호출...")
+            getChildList();
+            setIsParent(true);
+        }
+    }, [role]);
 
     return (
         <ThemeProvider theme={theme}>
@@ -433,6 +497,84 @@ function MyPage(props) {
                         )}
                     </Typography>
                 </Grid>
+
+                {/* 자녀가 없는 경우 자녀를 등록함 **/}
+                {isChild === false && isParent && (
+                    <Grid item container xs={12}>
+                        <Grid item xs={4}
+                              display="flex"
+                              justifyContent="center"
+                              alignItems="center"
+                              sx={{pb:"3rem"}}
+                        >
+                            <Typography sx={{fontWeight:'800', fontSize:'1.5rem'}}>자녀등록</Typography>
+                        </Grid>
+                        <Grid item container xs={8}
+                              display="flex"
+                              justifyContent="flex-start"
+                              alignItems="center"
+                              sx={{pb:"3rem"}}
+                        >
+                            <Grid item xs={9}>
+                                <TextField fullWidth size={"small"} label={"자녀이메일"} type={"email"} id={"childEmail"}/>
+                            </Grid>
+                            <Grid item xs={3} sx={{pl:"1rem"}}>
+                                <Button variant={"contained"} color={"primary"} fullWidth id={"sendConfirmEmail"}
+                                onClick={() => {
+                                    const childEmail = document.getElementById("childEmail").value;
+                                    sendConfirmEmail(childEmail).then((res) => {
+                                        // 성공 시 childEmail textfiled 잠그기
+                                        document.getElementById("childEmail").disabled = true;
+                                        // 버튼도 잠그기
+                                        document.getElementById("sendConfirmEmail").disabled = true;
+                                    })
+                                }}
+                                >인증번호 보내기</Button>
+                            </Grid>
+                            <Grid item xs={9} sx={{mt:"1rem"}}>
+                                <TextField fullWidth size={"small"} label={"인증번호"} id={"confirmNumber"}/>
+                            </Grid>
+                            <Grid item xs={3} sx={{pl:"1rem", mt:"1rem"}} type={"number"}>
+                                <Button variant={"contained"} color={"primary"} fullWidth
+                                onClick={() => {
+                                    const childEmail = document.getElementById("childEmail").value;
+                                    const confirmNumber = document.getElementById("confirmNumber").value;
+                                    confirmEmail(childEmail, confirmNumber);
+                                }}
+                                >인증하기</Button>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                )}
+                {/* 자녀가 있는 경우 자녀를 출력함 **/}
+                {isChild && (
+                    <Grid item container xs={12}>
+                        <Grid item xs={4}
+                              display="flex"
+                              justifyContent="center"
+                              alignItems="center"
+                              sx={{pb:"3rem"}}
+                        >
+                            <Typography sx={{fontWeight:'800', fontSize:'1.5rem'}}>자녀리스트</Typography>
+                        </Grid>
+                        <Grid item container xs={8}
+                              display="flex"
+                              justifyContent="flex-start"
+                              alignItems="center"
+                              sx={{pb:"3rem", display:"flex", alignItems:"center"}}
+                        >
+                                {childList.rci.map((child) => (
+                                        <Typography
+                                            display="flex"
+                                            justifyContent="flex-start"
+                                            alignItems="center"
+                                            sx={{fontWeight:'800', fontSize:'1rem', color:'#000000'}}>
+                                            {child.name}({child.email})
+                                        </Typography>
+                                ))}
+                        </Grid>
+                    </Grid>
+                )}
             </Grid>
         </ThemeProvider>
     );

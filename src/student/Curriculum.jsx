@@ -1,8 +1,9 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
-import {createTheme, ThemeProvider} from "@mui/material";
+import {createTheme, Grid, ThemeProvider} from "@mui/material";
 import DashTop from "../component/DashTop";
+import axios from "axios";
 
 function Curriculum(props) {
 
@@ -37,9 +38,33 @@ function Curriculum(props) {
         },
     });
 
+    // 내 커리큘럼에 해당하는 섹션 진도율 및 정보
+    const getMyPlanInfo = async () => {
+        const response = await axios.get(
+            `http://localhost:8099/member/myplan/list/info`,
+            {headers: {Authorization: `${accessToken}`}}
+        ).then((res) => {
+            console.log(res)
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
+
+    useEffect(() => {
+        if(accessToken){
+            getMyPlanInfo();
+        }
+    }, [accessToken])
+
     return (
         <ThemeProvider theme={theme}>
             <DashTop/>
+            <Grid container sx={{width:"100%", height:"100vh", py:"1rem"}}>
+                <Grid xs={4} item>
+                    {/* 이번주 진행률 **/}
+                </Grid>
+                <Grid xs={8} item></Grid>
+            </Grid>
         </ThemeProvider>
     );
 }

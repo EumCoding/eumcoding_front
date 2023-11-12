@@ -13,6 +13,8 @@ import axios from "axios";
 function DashBoard(props) {
     const accessToken = useSelector((state) => state.accessToken); // 엑세스 토큰
 
+    const role = useSelector((state) => state.role); // 역할
+
     const [profile, setProfile] = useState(null); // 프로필 저장될 부분
 
     const navigate = useNavigate()
@@ -37,15 +39,37 @@ function DashBoard(props) {
         }).catch((err) => console.log(err))
     }
 
+    // 자녀 리스트 가져오기
+    const getChildList = async () => {
+        console.log("자녀 리스트 가져오기...");
+        const response = await axios.get(
+            `http://localhost:8099/parent/children/list`,
+            {
+                headers:{Authorization: `${accessToken}`,}
+            }
+        ).then((res) => {
+            console.log(res)
+        }).catch((err) => {
+                // 자녀가 등록되어 있지 않다는 alert 띄우고 확인 누르면 이동
+            if (window.confirm("자녀가 등록되어 있지 않습니다. 자녀를 등록하시겠습니까?")) {
+                navigate("/my/profile");
+            }
+            })
+    }
+
     useEffect(() => {
-        getProfile();
+        if(accessToken){
+            getProfile();
+            getChildList();
+        }
+
     },[,accessToken])
 
     return (
         <ThemeProvider theme={theme}>
             <DashTop/>
 
-            <Grid container sx={{px: { xs: "5%", sm: "10%", md: "10%" }, mt:"5px"}}>
+            <Grid container sx={{px: { xs: "5%", sm: "10%", md: "10%" }, mt:"30px"}}>
                 <Grid item container xs={4} sx={{pr:"10px"}}>
                     <Grid item xs={12} container sx={{
                         width:"100%",
@@ -114,7 +138,7 @@ function DashBoard(props) {
                     </Grid>
                 </Grid>
 
-                {/* 최근 학습 강의 **/}
+                {/* 자녀 커리큘럼 관리 **/}
                 <Grid item container xs={4} sx={{px:"20px"}}>
                     <Grid item xs={12} container sx={{
                         width:"100%",
@@ -126,7 +150,7 @@ function DashBoard(props) {
                         position: "relative"
                     }}>
                         <Grid item xs={12} sx={{pt: "2rem"}}>
-                            <span className={styles.font_main}>최근 학습 강의</span>
+                            <span className={styles.font_main}>자녀 커리큘럼 관리</span>
                         </Grid>
                         <Grid item
                               display="flex"
@@ -200,7 +224,7 @@ function DashBoard(props) {
                         position: "relative"
                     }}>
                         <Grid item xs={12} sx={{pt: "2rem"}}>
-                            <span className={styles.font_main}>뱃지</span>
+                            <span className={styles.font_main}>자녀 학습통계</span>
                         </Grid>
                         <Grid item
                               container
@@ -212,18 +236,11 @@ function DashBoard(props) {
                                   display="flex"
                                   justifyContent="center"
                                   alignItems="center"
-                                  xs={12}>
-                                <LocalPoliceIcon sx={{fontSize: '4rem', color: '#8D8D8D'}}/>
-                            </Grid>
-                            <Grid item
-                                  display="flex"
-                                  justifyContent="center"
-                                  alignItems="center"
                                   xs={12}
                                   sx={{mt:'1rem'}}
                             >
                                 <span className={styles.font_normal}>
-                                    보유중인 뱃지가 없어요!
+                                    자녀학습통계...
                                 </span>
                             </Grid>
                         </Grid>
@@ -241,198 +258,7 @@ function DashBoard(props) {
                                     }
                                 }}
                             >
-                                <span className={styles.font_btn}>뱃지 고르러 가기</span>
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </Grid>
-            </Grid>
-
-
-            {/* 학습 계획 **/}
-            <Grid container  sx={{px: { xs: "5%", sm: "10%"}, mt:"5px"}}>
-
-                <Grid item container xs={4} sx={{pr:"10px"}}>
-                    <Grid item xs={12} container sx={{
-                        width:"100%",
-                        border: 1,
-                        borderColor: "#A2A2A2",
-                        borderRadius: "10px",
-                        px: "1.5rem",
-                        paddingBottom: '40%',
-                        position: "relative"
-                    }}>
-                        <Grid item xs={12} sx={{pt: "2rem"}}>
-                            <span className={styles.font_main}>학습 계획</span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="flex-start"
-                              alignItems="center"
-                              xs={12} sx={{pt: "1rem"}}>
-                                <span className={styles.font_normal}>
-                                    2023년 3월 25일
-                                </span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="flex-start"
-                              alignItems="center"
-                              xs={12} sx={{pt: "2rem"}}>
-                                <span className={styles.font_gray}>
-                                    오늘 수강할 강의
-                                </span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="flex-start"
-                              alignItems="center"
-                              xs={12} sx={{pt: "2rem"}}>
-                                <span className={styles.font_gray}>
-                                    무작정 따라하는 우리아이 ... 1강 : 5%
-                                </span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="center"
-                              alignItems="center"
-                              xs={12} sx={{pt: "1rem"}}>
-                            <Button
-                                sx={{
-                                    width: "92%", mb: "1rem", height: "4rem",
-                                    background: '#0B401D', borderRadius: '10px', position: 'absolute', bottom: 0,
-                                    '&:hover': {
-                                        background: "green",  // 호버시 버튼 배경색
-                                    }
-                                }}
-                                onClick={() => navigate("/student/curriculum")}
-                            >
-                                <span className={styles.font_btn}>전체보기</span>
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </Grid>
-
-                {/* 최근 질문 **/}
-                <Grid id='recent' item container xs={4}  sx={{px:"20px"}}>
-                    <Grid item xs={12} container sx={{
-                        width:"100%",
-                        border: 1,
-                        borderColor: "#A2A2A2",
-                        borderRadius: "10px",
-                        px: "1.5rem",
-                        paddingBottom: '40%',
-                        position: "relative"
-                    }}>
-                        <Grid item xs={12} sx={{pt: "2rem"}}>
-                            <span className={styles.font_main}>최근 질문</span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="flex-start"
-                              alignItems="center"
-                              xs={10} sx={{ pt: "1rem"}}>
-                                <span className={styles.font_normal}>
-                                    Q. 1강에 1번 문제가 이상해요
-                                </span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="flex-start"
-                              alignItems="center"
-                              xs={12} sx={{pt: "2rem"}}>
-                                <span className={styles.font_gray}>
-                                    잘 몰?루 겠어요
-                                </span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="flex-start"
-                              alignItems="center"
-                              xs={12} sx={{pt: "2rem"}}>
-                                <span className={styles.font_a}>
-                                    답변이 달렸어요!
-                                </span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="center"
-                              alignItems="center"
-                              xs={12} sx={{pt: "1rem"}}>
-                            <Button
-                                sx={{
-                                    width: "92%", mb: "1rem", height: "4rem",
-                                    background: '#0B401D', borderRadius: '10px', position: 'absolute', bottom: 0,
-                                    '&:hover': {
-                                        background: "green",  // 호버시 버튼 배경색
-                                    }
-                                }}
-                            >
-                                <span className={styles.font_btn}>전체보기</span>
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </Grid>
-
-                {/* 최근 리뷰 **/}
-                <Grid id='review' item container xs={4} sx={{pl:"10px"}}>
-                    <Grid item xs={12} container sx={{
-                        width:"100%",
-                        border: 1,
-                        borderColor: "#A2A2A2",
-                        borderRadius: "10px",
-                        px: "1.5rem",
-                        paddingBottom: '40%',
-                        position: "relative"
-                    }}>
-                        <Grid item xs={12} sx={{pt: "2rem"}}>
-                            <span className={styles.font_main}>최근 리뷰</span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="flex-start"
-                              alignItems="center"
-                              xs={12} sx={{pt: "1rem"}}>
-                                <span className={styles.font_normal}>
-                                    무작정 따라하는 우리아이 첫 코딩교육
-                                </span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="flex-start"
-                              alignItems="center"
-                              xs={12} sx={{pl:0, pt: "0"}}>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>
-                            <StarIcon sx={{ color: '#F2D857', fontSize: '2rem' }}/>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="flex-start"
-                              alignItems="center"
-                              xs={12} sx={{pt: "2rem"}}>
-                                <span className={styles.font_a}>
-                                    답변이 달렸어요!
-                                </span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="center"
-                              alignItems="center"
-                              xs={12} sx={{pt: "1rem"}}>
-                            <Button
-                                sx={{
-                                    width: "92%", mb: "1rem", height: "4rem",
-                                    background: '#0B401D', borderRadius: '10px', position: 'absolute', bottom: 0,
-                                    '&:hover': {
-                                        background: "green",  // 호버시 버튼 배경색
-                                    }
-                                }}
-                                onClick={() => navigate("/my/review")}
-                            >
-                                <span className={styles.font_btn}>전체보기</span>
+                                <span className={styles.font_btn}>자세히보기</span>
                             </Button>
                         </Grid>
                     </Grid>

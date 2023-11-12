@@ -499,17 +499,19 @@ function MyQuestion(props) {
                                       }
                                       }
                                 >
-                                    <Box sx={{fontWeight:"700", fontSize:"1.3rem", display:"inline", }}>
-                                        <Typography sx={{fontWeight:"700", fontSize:"1.3rem"}}>
-                                            {item.title}
+                                    <Grid item xs={12} sx={{display:"flex", justifyContent:"space-between"}}>
+                                        <Box sx={{display:"inline"}}>
+                                            <Typography sx={{fontWeight:"700", fontSize:"1.3rem"}}>
+                                                {item.title}
+                                            </Typography>
+                                            <Typography sx={{fontWeight:"700", fontSize:"1rem", color:"#A2A2A2"}}>
+                                                작성자 : {item.nickname}
+                                            </Typography>
+                                        </Box>
+                                        <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D", display:"inline", pr:"1rem", alignItems:"center"}}>
+                                            {item.date} | {item.answer === 0 ? "미답변" : "답변완료"}
                                         </Typography>
-                                        <Typography sx={{fontWeight:"700", fontSize:"1rem", color:"#A2A2A2"}}>
-                                            작성자 : {item.nickname}
-                                        </Typography>
-                                    </Box>
-                                    <Typography sx={{fontWeight:"900", fontSize:"1rem", color:"#8D8D8D", display:"inline", pr:"1rem", alignItems:"center"}}>
-                                        {item.date} | {item.answer === 0 ? "미답변" : "답변완료"}
-                                    </Typography>
+                                    </Grid>
                                     <Grid item xs={6} sx={{
                                         p: "5px",
                                         transition: '0.3s',

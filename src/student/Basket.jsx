@@ -46,7 +46,24 @@ function Basket(props) {
                 headers: {Authorization: `${accessToken}`,}
             }
         )
-        getBasket()
+        getBasket();
+    }
+
+    // 결제
+    const pay = async () => {
+        if(result && result.length > 0){
+            const response = await axios.post(
+                `http://localhost:8099/payment/ok?basketId=${result[0].basketId}`,
+                null,
+                {
+                    headers: {Authorization: `${accessToken}`,}
+                }
+            ).then((res) => {
+                alert("결제가 완료되었습니다.");
+            })
+        }else {
+            alert("장바구니가 비어있습니다.");
+        }
     }
 
     useEffect(() => {
@@ -254,7 +271,12 @@ function Basket(props) {
                             </Typography>
                         </Grid>
                         <Grid xs={12} item sx={{pt:"1rem", pb:"0.5rem"}}>
-                            <Button sx={{backgroundColor:"#3767A6", height:"150%", borderRadius:"0.5vw", }} fullWidth>
+                            <Button sx={{backgroundColor:"#3767A6", height:"150%", borderRadius:"0.5vw", }} fullWidth
+                                onClick={() => pay().then((res) => {
+                                    // 다시 로드하기
+                                    getBasket();
+                                })}
+                            >
                                 <Typography sx={{fontWeight:"900", fontSize:"1em", color:"#FFFFFF"}}>
                                     결제하기
                                 </Typography>

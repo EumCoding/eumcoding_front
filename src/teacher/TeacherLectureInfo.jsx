@@ -1753,7 +1753,7 @@ function TeacherLectureInfo(props) {
                                         return(
 
                                                 <Grid item container sx={{width:"100%"}}>
-                                                    <Grid item xs={7} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
+                                                    <Grid item xs={5} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
                                                         <div style={{display: 'flex', alignItems: 'center', flexGrow: 1, width:"60%"}}>
                                                             <Box position="relative" sx={{width:"100px", aspectRatio:"16/9", overflow:"hidden"}}>
                                                                 <img loading={"lazy"} src={subItem.thumb} style={{width:"100%", height:"100%", objectFit:"cover"}}/>
@@ -1761,11 +1761,30 @@ function TeacherLectureInfo(props) {
                                                             <span className={styles.font_curriculum_content}>{subItem.name}</span>
                                                         </div>
                                                     </Grid>
-                                                    <Grid item xs={5} display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
+                                                    <Grid item xs={7} display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
+                                                        <Button
+                                                            variant="contained"
+                                                            onClick={() => {
+                                                                // 문제수정
+                                                            }}
+                                                            startIcon={<EditIcon sx={{ color: "#FFFFFF" }} />} // 아이콘의 색상을 흰색으로 설정
+                                                            sx={{
+                                                                background: '#2196f3', // 파란색 계열의 배경색
+                                                                borderRadius: '10px',
+                                                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', // 그림자 추가
+                                                                height: '40px', // 높이 설정
+                                                                '&:hover': {
+                                                                    background: "#1976d2", // 호버 시 더 어두운 파란색
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Typography sx={{ color: "#FFFFFF" }}>문제수정</Typography>
+                                                        </Button>
 
                                                         <Button
                                                             variant="contained"
                                                             sx={{
+                                                                ml:3,
                                                                 background: '#4caf50', // Greenish color for upwards movement
                                                                 borderRadius: '10px',
                                                                 boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',

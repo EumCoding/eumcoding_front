@@ -28,6 +28,8 @@ import TeacherDashBoard from "./teacher/TeacherDashBoard";
 import TeacherMyLectureList from "./teacher/TeacherMyLectureList";
 import NewLecture from "./teacher/NewLecture";
 import TeacherLectureInfo from "./teacher/TeacherLectureInfo"
+import EmailConfirm from "./unauth/EmailConfirm";
+import ParentDashboard from "./parent/ParentDashboard";
 
 
 function App() {
@@ -45,15 +47,14 @@ function App() {
                         dispatch(setRole(Cookies.get('role')));
                 if(Cookies.get('memberId'))
                         dispatch(setMemberId(Cookies.get('memberId')));
-                if(!accessToken && !Cookies.get('accessToken')){
-                        navigate("/login");
-                }
         },[])
 
     return (
         <Routes>
             {/*test**/}
             <Route path="/test" element={<Test/>}/>
+            {/* 이메일확인 **/}
+            <Route path="/email/confirm/:value" element={<EmailConfirm/>}/>
             {/* 회원가입 */}
             <Route path="/joinSelect" element={<JoinSelect/>}/>
                 {/* 학생 회원가입 */}
@@ -99,6 +100,8 @@ function App() {
             <Route path={"/teacher/newLecture"} element={<NewLecture />}/>
                 {/* 강의 추가 **/}
                 <Route path={"/teacher/lectureInfo/:value"} element={<TeacherLectureInfo />}/>
+            {/* 학부모 dashboard **/}
+            <Route path={"/parent/dashboard"} element={<ParentDashboard />}/>
 
         </Routes>
 
