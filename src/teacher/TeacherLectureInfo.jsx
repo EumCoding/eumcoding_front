@@ -8,7 +8,7 @@ import {
     Divider, FormControlLabel,
     Grid, Modal, Radio, RadioGroup, TextField,
     ThemeProvider,
-    LinearProgress, Collapse, Fade, keyframes
+    LinearProgress, Collapse, Fade, keyframes, FormControl, InputLabel, Select, MenuItem
 } from "@mui/material";
 import TopBar from "../component/TopNav";
 import DashTop from "../component/DashTop";
@@ -38,6 +38,9 @@ import IconButton from "@mui/material/IconButton";
 import FaceIcon from "@mui/icons-material/Face6";
 import dayjs from "dayjs";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import AddIcon from '@mui/icons-material/Add';
+import BlockList from "../component/BlockList";
+
 
 // @emotion/react의 keyframes를 사용하여 애니메이션 정의
 const heartBurst = keyframes`
@@ -68,6 +71,7 @@ const modalStyle = {
 
 // 강사 side의 강의 정보를 표시하고 수정합니다.
 function TeacherLectureInfo(props) {
+
     const [newSectionName, setNewSectionName] = useState(""); // 새로운 Section 이름
 
     const navigate = useNavigate();
@@ -106,6 +110,9 @@ function TeacherLectureInfo(props) {
 
     // answer collapse state
     const [isAnswerCollapseOpen, setIsAnswerCollapseOpen] = useState([]); // Collapse 제어를 위한 상태
+
+    //  문제 리스트
+    const [videoTestList, setVideoTestList] = useState([]);
 
     const handleQuestionCollapseToggle = (idx) => {
         // 해당 idx의 상태값만 반대값으로 변경
@@ -158,7 +165,7 @@ function TeacherLectureInfo(props) {
     const [fileName, setFileName] = useState(''); // 파일명을 저장할 state
 
     // Video 수정용 state들
-    const [videoId, setVideoId] = useState(""); // Video 아이디 - 이 state로 Video 정보를 가져옴
+    const [videoId, setVideoId] = useState(""); // Video 아이디
     const [videoResult, setVideoResult] = useState(null); // 동영상 정보 담을 곳
 
     // Video 정보 수정용 state들...
@@ -184,6 +191,24 @@ function TeacherLectureInfo(props) {
     const [liked, setLiked] = useState(false);
 
     const [likedCount, setLikedCount] = useState(0); // 좋아요 갯수
+
+    const [videoTestCollapse, setVideoTestCollapse] = useState([]); // 문제리스트 collapse
+
+    // video test 용 문제 type
+    const [videoTestType, setVideoTestType] = useState(0);
+
+    // video test용 block 또는 보기 리스트
+    const [videoTestBlockList, setVideoTestBlockList] = useState([]);
+
+    // video test용 modal state
+    const [videoTestAddOpen, setVideoTestAddOpen] = useState(false);
+
+    // video test add용 block
+    const [videoTestBlock, setVideoTestBlock] = useState("");
+
+    // video test용 modal state의 함수
+    const handleVideoTestAddOpen = () => setVideoTestAddOpen(true);
+    const handleVideoTestAddClose = () => setVideoTestAddOpen(false);
 
     // 아코디언 모두 닫기
     const closeExpanded = () => {
@@ -723,6 +748,175 @@ function TeacherLectureInfo(props) {
         </Box>
     );
 
+    // video test 추가용 modal
+    const videoTestAddBody = (
+        <Grid
+            container
+            sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '80vw',
+                maxWidth: 800,
+                bgcolor: 'background.paper',
+                border: '1px solid #e0e0e0',
+                borderRadius: 2,
+                boxShadow: 24,
+                p: 7,
+            }}
+        >
+            <Grid xs={12} item sx={{display:"flex", justifyContent:"center", alignItems:"center", py:"1rem"}}>
+                <Typography sx={{fontWeight:"800", fontSize:"1.5rem"}}>
+                    문제추가
+                </Typography>
+            </Grid>
+            {/* 문제 type **/}
+            <Grid item xs={12} sx={{display:"flex", justifyContent:"center", alignItems:"center"}}>
+                <RadioGroup
+                    row // 이 속성을 추가하여 라디오 버튼들이 가로로 표시되도록 함
+                    id="addVideoTestRadio"
+                    value={videoTestType.toString()} // videoTestType 상태를 문자열로 변환
+                    onChange={(e) => {
+                        // int형으로 변환해 videoTestType state에 할당
+                        setVideoTestType(parseInt(e.target.value));
+                        // 바뀔 때 마다 videoTestBlockList 초기화
+                        setVideoTestBlockList([]);
+                        // 답도 초기화
+                        document.getElementById("videoTestAnswerInput").value = "";
+                    }}
+                >
+                    {/* 객관식... value 0 */}
+                    <FormControlLabel value="0" control={<Radio />} defaultValue label="객관식"/>
+                    {/* 블럭코딩... value 1 */}
+                    <FormControlLabel value="1" control={<Radio />} label="블럭코딩"/>
+                </RadioGroup>
+            </Grid>
+            {/* 문제제목 **/}
+            <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                <TextField
+                    id="videoTestTitleInput"
+                    fullWidth
+                    label="문제 제목"
+                    size="small"
+                    sx={{
+                        '& .MuiInputBase-root': {
+                            height: '40px', // TextField 높이 설정
+                        },
+                        display:"inline",
+                    }}
+                />
+            </Grid>
+            {/* 답 **/}
+            <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                <TextField
+                    id="videoTestAnswerInput"
+                    fullWidth
+                    label="답"
+                    size="small"
+                    sx={{
+                        '& .MuiInputBase-root': {
+                            height: '40px', // TextField 높이 설정
+                        },
+                        display:"inline",
+                    }}
+                    type={videoTestType === 0 ? "number" : "text"}
+                />
+            </Grid>
+            <Grid xs={12} item sx={{mt:"2rem"}}>
+                <Typography sx={{fontWeight:"700", fontSize:"1rem"}}>
+                    [{videoTestType === 0 ? "보기" : "블럭"}]
+                </Typography>
+            </Grid>
+            {/* videoTestType이 0인 경우... 객관식 보기 리스트 추가 **/}
+            {videoTestType === 0 && videoTestBlockList.map((item, idx) => {
+                return(
+                    <Grid xs={12} item sx={{pt:"0.3rem"}}>
+                        <Typography sx={{fontWeight:"500", fontSize:"1rem", display:"flex", alignItems:"center"}}>
+                            [{idx+1}]. {item} <ClearIcon onClick={() =>
+                                // 해당 idx의 item만 pop
+                                setVideoTestBlockList(videoTestBlockList.filter((item, index) => index !== idx))
+                            } />
+                        </Typography>
+                    </Grid>
+                )
+            })}
+            {videoTestType === 0 && (
+                <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                        <TextField
+                            id="videoTestBlockInput"
+                            fullWidth
+                            label="보기"
+                            size="small"
+                            sx={{
+                                '& .MuiInputBase-root': {
+                                    height: '40px', // TextField 높이 설정
+                                },
+                                display:"inline",
+                                width:"80%"
+                            }}
+                        />
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon sx={{ color: "#FFFFFF" }} />}
+                            sx={{
+                                height: '40px', // 버튼 높이를 TextField와 동일하게 설정
+                                background: '#4caf50',
+                                borderRadius: '10px',
+                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                                '&:hover': {
+                                    background: "#388e3c",
+                                },
+                                width:"15%"
+                            }}
+                            onClick={() => {
+                                // 추가 버튼 클릭 시 실행될 로직
+                                // videoTestBlockList state에 추가
+                                const temp = JSON.parse(JSON.stringify(videoTestBlockList)); // 깊은복사
+                                // 값이 없을때에 대한 예외처리
+                                if(document.getElementById("videoTestBlockInput").value === ""){
+                                    alert("값을 입력해주세요");
+                                    return;
+                                }
+                                temp.push(document.getElementById("videoTestBlockInput").value);
+                                setVideoTestBlockList(temp);
+                                // 추가 후 input 초기화
+                                document.getElementById("videoTestBlockInput").value = "";
+                            }}
+                        >
+                            <Typography sx={{ color: "#FFFFFF" }}>추가</Typography>
+                        </Button>
+                </Grid>
+            )}
+            {/* 블록코딩을 선택한 경우에는 블록 드랍다운 출력 **/}
+            {videoTestType === 1 && (
+                <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                    <FormControl fullWidth>
+                        <InputLabel id={"videoTestBlockLabel"} >블록선택</InputLabel>
+                        {/* 블록리스트 **/}
+                        <Select
+                            labelId={"videoTestBlockLabel"}
+                            id={"videoTestBlockSelect"}
+                            label={"블록선택"}
+                            onChange={(e) => {
+                                // 선택한 블록을 리스트에 추가
+                            }}
+                            onClick={() => console.log(BlockList)}
+                        >
+                            {BlockList.map((blockItem, blockIdx) => {
+                                return(
+                                    <MenuItem value={blockItem.code} >
+                                        {blockItem.text}
+                                    </MenuItem>
+                                )
+                            })}
+                        </Select>
+                    </FormControl>
+                </Grid>
+            )}
+        </Grid>
+    )
+
 
     // Section 이름 수정
     const updateSectionName = async (id, name) => { // id: 강의아이디, name: 강의명
@@ -772,11 +966,24 @@ function TeacherLectureInfo(props) {
             `http://localhost:8099/lecture/section/unauth/list?id=${id}`
         ).then((res) => {
             console.log(res)
-            res.data && setSection(res.data);
-            // Section의 갯수만큼 expanded에 false 넣기
-            const array = new Array(res.data.length).fill(false); // 배열생성
-            setExpanded(array); // expanded state에 할당
-            setEditTimetaken(array) // editTimetaken state 에 할당
+            if(res.data){
+                res.data && setSection(res.data);
+                // Section의 갯수만큼 expanded에 false 넣기
+                const array = new Array(res.data.length).fill(false); // 배열생성
+                setExpanded(array); // expanded state에 할당
+                setEditTimetaken(array) // editTimetaken state 에 할당
+                // [section의 갯수][video의 갯수]의 2차원 배열 생성 후 전부 false로 채우기
+                // 각 섹션별 비디오 개수에 따라 2차원 배열 생성 후 모든 값을 false로 초기화
+                const videoStatusArray = res.data.map((section, idx) =>
+                    new Array(section.videoDTOList.length).fill(false)
+                );
+                // video test
+                const videoTestArray = res.data.map((section, idx) =>
+                    new Array(section.videoDTOList.length).fill(null)
+                );
+                setVideoTestCollapse(videoStatusArray);
+                setVideoTestList(videoTestArray);
+            }
         })
     }
 
@@ -1166,6 +1373,29 @@ function TeacherLectureInfo(props) {
         )
     }
 
+    // video test list 가져오는 api
+    const getVideoTestList = async (videoId, idx, subIdx) => {
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/video/test/list`,
+            {
+                id:videoId
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        ).then((res) => {
+            console.log(res)
+            if(res.data){
+                // state의 해당하는 [idx][subIdx]에 할당
+                const temp = JSON.parse(JSON.stringify(videoTestList));
+                temp[idx][subIdx] = res.data;
+                setVideoTestList(temp);
+            }
+        })
+    }
+
 
     const theme = createTheme({ // Theme
         typography: {
@@ -1232,6 +1462,17 @@ function TeacherLectureInfo(props) {
                 aria-describedby="modal-description"
             >
                 {editVideoBody}
+            </Modal>
+
+            {/* add Video test Modal **/}
+            <Modal
+                open={videoTestAddOpen}
+
+                onClose={handleVideoTestAddClose}
+                aria-labelledby="modal-title"
+                aria-describedby="modal-description"
+            >
+                {videoTestAddBody}
             </Modal>
 
             <Grid container sx={{width:"100%", mb:"10rem"}}>
@@ -1749,11 +1990,11 @@ function TeacherLectureInfo(props) {
 
                                             </Typography>
                                         </Grid>
-                                    {item.videoDTOList && item.videoDTOList.map((subItem, idx) => {
+                                    {item.videoDTOList && item.videoDTOList.map((subItem, subIdx) => {
                                         return(
 
                                                 <Grid item container sx={{width:"100%"}}>
-                                                    <Grid item xs={5} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
+                                                    <Grid item xs={4} display={"flex"} justifyContent={"flex-start"} alignItems={"center"}>
                                                         <div style={{display: 'flex', alignItems: 'center', flexGrow: 1, width:"60%"}}>
                                                             <Box position="relative" sx={{width:"100px", aspectRatio:"16/9", overflow:"hidden"}}>
                                                                 <img loading={"lazy"} src={subItem.thumb} style={{width:"100%", height:"100%", objectFit:"cover"}}/>
@@ -1761,11 +2002,17 @@ function TeacherLectureInfo(props) {
                                                             <span className={styles.font_curriculum_content}>{subItem.name}</span>
                                                         </div>
                                                     </Grid>
-                                                    <Grid item xs={7} display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
+                                                    <Grid item xs={8} display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
                                                         <Button
                                                             variant="contained"
                                                             onClick={() => {
-                                                                // 문제수정
+                                                                // 해당하는 video의 test list를 가져옴
+                                                                getVideoTestList(subItem.id, idx, subIdx).then((res) => {
+                                                                    // 문제수정 collpase open
+                                                                    let array = JSON.parse(JSON.stringify(videoTestCollapse)); // 깊은 복사
+                                                                    array[idx][subIdx] = !array[idx][subIdx];
+                                                                    setVideoTestCollapse(array);
+                                                                })
                                                             }}
                                                             startIcon={<EditIcon sx={{ color: "#FFFFFF" }} />} // 아이콘의 색상을 흰색으로 설정
                                                             sx={{
@@ -1778,7 +2025,7 @@ function TeacherLectureInfo(props) {
                                                                 }
                                                             }}
                                                         >
-                                                            <Typography sx={{ color: "#FFFFFF" }}>문제수정</Typography>
+                                                            <Typography noWrap sx={{ color: "#FFFFFF" }}>문제수정</Typography>
                                                         </Button>
 
                                                         <Button
@@ -1881,7 +2128,98 @@ function TeacherLectureInfo(props) {
                                                             <Typography sx={{ color: "#FFFFFF" }}>삭제</Typography>
                                                         </Button>
                                                     </Grid>
+                                                    {/* videoTest Collpase **/}
+                                                        <Collapse in={videoTestCollapse[idx][subIdx]} sx={{ width: '100%' }}>
+                                                            <Grid container item xs={12} sx={{px:"2rem", py:"2rem", display: "flex", width: '100%'}}>
+                                                                {/* video test list **/}
+                                                                {subItem.videoTestDTOList && subItem.videoTestDTOList.map((testItem, testIdx) => {
+                                                                    return(
+                                                                        <Grid item container xs={12}>
+                                                                            {/* 문제 title **/}
+                                                                            <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                                                <Typography>
+                                                                                    제목 : {testItem.title}
+                                                                                </Typography>
+                                                                            </Grid>
+                                                                            {/* 노출시간 **/}
+                                                                            <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                                                <Typography>
+                                                                                    노출시간 : {testItem.testTime}
+                                                                                </Typography>
+                                                                            </Grid>
+                                                                            {/* 문제타입 **/}
+                                                                            <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                                                <Typography>
+                                                                                    문제타입 : {testItem.type === 0 ? "객관식" : "코드블럭"}
+                                                                                </Typography>
+                                                                            </Grid>
+                                                                            {/* 객관식인 경우의 보기 **/}
+                                                                            <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                                                <Typography>{testItem.type === 0 ? "보기" : "블럭목록"}</Typography>
+                                                                                {testItem.type === 0 && testItem.videoTestMultipleListDTOs.map((multipleItem, multipleIdx) => {
+                                                                                            return(
+                                                                                                <Typography id={`multipleTypography${multipleItem.id}`}>
+                                                                                                    {multipleItem.sequence} : {multipleItem.content}
+                                                                                                </Typography>
+                                                                                            )
+                                                                                        })
+                                                                                }
+                                                                                {testItem.type === 1 && testItem.blockResponseDTOList.map((blockItem, blockIdx) => {
+                                                                                    return(
+                                                                                        <Box
+                                                                                            sx={{
+                                                                                                padding: 2, // 내부 여백
+                                                                                                margin: 1, // 외부 여백
+                                                                                                backgroundColor: '#f5f5f5', // 배경색
+                                                                                                borderRadius: '10px', // 모서리 둥글게
+                                                                                                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)', // 그림자 효과
+                                                                                                maxWidth: 300, // 최대 너비
+                                                                                                textAlign: 'center' // 텍스트 중앙 정렬
+                                                                                            }}
+                                                                                        >
+                                                                                            <Typography variant="h6" color="textPrimary">
+                                                                                            </Typography>
+                                                                                        </Box>
+                                                                                    )
+                                                                                })
 
+                                                                                }
+                                                                            </Grid>
+                                                                            {/* 답 **/}
+                                                                            <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                                                <Typography id={"testAnswer_" + testItem.testAnswerDTO.id} >
+                                                                                    답 : {testItem.testAnswerDTO.answer}
+                                                                                </Typography>
+                                                                            </Grid>
+                                                                        </Grid>
+                                                                    )
+                                                                }
+                                                                )}
+                                                                <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-end", alignItems:"center"}}>
+                                                                    {/* 여기에 들어갈 버튼 만들어 줘 **/}
+                                                                    <Button
+                                                                        variant="contained"
+                                                                        startIcon={<AddIcon sx={{ color: "#FFFFFF" }} />}
+                                                                        sx={{
+                                                                            background: '#4caf50',
+                                                                            borderRadius: '10px',
+                                                                            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                                                                            '&:hover': {
+                                                                                background: "#388e3c",
+                                                                            }
+                                                                        }}
+                                                                        onClick={() => {
+                                                                            // video id를 state에 올림
+                                                                            setVideoId(subItem.id);
+                                                                            // video test 추가 modal open
+                                                                            handleVideoTestAddOpen();
+                                                                        }}
+                                                                    >
+                                                                        <Typography sx={{ color: "#FFFFFF" }}>문제 추가</Typography>
+                                                                    </Button>
+                                                                </Grid>
+                                                            </Grid>
+                                                        </Collapse>
                                                 </Grid>
 
 
