@@ -3,43 +3,43 @@
 // 블럭 리스트
 const BlockList = [
     {
-        code:"for",
+        code:"[for]",
         text:"반복"
     },
     {
-        code:"if",
+        code:"[if]",
         text:"조건"
     },
     {
-        code:"print",
+        code:"[print]",
         text:"출력"
     },
     {
-        code:"scan",
+        code:"[scan]",
         text:"입력"
     },
     {
-        code:"+",
+        code:"[+]",
         text:"더하기"
     },
     {
-        code:"-",
+        code:"[-]",
         text:"빼기"
     },
     {
-        code:"*",
+        code:"[*]",
         text:"곱하기"
     },
     {
-        code:"/",
+        code:"[/]",
         text:"나누기"
     },
     {
-        code:"number",
+        code:"[number]",
         text:"숫자"
     },
     {
-        code:"text",
+        code:"[text]",
         text:"문자열"
     }
 ]

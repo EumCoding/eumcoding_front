@@ -40,6 +40,7 @@ import dayjs from "dayjs";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import AddIcon from '@mui/icons-material/Add';
 import BlockList from "../component/BlockList";
+import Block from "../component/Block";
 
 
 // @emotion/react의 keyframes를 사용하여 애니메이션 정의
@@ -205,6 +206,26 @@ function TeacherLectureInfo(props) {
 
     // video test add용 block
     const [videoTestBlock, setVideoTestBlock] = useState("");
+
+    const [blockData, setBlockData] = React.useState([]);
+
+
+// 각 블록 코드에 따른 색상을 반환하는 함수
+    const getBlockColor = (code) => {
+        switch (code) {
+            case "[for]": return "#6495ED"; // 옥스퍼드 블루
+            case "[if]": return "#32CD32"; // 라임 그린
+            case "[print]": return "#FFA07A"; // 라이트 살몬
+            case "[scan]": return "#FF6347"; // 토마토
+            case "[+]": return "#FFD700"; // 골드
+            case "[-]": return "#ADD8E6"; // 라이트 블루
+            case "[*]": return "#DB7093"; // 페일 바이올렛 레드
+            case "[/]": return "#9370DB"; // 미디엄 퍼플
+            case "[number]": return "#90EE90"; // 라이트 그린
+            case "[text]": return "#D2B48C"; // 탄
+            default: return "#D3D3D3"; // 라이트 그레이
+        }
+    };
 
     // video test용 modal state의 함수
     const handleVideoTestAddOpen = () => setVideoTestAddOpen(true);
@@ -844,7 +865,7 @@ function TeacherLectureInfo(props) {
             {videoTestType === 0 && (
                 <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                         <TextField
-                            id="videoTestBlockInput"
+                            id="videoTestMultipleInput"
                             fullWidth
                             label="보기"
                             size="small"
@@ -874,48 +895,161 @@ function TeacherLectureInfo(props) {
                                 // videoTestBlockList state에 추가
                                 const temp = JSON.parse(JSON.stringify(videoTestBlockList)); // 깊은복사
                                 // 값이 없을때에 대한 예외처리
-                                if(document.getElementById("videoTestBlockInput").value === ""){
+                                if(document.getElementById("videoTestMultipleInput").value === ""){
                                     alert("값을 입력해주세요");
                                     return;
                                 }
-                                temp.push(document.getElementById("videoTestBlockInput").value);
+                                temp.push(document.getElementById("videoTestMultipleInput").value);
                                 setVideoTestBlockList(temp);
                                 // 추가 후 input 초기화
-                                document.getElementById("videoTestBlockInput").value = "";
+                                document.getElementById("videoTestMultipleInput").value = "";
                             }}
                         >
                             <Typography sx={{ color: "#FFFFFF" }}>추가</Typography>
                         </Button>
                 </Grid>
             )}
+            {videoTestType === 1 && blockData && (
+                <Grid container item xs={12} spacing={2}>
+                    {blockData.map((block, index) => (
+                        <Grid item xs={12} key={index} sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Block
+                                code={block.code}
+                                text={block.text}
+                                color={getBlockColor(block.code)}
+                                isSpecial={block.code === "[text]" || block.code === "[number]"}
+                            />
+                            <IconButton
+                                onClick={() => handleDeleteBlock(index)}
+                                sx={{ ml: 1 }}
+                            >
+                                <CloseIcon />
+                            </IconButton>
+                        </Grid>
+                    ))}
+                </Grid>
+            )}
             {/* 블록코딩을 선택한 경우에는 블록 드랍다운 출력 **/}
             {videoTestType === 1 && (
                 <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-                    <FormControl fullWidth>
-                        <InputLabel id={"videoTestBlockLabel"} >블록선택</InputLabel>
-                        {/* 블록리스트 **/}
-                        <Select
-                            labelId={"videoTestBlockLabel"}
-                            id={"videoTestBlockSelect"}
-                            label={"블록선택"}
-                            onChange={(e) => {
-                                // 선택한 블록을 리스트에 추가
-                            }}
-                            onClick={() => console.log(BlockList)}
-                        >
-                            {BlockList.map((blockItem, blockIdx) => {
-                                return(
-                                    <MenuItem value={blockItem.code} >
+                    <Grid xs={12} item>
+                        <FormControl fullWidth size="small">
+                            <InputLabel id="videoTestBlockLabel">블록선택</InputLabel>
+                            <Select
+                                labelId="videoTestBlockLabel"
+                                id="videoTestBlockSelect"
+                                value={videoTestBlock}
+                                onChange={(e) => {
+                                    //선택한 MenuItem의 값을 videoTestBlock state에 할당
+                                    setVideoTestBlock(e.target.value);
+                                    console.log(e.target.value);
+                                }}
+                                label="블록선택" // 여기에 라벨을 지정
+                                MenuProps={{
+                                    PaperProps: {
+                                        style: {
+                                            maxHeight: 48 * 4.5, // 드롭다운 메뉴의 최대 높이
+                                        },
+                                    },
+                                }}
+                                sx={{
+                                    '& .MuiSelect-select': {
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                    },
+                                }}
+                            >
+                                {BlockList.map((blockItem, blockIdx) => (
+                                    <MenuItem key={blockIdx} value={blockItem}>
                                         {blockItem.text}
                                     </MenuItem>
-                                )
-                            })}
-                        </Select>
-                    </FormControl>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    {/* number 또는 text가 선택된 경우 **/}
+
+                        <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:videoTestBlock === "[text]" || videoTestBlock === "[number]" ? "space-between" : "flex-end", alignItems:"flex-start"}}>
+                            {videoTestBlock && (videoTestBlock.code === "[text]" || videoTestBlock.code === "[number]") && (
+                            <TextField
+                                id="videoTestBlockInput"
+                                fullWidth
+                                label="보기"
+                                size="small"
+                                onChange={(e) => {
+                                    const newValue = e.target.value;
+                                    // 대괄호를 포함하고 있는지 검사
+                                    if (newValue.includes('[') || newValue.includes(']')) {
+                                        // 대괄호를 제거하고 값을 업데이트
+                                        e.target.value = newValue.replace(/[\[\]]/g, '');
+                                        // helperText를 통해 사용자에게 안내 메시지 표시
+                                        e.target.nextSibling.textContent = '대괄호 [ ]는 입력할 수 없습니다.';
+                                    } else {
+                                        // 대괄호가 없으면 안내 메시지 제거
+                                        e.target.nextSibling.textContent = '';
+                                    }
+                                }}
+                                helperText="대괄호 [ ]는 입력할 수 없습니다."
+                                sx={{
+                                    '& .MuiInputBase-root': {
+                                        height: '40px',
+                                    },
+                                    display: "inline",
+                                    width: "80%"
+                                }}
+                            />
+                            )}
+                            <Button
+                                variant="contained"
+                                startIcon={<AddIcon sx={{ color: "#FFFFFF" }} />}
+                                sx={{
+                                    height: '40px', // 버튼 높이를 TextField와 동일하게 설정
+                                    background: '#4caf50',
+                                    borderRadius: '10px',
+                                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                                    '&:hover': {
+                                        background: "#388e3c",
+                                    },
+                                    width:"15%"
+                                }}
+
+                                onClick={() => {
+                                    // [number] 또는 [text]가 선택된 경우에는 textfield에서 값을 가져와서 tempValue에 넣음
+                                    let tempValue = "";
+                                    if(videoTestBlock.code === "[text]" || videoTestBlock.code === "[number]") {
+                                        tempValue = document.getElementById("videoTestBlockInput").value;
+                                    }else {
+                                        // 아닌 경우에는 videoTestBlock에 할당된 값을 tempValue에
+                                        tempValue = videoTestBlock.text;
+                                    }
+                                    // { code: videoTestBlock, text: tempValue } 양식에 맞추어서 blockData state에 추가
+                                    // blockData state에 추가
+                                    const temp = JSON.parse(JSON.stringify(blockData)); // 깊은복사
+                                    temp.push({ code: videoTestBlock.code, text: tempValue });
+                                    setBlockData(temp);
+                                    // 추가 후 videoTestBlock 초기화
+                                    setVideoTestBlock(null);
+                                    document.getElementById("videoTestBlockSelect").value = "[for]";
+                                    // 추가 후 input 초기화([number] 또는 [text]의 경우에만)
+                                    if(videoTestBlock.code === "[text]" || videoTestBlock.code === "[number]") {
+                                        document.getElementById("videoTestBlockInput").value = "";
+                                    }
+                                }}
+                            >
+                                <Typography sx={{ color: "#FFFFFF" }}>추가</Typography>
+                            </Button>
+                        </Grid>
                 </Grid>
             )}
         </Grid>
     )
+
+
+
+// 블록 삭제 함수
+    const handleDeleteBlock = (index) => {
+        setBlockData(blockData.filter((_, i) => i !== index));
+    };
 
 
     // Section 이름 수정
