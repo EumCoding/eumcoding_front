@@ -910,9 +910,9 @@ function TeacherLectureInfo(props) {
                 </Grid>
             )}
             {videoTestType === 1 && blockData && (
-                <Grid container item xs={12} spacing={2}>
+                <Grid container item xs={12} spacing={2} sx={{ flexWrap: 'wrap', flexDirection: 'row', alignItems: 'center' }}>
                     {blockData.map((block, index) => (
-                        <Grid item xs={12} key={index} sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Grid item key={index} sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
                             <Block
                                 code={block.code}
                                 text={block.text}
