@@ -8,12 +8,15 @@ import StarIcon from '@mui/icons-material/Star';
 import {useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import axios from "axios";
+import dayjs from "dayjs";
 
 
 function DashBoard(props) {
     const accessToken = useSelector((state) => state.accessToken); // 엑세스 토큰
 
     const [profile, setProfile] = useState(null); // 프로필 저장될 부분
+
+    const [planResult, setplainResult] = useState(null); // 학습 계획 결과
 
     const navigate = useNavigate()
 
@@ -37,8 +40,30 @@ function DashBoard(props) {
         }).catch((err) => console.log(err))
     }
 
+    // 커리큘럼 정보 가져오기
+    const getPlan = async () => {
+        //endDate는 오늘날짜에서 시간만 23:59:59로 바꾸고 startDate는 오늘날짜에서 시간만 00:00:00
+        const startDate = dayjs().format('YYYY-MM-DDT') + '00:00:00'
+        const endDate = dayjs().format('YYYY-MM-DDT') + '23:59:59'
+        console.log(`http://localhost:8099/member/myplan/list/info?startDateStr=${startDate}&endDateStr=${endDate}`)
+        const response = await axios.post(
+            `http://localhost:8099/member/myplan/list/info?startDateStr=${startDate}&endDateStr=${endDate}`,
+            null,
+            {
+                headers:{Authorization: `${accessToken}`,}
+            }
+        ).then((res) => {
+            res && res.data && setplainResult(res.data)
+            console.log(res)
+        }).catch((err) => console.log(err))
+
+    }
+
     useEffect(() => {
-        getProfile();
+        if(accessToken){
+            getProfile();
+            getPlan();
+        }
     },[,accessToken])
 
     return (
@@ -271,7 +296,7 @@ function DashBoard(props) {
                               alignItems="center"
                               xs={12} sx={{pt: "1rem"}}>
                                 <span className={styles.font_normal}>
-                                    2023년 3월 25일
+                                    {dayjs().year()}년 {dayjs().month()}월 {dayjs().day()}일
                                 </span>
                         </Grid>
                         <Grid item
@@ -288,9 +313,16 @@ function DashBoard(props) {
                               justifyContent="flex-start"
                               alignItems="center"
                               xs={12} sx={{pt: "2rem"}}>
+                            {planResult?.slice(0, 3).map((item, idx) => (
                                 <span className={styles.font_gray}>
-                                    무작정 따라하는 우리아이 ... 1강 : 5%
+                                    {item.sectionDTOList[0].lectureName} ( {item.sectionDTOList[0].sectionName} ) : {item.sectionDTOList[0].progress}%
                                 </span>
+                            ))}
+                            {!planResult && (
+                                <span className={styles.font_gray}>
+                                    수강할 강의가 없습니다.
+                                        </span>
+                                )}
                         </Grid>
                         <Grid item
                               display="flex"

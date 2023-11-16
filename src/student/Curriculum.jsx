@@ -1,15 +1,26 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import {createTheme, Grid, ThemeProvider} from "@mui/material";
 import DashTop from "../component/DashTop";
 import axios from "axios";
+import dayjs from "dayjs";
 
 function Curriculum(props) {
 
     const accessToken = useSelector((state) => state.accessToken); // 엑세스 토큰
 
     const navigate = useNavigate()
+
+    // 오늘날짜 dayjs로
+    const today = dayjs();
+
+    // 오늘
+    const [planTodayResult, setPlanTodayResult] = useState(null); // 학습 계획 결과
+    // 3일
+    const [plan3DayResult, setPlan3DayResult] = useState(null); // 학습 계획 결과
+    // 일주일
+    const [planWeekResult, setPlanWeekResult] = useState(null); // 학습 계획 결과
 
     const theme = createTheme({ // Theme
         typography: {
@@ -38,21 +49,33 @@ function Curriculum(props) {
         },
     });
 
-    // 내 커리큘럼에 해당하는 섹션 진도율 및 정보
-    const getMyPlanInfo = async () => {
-        const response = await axios.get(
-            `http://localhost:8099/member/myplan/list/info`,
-            {headers: {Authorization: `${accessToken}`}}
+    // 커리큘럼 정보 가져오기
+    const getPlan = async (start, end) => {
+        const tempStart = start.format('YYYY-MM-DDT00:00:00');
+        const tempEnd = end.format('YYYY-MM-DDT00:00:00');
+        console.log(`http://localhost:8099/member/myplan/list/info?startDateStr=${tempStart}&endDateStr=${tempEnd}`)
+        const response = await axios.post(
+            `http://localhost:8099/member/myplan/list/info?startDateStr=${tempStart}&endDateStr=${tempEnd}`,
+            null,
+            {
+                headers:{Authorization: `${accessToken}`,}
+            }
         ).then((res) => {
             console.log(res)
-        }).catch((err) => {
-            console.log(err)
-        })
+        }).catch((err) => console.log(err))
     }
 
     useEffect(() => {
         if(accessToken){
-            getMyPlanInfo();
+            getPlan(today, today.add(1, 'day')).then((res) => {
+                res && res.data && setPlanTodayResult(res.data)
+            })
+            getPlan(today, today.add(3, 'day')).then((res) => {
+                res && res.data && setPlan3DayResult(res.data)
+            })
+            getPlan(today, today.add(7, 'day')).then((res) => {
+                res && res.data && setPlanWeekResult(res.data)
+            })
         }
     }, [accessToken])
 
