@@ -39,7 +39,7 @@ const BlockList = [
         text:"숫자"
     },
     {
-        code:"[text]",
+        code:"[String]",
         text:"문자열"
     }
 ]

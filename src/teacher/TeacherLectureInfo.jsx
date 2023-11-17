@@ -222,7 +222,7 @@ function TeacherLectureInfo(props) {
             case "[*]": return "#DB7093"; // 페일 바이올렛 레드
             case "[/]": return "#9370DB"; // 미디엄 퍼플
             case "[number]": return "#90EE90"; // 라이트 그린
-            case "[text]": return "#D2B48C"; // 탄
+            case "[String]": return "#D2B48C"; // 탄
             default: return "#D3D3D3"; // 라이트 그레이
         }
     };
@@ -917,7 +917,7 @@ function TeacherLectureInfo(props) {
                                 code={block.code}
                                 text={block.text}
                                 color={getBlockColor(block.code)}
-                                isSpecial={block.code === "[text]" || block.code === "[number]"}
+                                isSpecial={block.code === "[String]" || block.code === "[number]"}
                             />
                             <IconButton
                                 onClick={() => handleDeleteBlock(index)}
@@ -969,8 +969,8 @@ function TeacherLectureInfo(props) {
                     </Grid>
                     {/* number 또는 text가 선택된 경우 **/}
 
-                        <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:videoTestBlock === "[text]" || videoTestBlock === "[number]" ? "space-between" : "flex-end", alignItems:"flex-start"}}>
-                            {videoTestBlock && (videoTestBlock.code === "[text]" || videoTestBlock.code === "[number]") && (
+                        <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:(videoTestBlock && ( videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]")) ? "space-between" : "flex-end", alignItems:"flex-start"}}>
+                            {videoTestBlock && (videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]") && (
                             <TextField
                                 id="videoTestBlockInput"
                                 fullWidth
@@ -1014,9 +1014,14 @@ function TeacherLectureInfo(props) {
                                 }}
 
                                 onClick={() => {
-                                    // [number] 또는 [text]가 선택된 경우에는 textfield에서 값을 가져와서 tempValue에 넣음
+                                    // videoTestBlock 없을때 예외처리
+                                    if(!videoTestBlock){
+                                        alert("블록을 선택해주세요");
+                                        return;
+                                    }
+                                    // [number] 또는 [String]가 선택된 경우에는 textfield에서 값을 가져와서 tempValue에 넣음
                                     let tempValue = "";
-                                    if(videoTestBlock.code === "[text]" || videoTestBlock.code === "[number]") {
+                                    if(videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]") {
                                         tempValue = document.getElementById("videoTestBlockInput").value;
                                     }else {
                                         // 아닌 경우에는 videoTestBlock에 할당된 값을 tempValue에
@@ -1030,8 +1035,8 @@ function TeacherLectureInfo(props) {
                                     // 추가 후 videoTestBlock 초기화
                                     setVideoTestBlock(null);
                                     document.getElementById("videoTestBlockSelect").value = "[for]";
-                                    // 추가 후 input 초기화([number] 또는 [text]의 경우에만)
-                                    if(videoTestBlock.code === "[text]" || videoTestBlock.code === "[number]") {
+                                    // 추가 후 input 초기화([number] 또는 [String]의 경우에만)
+                                    if(videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]") {
                                         document.getElementById("videoTestBlockInput").value = "";
                                     }
                                 }}
