@@ -1,8 +1,18 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import {Typography} from "@mui/material";
+import BlockList from "./BlockList";
 
 const Block = ({ code, text, color, isSpecial }) => {
+    // BlockList를 이용해 들어온 code와 비교해 BlockList 내의 text를 리턴하는 함수
+    const getText = (code) => {
+        for (let i = 0; i < BlockList.length; i++) {
+            if (BlockList[i].code === code) {
+                return BlockList[i].text;
+            }
+        }
+    }
+
     return (
         <Box
             sx={{
@@ -14,6 +24,7 @@ const Block = ({ code, text, color, isSpecial }) => {
                 bgcolor: color,
                 borderRadius: '8px',
                 boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+                minHeight:"2rem",
                 mb: 2,
                 width: 'auto', // 너비 자동 조절
                 fontSize: '1rem',
@@ -47,7 +58,7 @@ const Block = ({ code, text, color, isSpecial }) => {
                     <Typography>{text}</Typography>
                 </>
             ) : (
-                <Typography>{text}</Typography>
+                <Typography>{code?getText(code):"알수없음"}</Typography>
             )}
             <Box
                 sx={{

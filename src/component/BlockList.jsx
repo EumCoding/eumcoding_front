@@ -35,12 +35,52 @@ const BlockList = [
         text:"나누기"
     },
     {
+        code:"[>]",
+        text:">"
+    },
+    {
+        code:"[>=]",
+        text:">="
+    },
+    {
+        code:"[=]",
+        text:"="
+    },
+    {
+        code:"[==]",
+        text:"=="
+    },
+    {
+        code:"[<=]",
+        text:"<="
+    },
+    {
+        code:"[<]",
+        text:"<"
+    },
+    {
+        code:"[{]",
+        text:"{"
+    },
+    {
+        code:"[}]",
+        text:"}"
+    },
+    {
         code:"[number]",
         text:"숫자"
     },
     {
         code:"[String]",
         text:"문자열"
+    },
+    {
+        code:"[numberVal]",
+        text:"숫자변수"
+    },
+    {
+        code:"[StringVal]",
+        text:"문자열변수"
     }
 ]
 

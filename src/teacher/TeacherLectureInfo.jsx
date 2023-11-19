@@ -41,7 +41,10 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import AddIcon from '@mui/icons-material/Add';
 import BlockList from "../component/BlockList";
 import Block from "../component/Block";
-
+import { TimePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
+import {DemoContainer, DemoItem} from "@mui/x-date-pickers/internals/demo";
 
 // @emotion/react의 keyframes를 사용하여 애니메이션 정의
 const heartBurst = keyframes`
@@ -74,6 +77,22 @@ const modalStyle = {
 function TeacherLectureInfo(props) {
 
     const [newSectionName, setNewSectionName] = useState(""); // 새로운 Section 이름
+
+    const [selectedTime, setSelectedTime] = useState(dayjs("00:00:00", "HH:mm:ss"));
+    const [maxTimeDayjs, setMaxTimeDayjs] = useState(dayjs());
+
+    const [stateIdx, setIdx] = useState([]); // 문제추가용 state
+    const [stateSubIdx, setSubIdx] = useState([]); // 문제추가용 state
+
+    const handleTimeChange = (newValue) => {
+        if (newValue.isBefore(maxTimeDayjs) || newValue.isSame(maxTimeDayjs)) {
+            console.log(newValue.format("HH:mm:ss"));
+            setSelectedTime(newValue);
+        } else {
+            // 최대 시간을 초과할 경우 경고 또는 자동 조정
+            console.log('Selected time exceeds the maximum limit');
+        }
+    };
 
     const navigate = useNavigate();
 
@@ -472,6 +491,14 @@ function TeacherLectureInfo(props) {
         setReviewCollapse(temp);
     }
 
+    useEffect(() => {
+        if(videoResult){
+            //maxTimeDayjs 설정
+            const temp = dayjs(videoResult.playTime, "HH:mm:ss");
+            setMaxTimeDayjs(temp);
+        }
+    }, [videoResult])
+
     const sectionModalBody = (
         <Box
             sx={{
@@ -769,6 +796,66 @@ function TeacherLectureInfo(props) {
         </Box>
     );
 
+    // videoTestAddBody에서 만든 문제를 추가하는 api 호출
+    const addVideoTest = async (videoId, title, answer, type, time, blockList, multipleList) => { // time은 그냥 dayjs() 타입으로 받아서 내부에서 처리
+        console.log("문제 추가하기...")
+        // type이 0일땐 객관식 1일땐 블럭코딩
+        let data;
+        if(type === 0) {
+            data = {
+                videoId: videoId,
+                score:1,
+                title: title,
+                testAnswerDTO: {
+                    answer: answer
+                },
+                type: type,
+                testTime: time.format("HH:mm:ss"),
+                // 객관식 문제 리스트
+                videoTestMultipleList: multipleList.map((item, idx) => {
+                    return {
+                        content: item,
+                    }
+                }),
+            }
+        }else if(type === 1){
+            data = {
+                videoId: videoId,
+                score:1,
+                title: title,
+                testAnswerDTO: {
+                    answer: answer
+                },
+                type: type,
+                testTime: time.format("HH:mm:ss"),
+                // 블럭 리스트
+                videoTestBlockList: blockList.map((item, idx) => {
+                    return{
+                        block : item.code,
+                        value : item.text,
+                    }
+                })
+            }
+        }
+        console.log(data);
+            const response = await axios.post(
+                `http://localhost:8099/lecture/section/video/test/add`,
+                data,
+                {
+                    headers:{
+                        Authorization: `${accessToken}`,
+                    }
+
+                }
+        ).catch((err) => {
+            console.log(err);
+            })
+    }
+
+    useEffect(() => {
+        console.log(selectedTime);
+    }, [selectedTime]);
+
     // video test 추가용 modal
     const videoTestAddBody = (
         <Grid
@@ -813,6 +900,31 @@ function TeacherLectureInfo(props) {
                     <FormControlLabel value="1" control={<Radio />} label="블럭코딩"/>
                 </RadioGroup>
             </Grid>
+            {/* 몇분 몇초에 추가할지 선택 **/}
+            {videoResult && (
+                <Grid container item xs={12} sx={{display:"flex", justifyContent:"center", alignItems:"center", py:"1rem"}}>
+                    <Grid item xs={12}>
+                        <Typography sx={{fontWeight:"500", fontSize:"1rem", mr:"1rem"}}>
+                            시간선택(영상길이 : {videoResult.playTime})
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <TimePicker
+                                    ampm={false}
+                                    openTo="seconds"
+                                    views={['minutes', 'seconds']}
+                                    label="Select Time"
+                                    value={selectedTime}
+                                    onChange={handleTimeChange}
+                                    renderInput={(params) => <TextField {...params} />}
+                                    // 기본값
+                                    defaultValue={dayjs("00:00:00", "HH:mm:ss")}
+                                />
+                        </LocalizationProvider>
+                    </Grid>
+                </Grid>
+                )}
             {/* 문제제목 **/}
             <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                 <TextField
@@ -1046,12 +1158,81 @@ function TeacherLectureInfo(props) {
                         </Grid>
                 </Grid>
             )}
+            <Grid xs={12} item sx={{mt:"4rem"}}>
+                <Button
+                    variant="contained"
+                    sx={{
+                        height: '40px', // 버튼 높이를 TextField와 동일하게 설정
+                        background: '#4caf50',
+                        borderRadius: '10px',
+                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                        '&:hover': {
+                            background: "#388e3c",
+                        },
+                        width:"100%"
+                    }}
+                    onClick={() => {
+                        //모든 요소가 다 작성되었는지 검사
+                        //videoTestType
+                        if(videoTestType === null){
+                            alert("문제 타입을 선택해주세요");
+                            return;
+                        }
+                        //videoTestTitleInput
+                        if(document.getElementById("videoTestTitleInput").value === ""){
+                            alert("문제 제목을 입력해주세요");
+                            return;
+                        }
+                        //videoTestAnswerInput
+                        if(document.getElementById("videoTestAnswerInput").value === ""){
+                            alert("답을 입력해주세요");
+                            return;
+                        }
+                        //videoTestBlockList
+                        if(videoTestType === 1 && blockData.length === 0){
+                            alert("블록을 추가해주세요");
+                            return;
+                        }
+                        //videoTestMultipleList
+                        if(videoTestType === 0 && videoTestBlockList.length === 0){
+                            alert("보기를 추가해주세요");
+                            return;
+                        }
+                        //selectedTime
+                        if(selectedTime === null){
+                            alert("시간을 선택해주세요");
+                            return;
+                        }
+                        // 모든 요소가 다 작성되었으면 문제 추가 api 호출
+                        addVideoTest(videoResult.id, document.getElementById("videoTestTitleInput").value, document.getElementById("videoTestAnswerInput").value, videoTestType, selectedTime, blockData, videoTestBlockList).then((res) => {
+                            // 문제 추가 후 해당 videoId의 문제 리스트 다시 불러옴
+                            getVideoTestList(videoResult.id, stateIdx, stateSubIdx);
+                            // 사용한 state와 input들 초기화
+                            setVideoTestType(null);
+                            setVideoTestBlock(null);
+                            setVideoTestBlockList([]);
+                            setBlockData([]);
+                            document.getElementById("videoTestTitleInput").value = "";
+                            document.getElementById("videoTestAnswerInput").value = "";
+                            document.getElementById("videoTestBlockSelect").value = "[for]";
+                            document.getElementById("videoTestBlockInput").value = "";
+                            setSelectedTime(null);
+                            handleVideoTestAddClose(); // 완료시 닫음
+                        }).catch((err) => {
+                            console.log(err);
+                            alert("문제 추가 실패");
+                        })
+                    }}
+                >
+                    <Typography sx={{ color: "#FFFFFF" }}>문제추가</Typography>
+                </Button>
+            </Grid>
         </Grid>
     )
 
 
 
-// 블록 삭제 함수
+    // 블록 삭제 함수
     const handleDeleteBlock = (index) => {
         setBlockData(blockData.filter((_, i) => i !== index));
     };
@@ -1422,6 +1603,7 @@ function TeacherLectureInfo(props) {
 
     // 영상 정보 불러오기
     const getVideoInfo = async(videoId) => {
+        console.log("영상정보불러오기...")
         const response = await axios.post(
             `http://localhost:8099/lecture/section/video/view?id=${videoId}`,
             {},
@@ -2294,7 +2476,7 @@ function TeacherLectureInfo(props) {
                                                                             </Grid>
                                                                             {/* 객관식인 경우의 보기 **/}
                                                                             <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                                                                <Typography>{testItem.type === 0 ? "보기" : "블럭목록"}</Typography>
+                                                                                <Typography>{testItem.type === 0 ? "보기" : "블럭"}</Typography>
                                                                                 {testItem.type === 0 && testItem.videoTestMultipleListDTOs.map((multipleItem, multipleIdx) => {
                                                                                             return(
                                                                                                 <Typography id={`multipleTypography${multipleItem.id}`}>
@@ -2350,13 +2532,68 @@ function TeacherLectureInfo(props) {
                                                                         onClick={() => {
                                                                             // video id를 state에 올림
                                                                             setVideoId(subItem.id);
-                                                                            // video test 추가 modal open
-                                                                            handleVideoTestAddOpen();
+                                                                            // idx, subIdx
+                                                                            setIdx(idx);
+                                                                            setSubIdx(subIdx);
+                                                                            // video id로 video 정보 가져오기
+                                                                            getVideoInfo(subItem.id).then((res) => {
+                                                                                // video test 추가 modal open
+                                                                                handleVideoTestAddOpen();
+                                                                            })
                                                                         }}
                                                                     >
                                                                         <Typography sx={{ color: "#FFFFFF" }}>문제 추가</Typography>
                                                                     </Button>
                                                                 </Grid>
+                                                            </Grid>
+                                                            <Grid xs={12} container item>
+                                                                {/* 문제 리스트 **/}
+                                                                {videoTestList[idx][subIdx] && videoTestList[idx][subIdx].map((testItem, testIdx) => {
+                                                                    return(
+                                                                        <Grid xs={12} container item>
+                                                                            {/* title **/}
+                                                                            <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                                                <Typography>
+                                                                                    {testItem.title}
+                                                                                </Typography>
+                                                                            </Grid>
+                                                                            {/* 노출시간 **/}
+                                                                            <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                                                <Typography>
+                                                                                    노출시간 : {testItem.testTime}
+                                                                                </Typography>
+                                                                            </Grid>
+                                                                            {/* 문제타입 **/}
+                                                                            <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                                                <Typography>
+                                                                                    {testItem.type === 0 ? "객관식" : "코드블럭"}
+                                                                                </Typography>
+                                                                            </Grid>
+                                                                            {/* 객관식인 경우 문제 보기 **/}
+                                                                            <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                                                <Typography>{testItem.type === 0 ? "[보기]" : "[블럭목록]"}</Typography>
+                                                                                {testItem.type === 0 && testItem.videoTestMultipleListDTOs.map((multipleItem, multipleIdx) => {
+                                                                                        return(
+                                                                                            <Typography id={`multipleTypography${multipleItem.id}`}>
+                                                                                                ({multipleItem.sequence}) : {multipleItem.content}
+                                                                                            </Typography>
+                                                                                        )
+                                                                                    }
+                                                                                )}
+                                                                                {testItem.type === 1 && testItem.blockResponseDTOList.map((blockItem, blockIdx) => {
+                                                                                    return(
+                                                                                        <Block
+                                                                                            code={blockItem.block}
+                                                                                            text={blockItem.value}
+                                                                                            color={getBlockColor(blockItem.block)}
+                                                                                            isSpecial={blockItem.block === "[String]" || blockItem.block === "[number]"}
+                                                                                        />
+                                                                                    )
+                                                                                })}
+                                                                            </Grid>
+                                                                        </Grid>
+                                                                    )
+                                                                })}
                                                             </Grid>
                                                         </Collapse>
                                                 </Grid>
