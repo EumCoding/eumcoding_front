@@ -59,14 +59,6 @@ const BlockList = [
         text:"<"
     },
     {
-        code:"[{]",
-        text:"{"
-    },
-    {
-        code:"[}]",
-        text:"}"
-    },
-    {
         code:"[number]",
         text:"숫자"
     },

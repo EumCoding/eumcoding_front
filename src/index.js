@@ -7,14 +7,15 @@ import {BrowserRouter} from "react-router-dom";
 import store from './redux/store';
 import {Provider} from "react-redux"; // 리덕스 스토어
 
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <Provider store={store}>
-        <React.StrictMode>
+        <>
             <BrowserRouter>
                 <App/>
             </BrowserRouter>
-        </React.StrictMode>
+        </>
     </Provider>
 );
 

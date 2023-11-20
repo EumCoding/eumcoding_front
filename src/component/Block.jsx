@@ -16,6 +16,7 @@ const Block = ({ code, text, color, isSpecial }) => {
     return (
         <Box
             sx={{
+                m:"0.3rem",
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -24,15 +25,14 @@ const Block = ({ code, text, color, isSpecial }) => {
                 bgcolor: color,
                 borderRadius: '8px',
                 boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
-                minHeight:"2rem",
-                mb: 2,
-                width: 'auto', // 너비 자동 조절
+                minHeight:"1.5rem",
                 fontSize: '1rem',
                 fontWeight: 'bold',
                 color: 'white',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
                 position: 'relative',
+                userSelect:"none"// 드래그 방지
             }}
         >
             {isSpecial ? (
@@ -52,7 +52,10 @@ const Block = ({ code, text, color, isSpecial }) => {
                         }}
                     >
                         <Typography sx={{ fontWeight: "300", fontSize: "0.6rem", color: "#000000" }}>
-                            {code.replace(/\[|\]/g, '')}
+                            {(code === "[number]" && "숫자값")}
+                            {(code === "[String]" && "문자값")}
+                            {(code === "[numberVal]" && "숫자변수")}
+                            {(code === "[StringVal]" && "문자열변수")}
                         </Typography>
                     </Box>
                     <Typography>{text}</Typography>

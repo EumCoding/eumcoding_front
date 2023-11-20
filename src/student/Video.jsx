@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import Typography from "@mui/material/Typography";
 import {CheckBox} from "@mui/icons-material";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import Block from "../component/Block";
 
 
 const style = {
@@ -23,6 +24,7 @@ const style = {
     left: '50%',
     transform: 'translate(-50%, -50%)',
     width: 1500,
+    height:800,
     bgcolor: 'background.paper',
     border: '2px solid #000',
     borderRadius : '20px',
@@ -30,6 +32,15 @@ const style = {
     p: 4,
 };
 
+const moveItem = (source, destination, sourceIndex, destIndex) => {
+    const sourceClone = Array.from(source);
+    const destClone = Array.from(destination);
+    const [removed] = sourceClone.splice(sourceIndex, 1);
+
+    destClone.splice(destIndex, 0, removed);
+
+    return { sourceClone, destClone };
+};
 
 function ValueLabelComponent(props) {
     const { children, open, value } = props;
@@ -48,8 +59,76 @@ function ValueLabelComponent(props) {
     );
 }
 
+// 리스트 내의 아이템 순서를 변경하는 함수
+const reorder = (list, startIndex, endIndex) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    return result;
+};
+
 
 function Video(props) {
+
+    const getBlockColor = (code) => {
+        switch (code) {
+            case "[for]": return "#6495ED"; // 옥스퍼드 블루
+            case "[if]": return "#32CD32"; // 라임 그린
+            case "[print]": return "#FFA07A"; // 라이트 살몬
+            case "[scan]": return "#FF6347"; // 토마토
+            case "[+]": return "#FFD700"; // 골드
+            case "[-]": return "#ADD8E6"; // 라이트 블루
+            case "[*]": return "#DB7093"; // 페일 바이올렛 레드
+            case "[/]": return "#9370DB"; // 미디엄 퍼플
+            case "[number]": return "#90EE90"; // 라이트 그린
+            case "[String]": return "#D2B48C"; // 탄
+            default: return "#D3D3D3"; // 라이트 그레이
+        }
+    };
+
+    const [blockList, setBlockList] = useState([/* 초기 블록 목록 */]);
+    const [answerGrid, setAnswerGrid] = useState([]); // 3x3 그리드 예시
+
+    const onDragEnd = (result) => {
+        const { source, destination } = result;
+
+        // 드롭되지 않은 경우
+        if (!destination) {
+            return;
+        }
+
+        if (source.droppableId === destination.droppableId) {
+            const items = reorder(
+                source.droppableId === 'droppableOne' ? blockList : answerGrid,
+                source.index,
+                destination.index
+            );
+
+            if (source.droppableId === 'droppableOne') {
+                setBlockList(items);
+            } else {
+                setAnswerGrid(items);
+            }
+        } else {
+            const { sourceClone, destClone } = moveItem(
+                source.droppableId === 'droppableOne' ? blockList : answerGrid,
+                destination.droppableId === 'droppableOne' ? blockList : answerGrid,
+                source.index,
+                destination.index
+            );
+
+            if (source.droppableId === 'droppableOne') {
+                setBlockList(sourceClone);
+                setAnswerGrid(destClone);
+            } else {
+                setBlockList(sourceClone);
+                setAnswerGrid(destClone);
+            }
+        }
+    };
+
+
+
     const navigate = useNavigate();
 
     const [open, setOpen] = useState(false);
@@ -138,6 +217,7 @@ function Video(props) {
             console.log(res)
             if(res.data){ // 데이터가 있을 때
                 setVideoTest(res.data); // state에 할당
+                // 블럭 접근 방법 -> setVideoTest[idx].blockResponseDTOList[idx]
                 // 테스트 여부 배열
                 const tempArr = [];
                 for(let i = 0; i < res.data.length ; i++){
@@ -221,6 +301,7 @@ function Video(props) {
                         setPlaying(false);
                         // 문제 타입이 블럭코딩 타입인 경우 블럭을 세팅합니다.
                         setBlocks(videoTest[i].blockResponseDTOList); // setting
+                        setBlockList(videoTest[i].blockResponseDTOList); // setting(new)
                         console.log(videoTest[i].blockResponseDTOList)
                         handleOpen();
                     }
@@ -367,6 +448,18 @@ function Video(props) {
                         <Typography id="modal-modal-title" variant="h6" component="h2" sx={{fontSize:"1.5rem", fontWeight:"700", py:"1rem"}}>
                             {videoTest[videoTestIdx].title}
                         </Typography>
+                        <Button
+                            onClick={() => {
+                                // blockList 출력
+                                console.log(blockList);
+                            }}
+                        >blockList 출력</Button>
+                        <Button
+                            onClick={() => {
+                                // answerGrid 출력
+                                console.log(answerGrid);
+                            }}
+                        >answerGrid 출력</Button>
                         {videoTest[videoTestIdx].type === 0 && (
                             <Typography id="modal-modal-description" sx={{ mt: 2 }}>
                                 <RadioGroup onChange={(e) => setAnswer(e.target.value)}>
@@ -382,155 +475,63 @@ function Video(props) {
                         )}
                         {videoTest[videoTestIdx].type === 1 && (
                             <Grid container sx={{width:"100%"}}>
-                                {blockAnswer && blockAnswer.length > 0 && blockAnswer.map((item1, idx1) => {
-                                    return(
-                                        <Grid container item xs={12} display={"flex"} justifyContent={"flex-start"} alignItem={"center"}>
-                                            {/* 해당하는 line에 블럭이 있으면 출력합니다. 블럭 옆에는 마우스 hover 시 색이 변하는 Box를 삽입합니다. length가 10이 넘으면 블럭을 붙이지 않습니다. Box 클릭시 해당 위치에 블럭이 삽입됩니다. **/}
-                                            {/* 블럭이 들어있는 경우 블럭을 출력합니다. **/}
-                                            {item1.length > 0 && item1.map((item, idx) => {
-                                                    return(
-                                                        <Grid item xs={1}>
-                                                            <Box
-                                                                key={item.id}
-                                                                sx={{
-                                                                    border:1,
-                                                                    borderColor:"#A2A2A2",
-                                                                    borderRadius : "10px",
-                                                                    width:"100%",
-                                                                    aspectRatio:"16/9",
-                                                                    bgcolor: '#66CC66',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center',
-                                                                    ':hover': { bgcolor: 'grey.400' },
-                                                                }}
-                                                                onClick={() => {
-                                                                    // 값이 ""이 아닌경우만 다시 넣습니다.
-                                                                    if(item !== ">") {
-                                                                        // 1. 깊은복사
-                                                                        const tempArr = JSON.parse(JSON.stringify(blocks));
-                                                                        // 2. push로 다시 값을 넣습니다.
-                                                                        tempArr.push({id:0, block:item})
-                                                                        // 3. state로 올립니다.
-                                                                        setBlocks(tempArr);
-                                                                    }
-                                                                    // 4. blockAnswer에서 해당 아이템을 제거합니다.
-                                                                    // 4-1. 깊은복사
-                                                                    const tempAnswer = JSON.parse(JSON.stringify(blockAnswer));
-                                                                    // 4-2. 제거
-                                                                    tempAnswer[idx1].splice(idx, 1);
-                                                                    // 4-3. state로 올립니다.
-                                                                    setBlockAnswer(tempAnswer);
-                                                                }}
-                                                            >
-                                                                {item}
-                                                            </Box>
-                                                        </Grid>
-                                                    )
-                                                }
-                                            )}
-                                            {/* 블럭 옆의 박스. 해당 박스 클릭하면 해당 줄에 블럭이 추가됩니다. **/}
-                                            {blockAnswer[0].length < 11 && (
-                                                <Grid xs={1} item>
-                                                    <Box
-                                                        sx={{
-                                                            border:1,
-                                                            borderColor:"#A2A2A2",
-                                                            borderRadius : "10px",
-                                                            width:"100%",
-                                                            aspectRatio:"16/9",
-                                                            bgcolor: '#FFFFFF',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            ':hover': { bgcolor: 'grey.400' },
-                                                        }}
-                                                        onClick={() => {
-                                                            // 첫번째 줄에 블럭을 추가합니다.
-                                                            // 1. 깊은복사
-                                                            const tempAnswer = JSON.parse(JSON.stringify(blockAnswer));
-                                                            // 2. 첫번째 줄에 블럭 추가
-                                                            tempAnswer[idx1].push(selectBlock)
-                                                            setBlockAnswer(tempAnswer);
-                                                            // ""가 아닌 경우만 제거합니다.
-                                                            if(selectBlock !== ">") {
-                                                                // 3. 기존에 있던 블럭 보기 제거
-                                                                // 3-1. 깊은복사
-                                                                const tempArr = JSON.parse(JSON.stringify(blocks));
-                                                                // 3-2. 선택한 idx 제거
-                                                                tempArr.splice(selectBlockIdx, 1);
-                                                                // 3-3. blocks state 변경
-                                                                setBlocks(tempArr);
-                                                            }
-
-                                                        }
-                                                        }
-                                                    />
-                                                </Grid>
-                                            )}
+                                <DragDropContext onDragEnd={onDragEnd}>
+                                    <Grid container sx={{width:"100%", height:"500"}}>
+                                        <Grid xs={12} item sx={{width:"100%", height:"200", border:1}}>
+                                            <Droppable droppableId="droppableOne" direction="horizontal">
+                                                {(provided) => (
+                                                    <Grid item xs={12} ref={provided.innerRef} {...provided.droppableProps} sx={{display:"flex"}}>
+                                                            {blockList.map((block, index) => (
+                                                                <Draggable key={block.id} draggableId={block.id.toString()} index={index} >
+                                                                    {(provided) => (
+                                                                        <Box
+                                                                             ref={provided.innerRef}
+                                                                             {...provided.draggableProps}
+                                                                             {...provided.dragHandleProps}
+                                                                             sx={{display:"flex", alignItems:"center", justifyContent:"flex", m:"0.3rem"}}
+                                                                        >
+                                                                            <Block code={block.block} color={getBlockColor(block.block)} text={block.value && block.value}
+                                                                                   isSpecial={
+                                                                                       (block.block === "[number]" || block.block === "[String]" || block.block === "[numberVal]" || block.block === "[StringVal]")
+                                                                                   } />
+                                                                        </Box>
+                                                                    )}
+                                                                </Draggable>
+                                                            ))}
+                                                            {provided.placeholder}
+                                                    </Grid>
+                                                )}
+                                            </Droppable>
                                         </Grid>
-                                    )
-                                })}
-
-                                {/* 제공되는 블럭들, 클릭하면 state로 올라가고 blocks에서 pop됩니다. **/}
-                                <Grid container item xs={12} sx={{pt:"3rem"}}>
-                                    <Grid xs={12} item sx={{py:"2rem"}}>
-                                        <Typography> 선생님이 준 블럭 </Typography>
+                                        <Grid xs={12} item sx={{width:"100%", height:"200", border:1}}>
+                                            <Droppable droppableId="droppableTwo" direction="horizontal">
+                                                {(provided) => (
+                                                    <Grid item xs={12} ref={provided.innerRef} {...provided.droppableProps} sx={{display:"flex"}}>
+                                                            {answerGrid.map((block, index) => (
+                                                                <Draggable key={block.id} draggableId={"answer" + block.id.toString()} index={index}>
+                                                                    {(provided) => (
+                                                                        <Box
+                                                                             ref={provided.innerRef}
+                                                                             {...provided.draggableProps}
+                                                                             {...provided.dragHandleProps}
+                                                                             sx={{display:"flex", alignItems:"center", justifyContent:"flex", m:"0.3rem"}}
+                                                                        >
+                                                                            <Block code={block.block} color={getBlockColor(block.block)} text={block.value && block.value}
+                                                                                   isSpecial={
+                                                                                       (block.block === "[number]" || block.block === "[String]" || block.block === "[numberVal]" || block.block === "[StringVal]")
+                                                                                   } />
+                                                                        </Box>
+                                                                    )}
+                                                                </Draggable>
+                                                            ))}
+                                                            {provided.placeholder}
+                                                    </Grid>
+                                                )}
+                                            </Droppable>
+                                        </Grid>
                                     </Grid>
-                                    {blocks && blocks.length > 0 && blocks.map((item, idx) => {
-                                        return(
-                                            <Grid xs={1}>
-                                                <Box
-                                                    key={item.id}
-                                                    sx={{
-                                                        border:1,
-                                                        borderColor:"#A2A2A2",
-                                                        borderRadius : "10px",
-                                                        width:"100%",
-                                                        aspectRatio:"16/9",
-                                                        bgcolor: '#99CCFF',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        ':hover': { bgcolor: 'grey.400' },
-                                                    }}
-                                                    onClick={() => {
-                                                        // 해당 블럭을 state로 올림
-                                                        setSelectBlock(item.block);
-                                                        setSelectBlockIdx(idx);
+                                </DragDropContext>
 
-                                                    }}
-                                                >
-                                                    {item.block}
-                                                </Box>
-                                            </Grid>
-                                        )
-                                    }
-                                    )}
-                                    <Grid xs={1}>
-                                        <Box
-                                            sx={{
-                                                border:1,
-                                                borderColor:"#A2A2A2",
-                                                borderRadius : "10px",
-                                                width:"100%",
-                                                aspectRatio:"16/9",
-                                                bgcolor: '#white',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                ':hover': { bgcolor: 'grey.400' },
-                                            }}
-                                            onClick={() => {
-                                                // 해당 블럭을 state로 올림
-                                                setSelectBlock(">");
-                                                setSelectBlockIdx(0);
-                                            }}
-                                        >
-                                            <Typography>></Typography>
-                                        </Box>
-                                    </Grid>
-                                </Grid>
                             </Grid>
                         )}
                         <Button sx={{mt:"1rem"}} onClick={() => {

@@ -1029,7 +1029,7 @@ function TeacherLectureInfo(props) {
                                 code={block.code}
                                 text={block.text}
                                 color={getBlockColor(block.code)}
-                                isSpecial={block.code === "[String]" || block.code === "[number]"}
+                                isSpecial={block.code === "[String]" || block.code === "[number]" || block.code === "[numberVal]" || block.code === "[StringVal]"}
                             />
                             <IconButton
                                 onClick={() => handleDeleteBlock(index)}
@@ -1081,10 +1081,11 @@ function TeacherLectureInfo(props) {
                     </Grid>
                     {/* number 또는 text가 선택된 경우 **/}
 
-                        <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:(videoTestBlock && ( videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]")) ? "space-between" : "flex-end", alignItems:"flex-start"}}>
-                            {videoTestBlock && (videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]") && (
+                        <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:(videoTestBlock && ( videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]" || videoTestBlock.code === "[numberVal]" || videoTestBlock.code === "[StringVal]")) ? "space-between" : "flex-end", alignItems:"flex-start"}}>
+                            {videoTestBlock && (videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]" || videoTestBlock.code === "[numberVal]" || videoTestBlock.code === "[StringVal]") && (
                             <TextField
                                 id="videoTestBlockInput"
+                                type={videoTestBlock.code === "[number]" ? "number" : "text"}
                                 fullWidth
                                 label="보기"
                                 size="small"
@@ -1208,14 +1209,13 @@ function TeacherLectureInfo(props) {
                             // 문제 추가 후 해당 videoId의 문제 리스트 다시 불러옴
                             getVideoTestList(videoResult.id, stateIdx, stateSubIdx);
                             // 사용한 state와 input들 초기화
-                            setVideoTestType(null);
+                            setVideoTestType(0);
                             setVideoTestBlock(null);
                             setVideoTestBlockList([]);
                             setBlockData([]);
                             document.getElementById("videoTestTitleInput").value = "";
                             document.getElementById("videoTestAnswerInput").value = "";
                             document.getElementById("videoTestBlockSelect").value = "[for]";
-                            document.getElementById("videoTestBlockInput").value = "";
                             setSelectedTime(null);
                             handleVideoTestAddClose(); // 완료시 닫음
                         }).catch((err) => {
@@ -2451,72 +2451,8 @@ function TeacherLectureInfo(props) {
                                                     </Grid>
                                                     {/* videoTest Collpase **/}
                                                         <Collapse in={videoTestCollapse[idx][subIdx]} sx={{ width: '100%' }}>
-                                                            <Grid container item xs={12} sx={{px:"2rem", py:"2rem", display: "flex", width: '100%'}}>
-                                                                {/* video test list **/}
-                                                                {subItem.videoTestDTOList && subItem.videoTestDTOList.map((testItem, testIdx) => {
-                                                                    return(
-                                                                        <Grid item container xs={12}>
-                                                                            {/* 문제 title **/}
-                                                                            <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                                                                <Typography>
-                                                                                    제목 : {testItem.title}
-                                                                                </Typography>
-                                                                            </Grid>
-                                                                            {/* 노출시간 **/}
-                                                                            <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                                                                <Typography>
-                                                                                    노출시간 : {testItem.testTime}
-                                                                                </Typography>
-                                                                            </Grid>
-                                                                            {/* 문제타입 **/}
-                                                                            <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                                                                <Typography>
-                                                                                    문제타입 : {testItem.type === 0 ? "객관식" : "코드블럭"}
-                                                                                </Typography>
-                                                                            </Grid>
-                                                                            {/* 객관식인 경우의 보기 **/}
-                                                                            <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                                                                <Typography>{testItem.type === 0 ? "보기" : "블럭"}</Typography>
-                                                                                {testItem.type === 0 && testItem.videoTestMultipleListDTOs.map((multipleItem, multipleIdx) => {
-                                                                                            return(
-                                                                                                <Typography id={`multipleTypography${multipleItem.id}`}>
-                                                                                                    {multipleItem.sequence} : {multipleItem.content}
-                                                                                                </Typography>
-                                                                                            )
-                                                                                        })
-                                                                                }
-                                                                                {testItem.type === 1 && testItem.blockResponseDTOList.map((blockItem, blockIdx) => {
-                                                                                    return(
-                                                                                        <Box
-                                                                                            sx={{
-                                                                                                padding: 2, // 내부 여백
-                                                                                                margin: 1, // 외부 여백
-                                                                                                backgroundColor: '#f5f5f5', // 배경색
-                                                                                                borderRadius: '10px', // 모서리 둥글게
-                                                                                                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)', // 그림자 효과
-                                                                                                maxWidth: 300, // 최대 너비
-                                                                                                textAlign: 'center' // 텍스트 중앙 정렬
-                                                                                            }}
-                                                                                        >
-                                                                                            <Typography variant="h6" color="textPrimary">
-                                                                                            </Typography>
-                                                                                        </Box>
-                                                                                    )
-                                                                                })
-
-                                                                                }
-                                                                            </Grid>
-                                                                            {/* 답 **/}
-                                                                            <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                                                                <Typography id={"testAnswer_" + testItem.testAnswerDTO.id} >
-                                                                                    답 : {testItem.testAnswerDTO.answer}
-                                                                                </Typography>
-                                                                            </Grid>
-                                                                        </Grid>
-                                                                    )
-                                                                }
-                                                                )}
-                                                                <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-end", alignItems:"center"}}>
+                                                            <Grid container item xs={12} sx={{display: "flex", width: '100%'}}>
+                                                                <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-end", alignItems:"center", pt:"1rem"}}>
                                                                     {/* 여기에 들어갈 버튼 만들어 줘 **/}
                                                                     <Button
                                                                         variant="contained"
@@ -2546,50 +2482,53 @@ function TeacherLectureInfo(props) {
                                                                     </Button>
                                                                 </Grid>
                                                             </Grid>
-                                                            <Grid xs={12} container item>
+                                                            <Grid xs={12} container item sx={{px:"2rem"}}>
                                                                 {/* 문제 리스트 **/}
                                                                 {videoTestList[idx][subIdx] && videoTestList[idx][subIdx].map((testItem, testIdx) => {
                                                                     return(
                                                                         <Grid xs={12} container item>
                                                                             {/* title **/}
                                                                             <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                                                                <Typography>
+                                                                                <Typography sx={{fontWeight:"800", fontSize:"1rem"}}>
                                                                                     {testItem.title}
                                                                                 </Typography>
                                                                             </Grid>
                                                                             {/* 노출시간 **/}
                                                                             <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                                                                <Typography>
-                                                                                    노출시간 : {testItem.testTime}
-                                                                                </Typography>
-                                                                            </Grid>
-                                                                            {/* 문제타입 **/}
-                                                                            <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                                                                <Typography>
-                                                                                    {testItem.type === 0 ? "객관식" : "코드블럭"}
+                                                                                <Typography sx={{fontWeight:"700", fontSize:"0.8rem"}}>
+                                                                                    노출시간 : {testItem.testTime} | 타입 : {testItem.type === 0 ? "객관식" : "코드블럭"} | 답 : {testItem.testAnswerDTO.answer}
                                                                                 </Typography>
                                                                             </Grid>
                                                                             {/* 객관식인 경우 문제 보기 **/}
-                                                                            <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                                                                <Typography>{testItem.type === 0 ? "[보기]" : "[블럭목록]"}</Typography>
+                                                                            <Grid xs={12} item container sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                                                <Grid xs={12} item>
+                                                                                    <Typography sx={{fontWeight:"800", fontSize:"0.8rem"}}>{testItem.type === 0 ? "[보기]" : "[블럭목록]"}</Typography>
+                                                                                </Grid>
                                                                                 {testItem.type === 0 && testItem.videoTestMultipleListDTOs.map((multipleItem, multipleIdx) => {
                                                                                         return(
-                                                                                            <Typography id={`multipleTypography${multipleItem.id}`}>
-                                                                                                ({multipleItem.sequence}) : {multipleItem.content}
-                                                                                            </Typography>
+                                                                                            <Grid xs={12} item>
+                                                                                                <Typography sx={{fontWeight:"500", fontSize:"0.8rem"}} id={`multipleTypography${multipleItem.id}`}>
+                                                                                                    ({multipleItem.sequence}) : {multipleItem.content}
+                                                                                                </Typography>
+                                                                                            </Grid>
                                                                                         )
                                                                                     }
                                                                                 )}
                                                                                 {testItem.type === 1 && testItem.blockResponseDTOList.map((blockItem, blockIdx) => {
                                                                                     return(
-                                                                                        <Block
-                                                                                            code={blockItem.block}
-                                                                                            text={blockItem.value}
-                                                                                            color={getBlockColor(blockItem.block)}
-                                                                                            isSpecial={blockItem.block === "[String]" || blockItem.block === "[number]"}
-                                                                                        />
+                                                                                        <Box sx={{pr:"0.3rem"}}>
+                                                                                            <Block
+                                                                                                code={blockItem.block}
+                                                                                                text={blockItem.value}
+                                                                                                color={getBlockColor(blockItem.block)}
+                                                                                                isSpecial={blockItem.block === "[String]" || blockItem.block === "[number]" || blockItem.block === "[StringVal]" || blockItem.block === "[numberVal]"}
+                                                                                            />
+                                                                                        </Box>
                                                                                     )
                                                                                 })}
+                                                                            </Grid>
+                                                                            <Grid xs={12} item sx={{py:"1rem"}}>
+                                                                                <Divider fullWidth />
                                                                             </Grid>
                                                                         </Grid>
                                                                     )
