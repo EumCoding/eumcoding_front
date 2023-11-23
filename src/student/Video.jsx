@@ -32,15 +32,6 @@ const style = {
     p: 4,
 };
 
-const moveItem = (source, destination, sourceIndex, destIndex) => {
-    const sourceClone = Array.from(source);
-    const destClone = Array.from(destination);
-    const [removed] = sourceClone.splice(sourceIndex, 1);
-
-    destClone.splice(destIndex, 0, removed);
-
-    return { sourceClone, destClone };
-};
 
 function ValueLabelComponent(props) {
     const { children, open, value } = props;
@@ -59,15 +50,6 @@ function ValueLabelComponent(props) {
     );
 }
 
-// 리스트 내의 아이템 순서를 변경하는 함수
-const reorder = (list, startIndex, endIndex) => {
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-    return result;
-};
-
-
 function Video(props) {
 
     const getBlockColor = (code) => {
@@ -82,12 +64,36 @@ function Video(props) {
             case "[/]": return "#9370DB"; // 미디엄 퍼플
             case "[number]": return "#90EE90"; // 라이트 그린
             case "[String]": return "#D2B48C"; // 탄
+            case "[=]": return "#CBAACB"; // 라벤더
             default: return "#D3D3D3"; // 라이트 그레이
         }
     };
 
-    const [blockList, setBlockList] = useState([/* 초기 블록 목록 */]);
-    const [answerGrid, setAnswerGrid] = useState([]); // 3x3 그리드 예시
+    const [blockList, setBlockList] = useState([]);
+    const [answerGrid, setAnswerGrid] = useState([[]]);
+
+    // 리스트 내 항목 순서 변경
+    const reorder = (list, startIndex, endIndex) => {
+        const result = Array.from(list);
+        const [removed] = result.splice(startIndex, 1);
+        result.splice(endIndex, 0, removed);
+        return result;
+    };
+
+// 다른 리스트로 항목 이동
+    const moveItem = (source, destination, droppableSource, droppableDestination) => {
+        const sourceClone = Array.from(source);
+        const destClone = Array.from(destination);
+        const [removed] = sourceClone.splice(droppableSource.index, 1);
+
+        destClone.splice(droppableDestination.index, 0, removed);
+
+        const result = {};
+        result[droppableSource.droppableId] = sourceClone;
+        result[droppableDestination.droppableId] = destClone;
+
+        return result;
+    };
 
     const onDragEnd = (result) => {
         const { source, destination } = result;
@@ -99,7 +105,7 @@ function Video(props) {
 
         if (source.droppableId === destination.droppableId) {
             const items = reorder(
-                source.droppableId === 'droppableOne' ? blockList : answerGrid,
+                source.droppableId === 'droppableOne' ? blockList : answerGrid[parseInt(source.droppableId.split('_')[1])],
                 source.index,
                 destination.index
             );
@@ -107,26 +113,37 @@ function Video(props) {
             if (source.droppableId === 'droppableOne') {
                 setBlockList(items);
             } else {
-                setAnswerGrid(items);
+                const newAnswerGrid = Array.from(answerGrid);
+                newAnswerGrid[parseInt(source.droppableId.split('_')[1])] = items;
+                setAnswerGrid(newAnswerGrid);
             }
         } else {
-            const { sourceClone, destClone } = moveItem(
-                source.droppableId === 'droppableOne' ? blockList : answerGrid,
-                destination.droppableId === 'droppableOne' ? blockList : answerGrid,
-                source.index,
-                destination.index
+            const sourceList = source.droppableId === 'droppableOne' ? blockList : answerGrid[parseInt(source.droppableId.split('_')[1])];
+            const destList = destination.droppableId === 'droppableOne' ? blockList : answerGrid[parseInt(destination.droppableId.split('_')[1])];
+            const result = moveItem(
+                sourceList,
+                destList,
+                source,
+                destination
             );
 
             if (source.droppableId === 'droppableOne') {
-                setBlockList(sourceClone);
-                setAnswerGrid(destClone);
+                setBlockList(result[source.droppableId]);
+                setAnswerGrid(prev => {
+                    const newGrid = Array.from(prev);
+                    newGrid[parseInt(destination.droppableId.split('_')[1])] = result[destination.droppableId];
+                    return newGrid;
+                });
             } else {
-                setBlockList(sourceClone);
-                setAnswerGrid(destClone);
+                setAnswerGrid(prev => {
+                    const newGrid = Array.from(prev);
+                    newGrid[parseInt(source.droppableId.split('_')[1])] = result[source.droppableId];
+                    newGrid[parseInt(destination.droppableId.split('_')[1])] = result[destination.droppableId];
+                    return newGrid;
+                });
             }
         }
     };
-
 
 
     const navigate = useNavigate();
@@ -389,6 +406,15 @@ function Video(props) {
         console.log(json);
     };
 
+    // 2차원 배열 answerGrid의 행을 늘리는 함수
+    const addRow = () => {
+        setAnswerGrid(answerGrid.concat([[]]));
+    };
+    // 2차원 배열 answerGrid의 행을 줄이는 함수
+    const deleteRow = () => {
+        setAnswerGrid(answerGrid.slice(0, -1));
+    };
+
 
     // 전체화면 만들기
     const toggleFullScreen = (element) => {
@@ -445,21 +471,18 @@ function Video(props) {
                     aria-describedby="modal-modal-description"
                 >
                     <Box sx={style}>
+                        <Typography id="modal-modal-title" variant="h6" component="h2" sx={{fontSize:"1.5rem", fontWeight:"700", py:"1rem", color:"#0B401D"}}>
+                            문제!
+                        </Typography>
                         <Typography id="modal-modal-title" variant="h6" component="h2" sx={{fontSize:"1.5rem", fontWeight:"700", py:"1rem"}}>
                             {videoTest[videoTestIdx].title}
                         </Typography>
-                        <Button
-                            onClick={() => {
-                                // blockList 출력
-                                console.log(blockList);
-                            }}
-                        >blockList 출력</Button>
-                        <Button
-                            onClick={() => {
-                                // answerGrid 출력
-                                console.log(answerGrid);
-                            }}
-                        >answerGrid 출력</Button>
+                        <Button onClick={() => console.log(answerGrid)} >
+                            answerGrid
+                        </Button>
+                        <Button onClick={() => console.log(blockList)} >
+                            blockList
+                        </Button>
                         {videoTest[videoTestIdx].type === 0 && (
                             <Typography id="modal-modal-description" sx={{ mt: 2 }}>
                                 <RadioGroup onChange={(e) => setAnswer(e.target.value)}>
@@ -474,10 +497,10 @@ function Video(props) {
                             </Typography>
                         )}
                         {videoTest[videoTestIdx].type === 1 && (
-                            <Grid container sx={{width:"100%"}}>
+                            <Grid container sx={{width:"100%", overflow:"auto"}}>
                                 <DragDropContext onDragEnd={onDragEnd}>
                                     <Grid container sx={{width:"100%", height:"500"}}>
-                                        <Grid xs={12} item sx={{width:"100%", height:"200", border:1}}>
+                                        <Grid xs={12} item sx={{width:"100%", height:"200", border:1, overflow:"auto"}}>
                                             <Droppable droppableId="droppableOne" direction="horizontal">
                                                 {(provided) => (
                                                     <Grid item xs={12} ref={provided.innerRef} {...provided.droppableProps} sx={{display:"flex"}}>
@@ -503,35 +526,47 @@ function Video(props) {
                                                 )}
                                             </Droppable>
                                         </Grid>
-                                        <Grid xs={12} item sx={{width:"100%", height:"200", border:1}}>
-                                            <Droppable droppableId="droppableTwo" direction="horizontal">
-                                                {(provided) => (
-                                                    <Grid item xs={12} ref={provided.innerRef} {...provided.droppableProps} sx={{display:"flex"}}>
-                                                            {answerGrid.map((block, index) => (
-                                                                <Draggable key={block.id} draggableId={"answer" + block.id.toString()} index={index}>
-                                                                    {(provided) => (
-                                                                        <Box
-                                                                             ref={provided.innerRef}
-                                                                             {...provided.draggableProps}
-                                                                             {...provided.dragHandleProps}
-                                                                             sx={{display:"flex", alignItems:"center", justifyContent:"flex", m:"0.3rem"}}
-                                                                        >
-                                                                            <Block code={block.block} color={getBlockColor(block.block)} text={block.value && block.value}
-                                                                                   isSpecial={
-                                                                                       (block.block === "[number]" || block.block === "[String]" || block.block === "[numberVal]" || block.block === "[StringVal]")
-                                                                                   } />
-                                                                        </Box>
-                                                                    )}
-                                                                </Draggable>
-                                                            ))}
-                                                            {provided.placeholder}
-                                                    </Grid>
-                                                )}
-                                            </Droppable>
-                                        </Grid>
+                                        {answerGrid && answerGrid.map((row, idx) => {
+                                            return(
+                                                <Grid xs={12} item sx={{width:"100%", height:"200", border:1, overflow:"auto"}}>
+                                                    <Droppable droppableId={"droppable_" + idx} direction="horizontal">
+                                                        {(provided) => (
+                                                            <Grid item xs={12} ref={provided.innerRef} {...provided.droppableProps} sx={{display:"flex"}}>
+                                                                {answerGrid[idx].length > 0 && answerGrid[idx].map((block, index) => (
+                                                                    <Draggable key={block.id} draggableId={"answer" + block.id.toString()} index={index}>
+                                                                        {(provided) => (
+                                                                            <Box
+                                                                                ref={provided.innerRef}
+                                                                                {...provided.draggableProps}
+                                                                                {...provided.dragHandleProps}
+                                                                                sx={{display:"flex", alignItems:"center", justifyContent:"flex", m:"0.3rem"}}
+                                                                            >
+                                                                                <Block code={block.block} color={getBlockColor(block.block)} text={block.value && block.value}
+                                                                                       isSpecial={
+                                                                                           (block.block === "[number]" || block.block === "[String]" || block.block === "[numberVal]" || block.block === "[StringVal]")
+                                                                                       } />
+                                                                            </Box>
+                                                                        )}
+                                                                    </Draggable>
+                                                                ))}
+                                                                {provided.placeholder}
+                                                                <Button
+                                                                    sx={{display:"flex", alignItems:"center", justifyContent:"flex", m:"0.3rem"}}
+                                                                    onClick={() => {
+                                                                        // answerGrid의 행을 늘립니다.
+                                                                        addRow();
+                                                                    }}
+                                                                >
+                                                                    <Block code={"[enter]"} color={getBlockColor("[enter]")} text={"줄바꿈"} />
+                                                                </Button>
+                                                            </Grid>
+                                                        )}
+                                                    </Droppable>
+                                                </Grid>
+                                                )
+                                        })}
                                     </Grid>
                                 </DragDropContext>
-
                             </Grid>
                         )}
                         <Button sx={{mt:"1rem"}} onClick={() => {

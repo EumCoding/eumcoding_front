@@ -30,6 +30,8 @@ import NewLecture from "./teacher/NewLecture";
 import TeacherLectureInfo from "./teacher/TeacherLectureInfo"
 import EmailConfirm from "./unauth/EmailConfirm";
 import ParentDashboard from "./parent/ParentDashboard";
+import ParentCurriculum from "./parent/ParentCurriculum";
+import TeacherStats from "./teacher/TeacherStats";
 
 
 function App() {
@@ -102,6 +104,11 @@ function App() {
                 <Route path={"/teacher/lectureInfo/:value"} element={<TeacherLectureInfo />}/>
             {/* 학부모 dashboard **/}
             <Route path={"/parent/dashboard"} element={<ParentDashboard />}/>
+            {/* 학부모 커리큘럼 **/}
+            <Route path={"/parent/curriculum"} element={<ParentCurriculum />}/>
+            {/* 강사통계 **/}
+            <Route path={"/teacher/stats"} element={<TeacherStats />}/>
+
 
         </Routes>
 

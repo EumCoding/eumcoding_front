@@ -499,7 +499,7 @@ function MyPage(props) {
                 </Grid>
 
                 {/* 자녀가 없는 경우 자녀를 등록함 **/}
-                {isChild === false && isParent && (
+                {isParent && (
                     <Grid item container xs={12}>
                         <Grid item xs={4}
                               display="flex"

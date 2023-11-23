@@ -8,6 +8,7 @@ import StarIcon from '@mui/icons-material/Star';
 import {useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import axios from "axios";
+import Typography from "@mui/material/Typography";
 
 
 function DashBoard(props) {
@@ -16,6 +17,8 @@ function DashBoard(props) {
     const role = useSelector((state) => state.role); // 역할
 
     const [profile, setProfile] = useState(null); // 프로필 저장될 부분
+
+    const [childList, setChildList] = useState(null); // 자녀 목록 저장될 부분
 
     const navigate = useNavigate()
 
@@ -49,6 +52,7 @@ function DashBoard(props) {
             }
         ).then((res) => {
             console.log(res)
+            setChildList(res.data);
         }).catch((err) => {
                 // 자녀가 등록되어 있지 않다는 alert 띄우고 확인 누르면 이동
             if (window.confirm("자녀가 등록되어 있지 않습니다. 자녀를 등록하시겠습니까?")) {
@@ -152,51 +156,56 @@ function DashBoard(props) {
                         <Grid item xs={12} sx={{pt: "2rem"}}>
                             <span className={styles.font_main}>자녀 커리큘럼 관리</span>
                         </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="flex-start"
-                              alignItems="center"
-                              xs={12} sx={{pt: "1rem"}}>
-                                <span className={styles.font_normal}>
-                                    무작정 따라하는 우리아이 첫 코딩교육
-                                </span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="flex-start"
-                              alignItems="center"
-                              xs={12} sx={{pt: "2rem"}}>
-                                <span className={styles.font_gray}>
-                                    진도율 : 1강 / 12강 (5%)
-                                </span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="flex-start"
-                              alignItems="center"
-                              xs={3} sx={{pt: "2rem"}}>
-                                <span className={styles.font_a} >
-                                    전체보기
-                                </span>
-                        </Grid>
-                        <Grid item
-                              display="flex"
-                              justifyContent="flex-start"
-                              alignItems="center"
-                              xs={9} sx={{pt: "2rem"}}>
-                                <span className={styles.font_a}
-                                      onClick={() => navigate("/my/payLog")}
-                                >
-                                    결제내역
-                                </span>
-                        </Grid>
+                        {/*자녀 목록 출력하기**/}
+                        {childList && (
+                            <Grid item
+                                  container
+                                  display="flex"
+                                  justifyContent="flex-start"
+                                  alignItems="center"
+                                  xs={12} sx={{pt: "1rem", display:"flex", alignItems:"center"}}>
+                                <Grid xs={12} item>
+                                    <Typography sx={{fontWeight:"800", fontSize:"1.5rem", display:"flex"}}>
+                                        자녀목록
+                                    </Typography>
+                                </Grid>
+                                {childList && childList.rci.map((child) => (
+                                    <Grid item xs={12}>
+                                        <Typography
+                                            display="flex"
+                                            justifyContent="flex-start"
+                                            alignItems="center"
+                                            sx={{fontWeight:'700', fontSize:'1rem', color:'#000000'}}>
+                                            {child.name}({child.email})
+                                        </Typography>
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        )}
+                        {
+                            !childList && (
+                                <Grid item
+                                      display="flex"
+                                      justifyContent="flex-start"
+                                      alignItems="center"
+                                      xs={12} sx={{pt: "1rem"}}>
+                                        <Typography
+                                            display="flex"
+                                            justifyContent="flex-start"
+                                            alignItems="center"
+                                            sx={{fontWeight:'700', fontSize:'1rem', color:'#000000'}}>
+                                            자녀가 등록되어 있지 않습니다.
+                                        </Typography>
+                                </Grid>
+                            )
+                        }
                         <Grid item
                               display="flex"
                               justifyContent="center"
                               alignItems="center"
                               xs={12} sx={{pt: "1rem"}}>
                             <Button
-                                onClick={() => navigate("/my/lectureList")}
+                                onClick={() => navigate("/parent/curriculum")}
                                 sx={{
                                     width: "92%", mb: "1rem", height: "4rem",
                                     background: '#0B401D', borderRadius: '10px', position: 'absolute', bottom: 0,
@@ -205,7 +214,7 @@ function DashBoard(props) {
                                     }
                                 }}
                             >
-                                <span className={styles.font_btn} >이어서 수강하기</span>
+                                <span className={styles.font_btn} >진행률 보기</span>
                             </Button>
                         </Grid>
                     </Grid>

@@ -229,6 +229,7 @@ function TeacherDashBoard(props) {
                                         background: "green",  // 호버시 버튼 배경색
                                     }
                                 }}
+                                onClick={() => navigate("/teacher/stats")}
                             >
                                 <span className={styles.font_btn}>전체 통계 보기</span>
                             </Button>

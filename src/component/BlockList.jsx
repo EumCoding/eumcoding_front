@@ -73,6 +73,10 @@ const BlockList = [
     {
         code:"[StringVal]",
         text:"문자열변수"
+    },
+    {
+        code:"[enter]",
+        text:"다음줄"
     }
 ]
 

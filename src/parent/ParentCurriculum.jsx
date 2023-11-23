@@ -1,7 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import {useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
-import {Button, createTheme, Grid, TextField, ThemeProvider, Typography} from "@mui/material";
+import {
+    Button,
+    createTheme,
+    FormControl,
+    Grid, InputLabel,
+    MenuItem,
+    Select,
+    TextField,
+    ThemeProvider,
+    Typography
+} from "@mui/material";
 import DashTop from "../component/DashTop";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -9,11 +19,15 @@ import {ResponsivePie} from "@nivo/pie";
 import {DesktopDatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 
-function Curriculum(props) {
+function ParentCurriculum(props) {
 
     const accessToken = useSelector((state) => state.accessToken); // 엑세스 토큰
 
     const navigate = useNavigate()
+
+    const [childId, setChildId] = useState(0); // 자식 id
+
+    const [childList, setChildList] = useState(null); // 자녀 리스트
 
     // 오늘날짜 dayjs로
     const today = dayjs();
@@ -78,6 +92,42 @@ function Curriculum(props) {
         return true;
     };
 
+    // 자녀 리스트 불러오기
+    const getChildList = async () => {
+        try {
+            console.log("자녀 리스트 불러오기...")
+            const response = await axios.get(
+                `http://localhost:8099/parent/children/list`,
+                { headers: { Authorization: `${accessToken}` } }
+            );
+            console.log(response);
+            if(response && response.data){
+                setChildList(response.data);
+                setChildId(response.data.rci[0].memberId);
+            }
+            return response; // 여기서 응답을 반환
+        } catch (err) {
+            console.log(err);
+            return null; // 오류가 발생한 경우 null 반환
+        }
+    };
+
+    // 자녀 커리큘럼 조회하기
+    const getChildCurriculum = async (childId, startDay, endDay) => {
+        try {
+            console.log("자녀 커리큘럼 조회하기...")
+            const response = await axios.get(
+                `http://localhost:8099/parent/children/curriculum?childId=${childId}&endDateStr=${endDay.format('YYYY-MM-DDT23:59:59')}&startDateStr=${startDay.format('YYYY-MM-DDT00:00:00')} `,
+                { headers: { Authorization: `${accessToken}` } }
+            );
+            console.log(response);
+            return response; // 여기서 응답을 반환
+        } catch (err) {
+            console.log(err);
+            return null; // 오류가 발생한 경우 null 반환
+        }
+    };
+
 
     // 테마
     const theme = createTheme({ // Theme
@@ -127,80 +177,41 @@ function Curriculum(props) {
     };
 
     useEffect(() => {
-        if(accessToken){
-            getPlan(today, today.add(1, 'day')).then((res) => {
-                console.log("오늘 진행률")
-                console.log(res)
-                res && res.data && setPlanTodayResult(res.data)
-                // 진행률 계산
-                if (res && res.data) {
-                    console.log("진행률 계산... 시작")
-                    let validProgressCount = 0;
-                    const progressSum = res.data.reduce((acc, cur) => {
-                        if (cur.sectionDTOList && cur.sectionDTOList.length > 0 && cur.sectionDTOList[0].progress !== undefined) {
-                            validProgressCount++;
-                            return acc + cur.sectionDTOList[0].progress;
-                        }
-                        return acc;
-                    }, 0);
+        if(accessToken){ // childList가 setting 되었을때 0번 child를 먼저 조회합니다.
+            // 자녀 리스트 조회하기
+            getChildList().then((res) => {
+                getChildCurriculum(res.data.rci[0].memberId, today, today.add(1, 'day')).then((res) => {
+                    console.log("오늘 진행률")
+                    console.log(res)
+                    res && res.data && setPlanTodayResult(res.data)
+                    // 진행률 계산
+                    if (res && res.data) {
+                        console.log("진행률 계산... 시작")
+                        let validProgressCount = 0;
+                        const progressSum = res.data.reduce((acc, cur) => {
+                            if (cur.sectionDTOList && cur.sectionDTOList.length > 0 && cur.sectionDTOList[0].progress !== undefined) {
+                                validProgressCount++;
+                                return acc + cur.sectionDTOList[0].progress;
+                            }
+                            return acc;
+                        }, 0);
 
-                    const progress = validProgressCount > 0 ? Math.round(progressSum / validProgressCount) : 0;
-                    console.log("오늘 진행률", progress);
-                    setTodayProgress(progress);
-                    const tempData = [
-                        {
-                            id: "진행중",
-                            value: progress
-                        },
-                        {
-                            id: "남은강의",
-                            value: 100 - progress
-                        }
-                    ];
-                    setTodayProgressData(tempData);
-                }
-            })
-            getPlan(today, today.add(3, 'day')).then((res) => {
-                res && res.data && setPlan3DayResult(res.data)
-                console.log("3일 진행률")
-                console.log(res)
-                // 진행률 계산
-                if (res && res.data) {
-                    console.log("진행률 계산... 시작")
-                    let validProgressCount = 0;
-                    const progressSum = res.data.reduce((acc, cur) => {
-                        if (cur.sectionDTOList && cur.sectionDTOList.length > 0 && cur.sectionDTOList[0].progress !== undefined) {
-                            validProgressCount++;
-                            return acc + cur.sectionDTOList[0].progress;
-                        }
-                        return acc;
-                    }, 0);
-
-                    const progress = validProgressCount > 0 ? Math.round(progressSum / validProgressCount) : 0;
-                    console.log("오늘 진행률", progress);
-                    setThreeDayProgress(progress);
-                }
-            })
-            getPlan(today, today.add(7, 'day')).then((res) => {
-                res && res.data && setPlanWeekResult(res.data)
-                console.log("일주일 진행률")
-                console.log(res)
-                // 진행률 계산
-                if (res && res.data) {
-                    console.log("진행률 계산... 시작")
-                    let validProgressCount = 0;
-                    const progressSum = res.data.reduce((acc, cur) => {
-                        if (cur.sectionDTOList && cur.sectionDTOList.length > 0 && cur.sectionDTOList[0].progress !== undefined) {
-                            validProgressCount++;
-                            return acc + cur.sectionDTOList[0].progress;
-                        }
-                        return acc;
-                    }, 0);
-
-                    const progress = validProgressCount > 0 ? Math.round(progressSum / validProgressCount) : 0;
-                    console.log("오늘 진행률", progress);
-                    setWeekProgress(progress);
-                }
+                        const progress = validProgressCount > 0 ? Math.round(progressSum / validProgressCount) : 0;
+                        console.log("오늘 진행률", progress);
+                        setTodayProgress(progress);
+                        const tempData = [
+                            {
+                                id: "진행중",
+                                value: progress
+                            },
+                            {
+                                id: "남은강의",
+                                value: 100 - progress
+                            }
+                        ];
+                        setTodayProgressData(tempData);
+                    }
+                })
             })
         }
     }, [accessToken])
@@ -213,9 +224,30 @@ function Curriculum(props) {
                     {/* 오늘 진행률 **/}
                     <Grid xs={12} container item sx={{border:1, borderColor:"#8D8D8D", borderRadius:"20px", width:"100%", height:"40vh", display:"flex", alignItems:"flex-start", p:5}}>
                         <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                            <Typography sx={{fontWeight:"900", fontSize:"1.7rem"}}>
+                            <Typography sx={{fontWeight:"900", fontSize:"1.7rem", display:"inline"}}>
                                 오늘 진행률
                             </Typography>
+                            {childList && (
+                                <FormControl variant="standard" sx={{ ml: 5, minWidth: 120 }}>
+                                    <InputLabel id="demo-simple-select-standard-label">자녀선택</InputLabel>
+                                    <Select
+                                        labelId="demo-simple-select-standard-label"
+                                        id="demo-simple-select-standard"
+                                        value={childId}
+                                        onChange={(e) => setChildId(parseInt(e.target.value))}
+                                        label="자녀선택"
+                                        defaultValue={(childList.rci)[0].memberId}
+                                    >
+                                        {
+                                            childList.rci.map((item, idx) => {
+                                                return(
+                                                    <MenuItem key={item.memberId} value={item.memberId}>{item.name}</MenuItem>
+                                                    )
+                                            })
+                                        }
+                                    </Select>
+                                </FormControl>
+                            )}
                         </Grid>
                         {/* 날짜 **/}
                         <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
@@ -225,33 +257,33 @@ function Curriculum(props) {
                         </Grid>
                         {todayProgressData && (
 
-                                <Grid xs={12} item sx={{height:"70%", position: 'relative'}}>
-                                    <ResponsivePie
-                                        data={todayProgressData}
-                                        margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
-                                        enableArcLabels={false}
-                                        enableArcLinkLabels={false}
-                                        innerRadius={0.5}
-                                        padAngle={0.7}
-                                        cornerRadius={3}
-                                        colors={{ scheme: 'nivo' }}
-                                        borderWidth={1}
-                                        borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
-                                        enableRadialLabels={false}
-                                        enableSlicesLabels={false}
-                                        isInteractive={true}
-                                    />
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: '50%',
-                                            left: '50%',
-                                            transform: 'translate(-50%, -50%)',
-                                            fontSize: '2rem',
-                                            fontWeight: 'bold'
-                                        }}>
-                                            {todayProgress}%
-                                        </div>
-                                </Grid>
+                            <Grid xs={12} item sx={{height:"70%", position: 'relative'}}>
+                                <ResponsivePie
+                                    data={todayProgressData}
+                                    margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                                    enableArcLabels={false}
+                                    enableArcLinkLabels={false}
+                                    innerRadius={0.5}
+                                    padAngle={0.7}
+                                    cornerRadius={3}
+                                    colors={{ scheme: 'nivo' }}
+                                    borderWidth={1}
+                                    borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
+                                    enableRadialLabels={false}
+                                    enableSlicesLabels={false}
+                                    isInteractive={true}
+                                />
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    fontSize: '2rem',
+                                    fontWeight: 'bold'
+                                }}>
+                                    {todayProgress}%
+                                </div>
+                            </Grid>
                         )}
                     </Grid>
                 </Grid>
@@ -262,31 +294,31 @@ function Curriculum(props) {
                             <Typography sx={{fontWeight:"900", fontSize:"1.7rem"}} >오늘 들을 강의</Typography>
                         </Grid>
                         {planTodayResult && planTodayResult.map((item, idx) => {
-                        return (
-                            <Grid xs={12} container item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"
-                                // 호버 시 회색으로
-                                , "&:hover": {
-                                    backgroundColor: "#EAEAEA"
-                                }
-                                // 테두리 둥글게
-                                , borderRadius:"20px"
-                                , p:2
-                            }}>
-                                <Grid xs={9} item>
-                                    <Typography sx={{fontWeight:"600", fontSize:"1rem", display:"flex"}}>
-                                        {item.sectionDTOList && item.sectionDTOList[0].lectureName}({item.sectionDTOList && item.sectionDTOList[0].sectionName})
-                                    </Typography>
-                                    <Typography sx={{fontWeight:"600", fontSize:"0.7rem", color:"#8D8D8D", display:"flex"}}>
-                                        기간 : {dayjs(item.date,  "YYYY-MM-DD HH:mm:ss").format("YYYY년 MM월DD일")} ~ {dayjs(item.date,  "YYYY-MM-DD HH:mm:ss").add(parseInt(item.sectionDTOList[0].timetaken), 'day').format("YYYY년 MM월DD일")}
-                                    </Typography>
+                            return (
+                                <Grid xs={12} container item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"
+                                    // 호버 시 회색으로
+                                    , "&:hover": {
+                                        backgroundColor: "#EAEAEA"
+                                    }
+                                    // 테두리 둥글게
+                                    , borderRadius:"20px"
+                                    , p:2
+                                }}>
+                                    <Grid xs={9} item>
+                                        <Typography sx={{fontWeight:"600", fontSize:"1rem", display:"flex"}}>
+                                            {item.sectionDTOList && item.sectionDTOList[0].lectureName}({item.sectionDTOList && item.sectionDTOList[0].sectionName})
+                                        </Typography>
+                                        <Typography sx={{fontWeight:"600", fontSize:"0.7rem", color:"#8D8D8D", display:"flex"}}>
+                                            기간 : {dayjs(item.date,  "YYYY-MM-DD HH:mm:ss").format("YYYY년 MM월DD일")} ~ {dayjs(item.date,  "YYYY-MM-DD HH:mm:ss").add(parseInt(item.sectionDTOList[0].timetaken), 'day').format("YYYY년 MM월DD일")}
+                                        </Typography>
+                                    </Grid>
+                                    <Grid xs={3} item sx={{display:'flex', justifyContent:"flex-end"}}>
+                                        <Typography sx={{fontWeight:"600", fontSize:"0.7rem", color:"#8D8D8D", display:"flex"}}>
+                                            진행률 : {item.sectionDTOList && item.sectionDTOList[0].progress}  %
+                                        </Typography>
+                                    </Grid>
                                 </Grid>
-                                <Grid xs={3} item sx={{display:'flex', justifyContent:"flex-end"}}>
-                                    <Typography sx={{fontWeight:"600", fontSize:"0.7rem", color:"#8D8D8D", display:"flex"}}>
-                                        진행률 : {item.sectionDTOList && item.sectionDTOList[0].progress}  %
-                                    </Typography>
-                                </Grid>
-                            </Grid>
-                        )
+                            )
                         })}
                     </Grid>
                 </Grid>
@@ -317,7 +349,7 @@ function Curriculum(props) {
                                             height: 40,
                                             '.MuiInputBase-input': { height: '1.1876em', padding: '10px 12px' }, // Input 요소에 대한 스타일
                                         }} />
-                                }
+                                    }
                                 />
                             </LocalizationProvider>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -343,48 +375,48 @@ function Curriculum(props) {
                                             height: 40,
                                             '.MuiInputBase-input': { height: '1.1876em', padding: '10px 12px' }, // Input 요소에 대한 스타일
                                         }} />
-                                }
+                                    }
                                 />
                             </LocalizationProvider>
                             <Button
                                 variant="contained"
                                 color="primary"
                                 onClick={() =>
-                                // 기간 조회
-                                getPlan(startDate, endDate).then((res) => {
-                                    console.log("기간 조회")
-                                    console.log(res)
-                                    res && res.data && setPlanResult(res.data)
-                                    // 진행률 계산
-                                    if (res && res.data) {
-                                        console.log("진행률 계산... 시작")
-                                        let validProgressCount = 0;
-                                        const progressSum = res.data.reduce((acc, cur) => {
-                                            if (cur.sectionDTOList && cur.sectionDTOList.length > 0 && cur.sectionDTOList[0].progress !== undefined) {
-                                                validProgressCount++;
-                                                return acc + cur.sectionDTOList[0].progress;
-                                            }
-                                            return acc;
-                                        }, 0);
+                                    // 기간 조회
+                                    getChildCurriculum(childId, startDate, endDate).then((res) => {
+                                        console.log("기간 조회")
+                                        console.log(res)
+                                        res && res.data && setPlanResult(res.data)
+                                        // 진행률 계산
+                                        if (res && res.data) {
+                                            console.log("진행률 계산... 시작")
+                                            let validProgressCount = 0;
+                                            const progressSum = res.data.reduce((acc, cur) => {
+                                                if (cur.sectionDTOList && cur.sectionDTOList.length > 0 && cur.sectionDTOList[0].progress !== undefined) {
+                                                    validProgressCount++;
+                                                    return acc + cur.sectionDTOList[0].progress;
+                                                }
+                                                return acc;
+                                            }, 0);
 
-                                        const progress = validProgressCount > 0 ? Math.round(progressSum / validProgressCount) : 0;
-                                        console.log("오늘 진행률", progress);
-                                        setProgress(progress);
-                                        // nivo
-                                        const tempData = [
-                                            {
-                                                id: "진행중",
-                                                value: progress
-                                            },
-                                            {
-                                                id: "남은강의",
-                                                value: 100 - progress
-                                            }
-                                        ];
-                                        setProgressData(tempData);
-                                    }
-                                })
-                            }
+                                            const progress = validProgressCount > 0 ? Math.round(progressSum / validProgressCount) : 0;
+                                            console.log("오늘 진행률", progress);
+                                            setProgress(progress);
+                                            // nivo
+                                            const tempData = [
+                                                {
+                                                    id: "진행중",
+                                                    value: progress
+                                                },
+                                                {
+                                                    id: "남은강의",
+                                                    value: 100 - progress
+                                                }
+                                            ];
+                                            setProgressData(tempData);
+                                        }
+                                    })
+                                }
                                 sx={{
                                     backgroundColor: '#3767A6', // 버튼의 배경 색상
                                     '&:hover': {
@@ -474,4 +506,4 @@ function Curriculum(props) {
     );
 }
 
-export default Curriculum;
+export default ParentCurriculum;
