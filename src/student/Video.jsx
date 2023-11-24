@@ -391,6 +391,9 @@ function Video(props) {
         playerRef.current.seekTo(maxPlayed);
     };
 
+    // 객관식 테스트 결과 전송하기
+    // const multipleChoiceResult = async(answer, id)
+
 
 
     const handleDragEnd = (result) => {

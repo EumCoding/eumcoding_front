@@ -75,6 +75,8 @@ const modalStyle = {
 
 // 강사 side의 강의 정보를 표시하고 수정합니다.
 function TeacherLectureInfo(props) {
+    const [firstTestExpand, setFirstTestExpand] = useState(false);
+    const [secondTestExpand, setSecondTestExpand] = useState(false);
 
     const [newSectionName, setNewSectionName] = useState(""); // 새로운 Section 이름
 
@@ -1724,12 +1726,37 @@ function TeacherLectureInfo(props) {
         },
     });
 
+    const [firstTestResult, setFirstTestResult] = useState(null); // 첫번째 테스트 결과
+    const [secondTestResult, setSecondTestResult] = useState(null); // 두번째 테스트 결과
+
+    // main test 정보 가져오기
+    const getMainTestInfo = async (id) => {
+        console.log("메인테스트정보 가져오기")
+        const response = await axios.get(
+            `http://localhost:8099/lecture/section/test/unauth/view?lectureId=${id}`
+        ).then((res) => {
+            console.log("메인테스트정보")
+            console.log(res)
+            if(res && res.data){
+                res.data.forEach((item) => {
+                    if(item.type === 0){
+                        setFirstTestResult(item);
+                    }
+                    if(item.type === 1){
+                        setSecondTestResult(item);
+                    }
+                })
+            }
+        })
+    }
+
     useEffect(() => {
         getLectureInfo(params.value) // 첫번째 정보 가져옴
         // 첫번째 페이지의 질문리스트 가져옴
         getQuestionList(params.value, 1);
         // 첫번째 페이지의 리뷰리스트 가져옴
         getReviewList(params.value, 0);
+        getMainTestInfo(params.value);
     },[])
 
     useEffect(() => {
@@ -2276,7 +2303,7 @@ function TeacherLectureInfo(props) {
                                             {!editTimetaken[idx] && (
                                                 <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>{item.timeTaken}</Typography>
                                             )}
-                                            <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>주
+                                            <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>일
                                                 {!editTimetaken[idx] && (
                                                     <EditIcon
                                                         onClick={() => {
@@ -2572,6 +2599,67 @@ function TeacherLectureInfo(props) {
                     >
                         Section 추가하기
                     </Button>
+                </Grid>
+                {/* 중간평가 최종평가 **/}
+                <Grid item xs={12}
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                      sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, mt:"3rem"}}
+                >
+                    <Container>
+                        <Accordion expanded={firstTestExpand}>
+                            <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />}
+                                              onClick={() => {
+                                                  let temp = !firstTestExpand;
+                                                    setFirstTestExpand(temp);
+                                              }
+                                              }>
+                                <span className={styles.font_curriculum_title}>중간평가</span>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Grid container sx={{width:"100%"}}>
+                                    {/* section 선택 **/}
+                                    <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                        <FormControl sx={{ width: "100px", ml: "1rem", my: 'auto' }}>
+                                            <Select
+                                                label={"Section 선택"}
+                                                id="sectionSelect1"
+                                                variant="standard"
+                                                size="small"
+                                                //defaultValue={myLectureList[0].id}
+                                                onChange={(event) => {
+                                                    // sectionSelect2의 값보다 작을때만 변경
+                                                }}
+                                            >
+                                                {/*강의리스트... 기본값은 lectureList[0]이고 두번째 select에서 선택된 강의는 선택불가**/}
+                                                            <MenuItem value={""}>""</MenuItem>
+
+                                            </Select>
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                        <Typography>중간평가가 없습니다.</Typography>
+                                    </Grid>
+                                </Grid>
+                            </AccordionDetails>
+                        </Accordion>
+                        <Accordion expanded={secondTestExpand}>
+                            <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />} onClick={() => {
+                                let temp = !secondTestExpand;
+                                setSecondTestExpand(temp);
+                            }}>
+                                <span className={styles.font_curriculum_title}>최종평가</span>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Grid container sx={{width:"100%"}}>
+                                    <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                        <Typography>최종평가가 없습니다.</Typography>
+                                    </Grid>
+                                </Grid>
+                            </AccordionDetails>
+                        </Accordion>
+                    </Container>
                 </Grid>
 
                 <Grid item xs={12}
