@@ -15,10 +15,6 @@ const BlockList = [
         text:"출력"
     },
     {
-        code:"[scan]",
-        text:"입력"
-    },
-    {
         code:"[+]",
         text:"더하기"
     },
@@ -41,10 +37,6 @@ const BlockList = [
     {
         code:"[>=]",
         text:">="
-    },
-    {
-        code:"[=]",
-        text:"="
     },
     {
         code:"[==]",
@@ -74,10 +66,6 @@ const BlockList = [
         code:"[StringVal]",
         text:"문자열변수"
     },
-    {
-        code:"[enter]",
-        text:"다음줄"
-    }
 ]
 
 export default BlockList;

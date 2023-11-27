@@ -45,7 +45,7 @@ function MyLecture(props) {
     // 서버에서 결과 받아오기
     const getMyLecture = async (pageParam) => { // pageParam : 가져올 page
         const response = await axios.post(
-            `http://localhost:8099/member/mylecture/list?page=${pageParam}&sort=1&size=12`,
+            `${process.env.REACT_APP_API_URL}/member/mylecture/list?page=${pageParam}&sort=1&size=12`,
             null,
             {
                 headers:{Authorization: `${accessToken}`,}

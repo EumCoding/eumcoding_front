@@ -24,7 +24,7 @@ function EmailConfirm(props) {
     const confirm = async () => {
         const encodedCode = encodeURIComponent(code);
         const response = await axios.get(
-            `http://localhost:8099/unauth/member/confirm-email?token=${encodedCode}`
+            `${process.env.REACT_APP_API_URL}/unauth/member/confirm-email?token=${encodedCode}`
         ).catch((err) => {
             alert("잘못된 접근입니다.")
         })

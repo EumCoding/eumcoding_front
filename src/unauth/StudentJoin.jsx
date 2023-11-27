@@ -104,7 +104,7 @@ function StudentJoin(props) {
         fd.append('address', address1+address2)
         // 회원가입 api 호출
         const response = await axios.post(
-            `http://localhost:8099/unauth/member/signup`,
+            `${process.env.REACT_APP_API_URL}/unauth/member/signup`,
             fd,
             {
                 headers:{

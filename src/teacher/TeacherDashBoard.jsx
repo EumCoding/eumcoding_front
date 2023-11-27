@@ -26,7 +26,7 @@ function TeacherDashBoard(props) {
     // 최초 정보 가져오기
     const getProfile = async () => {
         const response = await axios.post(
-            `http://localhost:8099/member/info`,
+            `${process.env.REACT_APP_API_URL}/member/info`,
             null,
             {
                 headers:{Authorization: `${accessToken}`,}

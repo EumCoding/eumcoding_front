@@ -2,7 +2,6 @@ import './App.css';
 import React, {useEffect} from 'react';
 import {Route, Routes, useNavigate} from "react-router-dom";
 import StudentJoin from "./unauth/StudentJoin";
-import TopBar from "./component/TopNav";
 import Main from "./unauth/Main";
 import Login from "./unauth/Login";
 import Lecture from "./unauth/Lecture";
@@ -39,7 +38,6 @@ function App() {
 
         const dispatch = useDispatch();
         const accessToken = useSelector((state) => state.accessToken);
-        const navigate = useNavigate();
 
         // token을 리덕스로 가져옴. 이후에 refresh token 적용 시 쿠키에는 refresh token, redux에는 access token 적용하는 식으로 진행.
         useEffect(() => {

@@ -29,7 +29,7 @@ function DashBoard(props) {
     // 최초 정보 가져오기
     const getProfile = async () => {
         const response = await axios.post(
-            `http://localhost:8099/member/info`,
+            `${process.env.REACT_APP_API_URL}/member/info`,
             null,
             {
                 headers:{Authorization: `${accessToken}`,}
@@ -45,9 +45,9 @@ function DashBoard(props) {
         //endDate는 오늘날짜에서 시간만 23:59:59로 바꾸고 startDate는 오늘날짜에서 시간만 00:00:00
         const startDate = dayjs().format('YYYY-MM-DDT') + '00:00:00'
         const endDate = dayjs().format('YYYY-MM-DDT') + '23:59:59'
-        console.log(`http://localhost:8099/member/myplan/list/info?startDateStr=${startDate}&endDateStr=${endDate}`)
+        console.log(`${process.env.REACT_APP_API_URL}/member/myplan/list/info?startDateStr=${startDate}&endDateStr=${endDate}`)
         const response = await axios.post(
-            `http://localhost:8099/member/myplan/list/info?startDateStr=${startDate}&endDateStr=${endDate}`,
+            `${process.env.REACT_APP_API_URL}/member/myplan/list/info?startDateStr=${startDate}&endDateStr=${endDate}`,
             null,
             {
                 headers:{Authorization: `${accessToken}`,}

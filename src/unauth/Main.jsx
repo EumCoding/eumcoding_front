@@ -122,7 +122,7 @@ function Main(props) {
     // 인기강의 연결
     const getPopular = async () => {
         const response = await axios.get(
-            `http://localhost:8099/unauth/main/popular`,
+            `${process.env.REACT_APP_API_URL}/unauth/main/popular`,
         ).then((res) => {
             console.log(res);
             if(res.data){
@@ -134,7 +134,7 @@ function Main(props) {
     // 신규강의 연결
     const getNewest = async () => {
         const response = await axios.get(
-            `http://localhost:8099/unauth/main/new`,
+            `${process.env.REACT_APP_API_URL}/unauth/main/new`,
         ).then((res) => {
             console.log(res);
             if(res.data){

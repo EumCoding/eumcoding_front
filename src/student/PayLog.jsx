@@ -124,7 +124,7 @@ function PayLog(props) {
 
             console.log("시작일 " + startParam);
 
-            const url = `http://localhost:8099/payment/myPayment?size=10&page=${pageParam}`;
+            const url = `${process.env.REACT_APP_API_URL}/payment/myPayment?size=10&page=${pageParam}`;
 
             const response = await axios.post(url,
             {
@@ -157,7 +157,7 @@ function PayLog(props) {
     // 리뷰작성
     const writeReview = async () => {
         try {
-            const url = `http://localhost:8099/lecture/review/write`;
+            const url = `${process.env.REACT_APP_API_URL}/lecture/review/write`;
 
             const response = await axios.post(url,
                 {

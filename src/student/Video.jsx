@@ -198,7 +198,7 @@ function Video(props) {
     // 비디오 정보 가져오기
     const getVideoInfo = async (id) => { // id: 강의아이디
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/video/view?id=${id}`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/video/view?id=${id}`,
             null,
             {headers:{Authorization: `${accessToken}`,}}
         ).then((res) => {
@@ -225,7 +225,7 @@ function Video(props) {
     // 비디오 테스트 정보 가져오기
     const getVideoTest = async (id) => { // id: 강의아이디
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/video/test/list`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/video/test/list`,
             {
                 id:id
             },
@@ -260,7 +260,7 @@ function Video(props) {
         const seconds = Math.floor(paramMax % 60);
         console.log(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`)
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/video/view/result`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/video/view/result`,
             {
                 lastView:`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
                 videoId:id
@@ -275,7 +275,7 @@ function Video(props) {
     // 시청결과 전송하기
     const videoTestResult = async (answer, id) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/video/test/log/add`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/video/test/log/add`,
             {
                 subAnswer : answer.toString(),
                 videoTestId : id,
@@ -459,7 +459,7 @@ function Video(props) {
             }
         )
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/video/test/block/result`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/video/test/block/result`,
             {
                 blockList: list,
                 videoTestId: id
@@ -488,7 +488,7 @@ function Video(props) {
             videoTestId: id
         })
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/video/test/multiple_list/result`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/video/test/multiple_list/result`,
             {
                 answerList: [parseInt(answer)],
                 videoTestId: id

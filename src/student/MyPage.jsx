@@ -86,7 +86,7 @@ function MyPage(props) {
     // 주소 변경
     const updateAddress = async (addr) => {
         const response = await axios.post(
-            `http://localhost:8099/member/updateaddress`, {address: addr}, {
+            `${process.env.REACT_APP_API_URL}/member/updateaddress`, {address: addr}, {
                 headers:{'Authorization': `Bearer ${accessToken}`,}
             }
         ).then((res) => {
@@ -104,7 +104,7 @@ function MyPage(props) {
     // 전화번호 변경
     const updateTel = async () => {
         const response = await axios.post(
-            `http://localhost:8099/member/updatetel`, {tel: tel}, {
+            `${process.env.REACT_APP_API_URL}/member/updatetel`, {tel: tel}, {
                 headers:{'Authorization': `${accessToken}`,}
             }
         ).then((res) => {
@@ -131,7 +131,7 @@ function MyPage(props) {
     // 최초 정보 가져오기
     const getProfile = async () => {
         const response = await axios.post(
-            `http://localhost:8099/member/info`,
+            `${process.env.REACT_APP_API_URL}/member/info`,
             null,
             {
                 headers:{Authorization: `${accessToken}`,}
@@ -146,7 +146,7 @@ function MyPage(props) {
     // 닉네임 변경
     const updateNickname = async () => {
         const response = await axios.post(
-            `http://localhost:8099/member/updatenickname`, {nickname: nickname}, {
+            `${process.env.REACT_APP_API_URL}/member/updatenickname`, {nickname: nickname}, {
                 headers:{'Authorization': `${accessToken}`,}
             }
         ).then((res) => {
@@ -174,7 +174,7 @@ function MyPage(props) {
             return;
         }
         const response = await axios.post(
-            `http://localhost:8099/member/updatepw`, {chgPw: chgPw1, curPw: curPw}, {
+            `${process.env.REACT_APP_API_URL}/member/updatepw`, {chgPw: chgPw1, curPw: curPw}, {
                 headers:{'Authorization': `${accessToken}`,}
             }
         ).then((res) => {
@@ -193,7 +193,7 @@ function MyPage(props) {
     // 학부모인 경우 호출할 자녀 리스트 api
     const getChildList = async () => {
         const response = await axios.get(
-            `http://localhost:8099/parent/children/list`, {
+            `${process.env.REACT_APP_API_URL}/parent/children/list`, {
                 headers:{'Authorization': `${accessToken}`,}
             }
         ).then((res) => {
@@ -210,7 +210,7 @@ function MyPage(props) {
     // 이메일 인증번호 요청
     const sendConfirmEmail = async (paramEmail) => {
         const response = await axios.post(
-            `http://localhost:8099/parent/request?childEmail=${paramEmail}`,null, {
+            `${process.env.REACT_APP_API_URL}/parent/request?childEmail=${paramEmail}`,null, {
                 headers:{'Authorization': `${accessToken}`,}
             }
         ).then((res) => {
@@ -227,7 +227,7 @@ function MyPage(props) {
         const tempEmail = encodeURIComponent(paramEmail);
         const tempCode = encodeURIComponent(paramCode);
         const response = await axios.post(
-            `http://localhost:8099/parent/verify?childEmail=${tempEmail}&verificationNumber=${tempCode}`,null, {
+            `${process.env.REACT_APP_API_URL}/parent/verify?childEmail=${tempEmail}&verificationNumber=${tempCode}`,null, {
                 headers:{'Authorization': `${accessToken}`,}
             }
         ).then((res) => {

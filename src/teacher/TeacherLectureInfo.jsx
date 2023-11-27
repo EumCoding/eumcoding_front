@@ -285,7 +285,7 @@ function TeacherLectureInfo(props) {
             fd.append('thumb', file1);
         }); // 파일 임포트
         const response = await axios.post(
-            `http://localhost:8099/lecture/update/thumb`,
+            `${process.env.REACT_APP_API_URL}/lecture/update/thumb`,
             fd,
             {
                 headers:{
@@ -298,7 +298,7 @@ function TeacherLectureInfo(props) {
     // 질문리스트 가져오기
     const getQuestionList = async (id, page) => {
         const response = await axios.get(
-            `http://localhost:8099/lecture/question/unauth/list?lectureId=${id}&page=${page}`
+            `${process.env.REACT_APP_API_URL}/lecture/question/unauth/list?lectureId=${id}&page=${page}`
         ).then((res) => {
             console.log("질문리스트..")
             console.log(res)
@@ -343,7 +343,7 @@ function TeacherLectureInfo(props) {
     // 답변 리스트 가져오기
     const getAnswerList = async (id, idx) => {
         const response = await axios.get(
-            `http://localhost:8099/lecture/question/comment/auth/list?questionId=${id}`,
+            `${process.env.REACT_APP_API_URL}/lecture/question/comment/auth/list?questionId=${id}`,
             {
                 headers:{
                     Authorization: `${accessToken}`,
@@ -373,7 +373,7 @@ function TeacherLectureInfo(props) {
     // 답변 삭제하기
     const deleteAnswer = async (id) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/question/comment/delete`,
+            `${process.env.REACT_APP_API_URL}/lecture/question/comment/delete`,
             {
                 questionCommentId: id,
             },
@@ -389,7 +389,7 @@ function TeacherLectureInfo(props) {
     const getLikeCount = async (id) => {
         console.log("좋아요 갯수 가져오기(비회원)...")
         const response = await axios.get(
-            `http://localhost:8099/lecture/heart/unauth/view?id=${id}`
+            `${process.env.REACT_APP_API_URL}/lecture/heart/unauth/view?id=${id}`
         ).then((res) => {
             console.log(res)
             if(res && res.data){
@@ -403,7 +403,7 @@ function TeacherLectureInfo(props) {
     const getLikeCountMember = async (id) => {
         console.log("좋아요 갯수 가져오기(회원)...")
         const response = await axios.get(
-            `http://localhost:8099/lecture/heart/auth/view?id=${id}`,
+            `${process.env.REACT_APP_API_URL}/lecture/heart/auth/view?id=${id}`,
             {headers:{Authorization: `${accessToken}`,}}
         ).then((res) => {
             console.log(res)
@@ -417,7 +417,7 @@ function TeacherLectureInfo(props) {
     // 좋아요 추가
     const addLike = async (id) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/heart/add`,
+            `${process.env.REACT_APP_API_URL}/lecture/heart/add`,
             {
                 lectureId:id
             },
@@ -431,7 +431,7 @@ function TeacherLectureInfo(props) {
     // 좋아요 삭제
     const deleteLike = async (id) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/heart/delete`,
+            `${process.env.REACT_APP_API_URL}/lecture/heart/delete`,
             {
                 lectureId:id
             },
@@ -851,7 +851,7 @@ function TeacherLectureInfo(props) {
         }
         console.log(data);
             const response = await axios.post(
-                `http://localhost:8099/lecture/section/video/test/add`,
+                `${process.env.REACT_APP_API_URL}/lecture/section/video/test/add`,
                 data,
                 {
                     headers:{
@@ -1228,7 +1228,7 @@ function TeacherLectureInfo(props) {
                             document.getElementById("videoTestTitleInput").value = "";
                             document.getElementById("videoTestAnswerInput").value = "";
                             document.getElementById("videoTestBlockSelect").value = "[for]";
-                            setSelectedTime(null);
+                            setSelectedTime(dayjs("00:00", "HH:mm"));
                             handleVideoTestAddClose(); // 완료시 닫음
                         }).catch((err) => {
                             console.log(err);
@@ -1269,7 +1269,7 @@ function TeacherLectureInfo(props) {
         )
 
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/test/add`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/test/add`,
             {
                 lectureId: params.value,
                 answer: [answer],
@@ -1657,7 +1657,7 @@ function TeacherLectureInfo(props) {
     // main test 가져오는 api 호출... /lecture/section/test/view/question
     const getMainTestQuestion = async (id, idx) => { // id: 강의아이디
         const response = await axios.get(
-            `http://localhost:8099/lecture/section/test/view/question?mainTestId=${id}`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/test/view/question?mainTestId=${id}`,
             {
                 headers:{
                     Authorization: `${accessToken}`,
@@ -1685,7 +1685,7 @@ function TeacherLectureInfo(props) {
     // Section 이름 수정
     const updateSectionName = async (id, name) => { // id: 강의아이디, name: 강의명
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/update/name`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/update/name`,
             {
                 id: id,
                 name: name,
@@ -1702,7 +1702,7 @@ function TeacherLectureInfo(props) {
     // 강의 정보 가져오기 1
     const getLectureInfo = async (id) => { // id: 강의아이디
         const response = await axios.get(
-            `http://localhost:8099/lecture/unauth/view?id=${id}`
+            `${process.env.REACT_APP_API_URL}/lecture/unauth/view?id=${id}`
         ).then((res) => {
             console.log(res)
             if(res.data){
@@ -1717,7 +1717,7 @@ function TeacherLectureInfo(props) {
     // 강사정보 가져오기
     const getTeacherInfo = async (id) => { // id: 강의아이디
         const response = await axios.get(
-            `http://localhost:8099/unauth/profile/teacher/${id}`
+            `${process.env.REACT_APP_API_URL}/unauth/profile/teacher/${id}`
         ).then((res) => {
             console.log(res)
             res.data && setTeacher(res.data);
@@ -1727,7 +1727,7 @@ function TeacherLectureInfo(props) {
     // 섹션 정보 가져오기
     const getSectionInfo = async (id) => { // id: 강의아이디
         const response = await axios.get(
-            `http://localhost:8099/lecture/section/unauth/list?id=${id}`
+            `${process.env.REACT_APP_API_URL}/lecture/section/unauth/list?id=${id}`
         ).then((res) => {
             console.log(res)
             if(res.data){
@@ -1754,7 +1754,7 @@ function TeacherLectureInfo(props) {
     // 강의명 수정하기
     const updateLectureName = async (id, name) => { // id: 강의아이디, name: 강의명
         const response = await axios.post(
-            `http://localhost:8099/lecture/update/name`,
+            `${process.env.REACT_APP_API_URL}/lecture/update/name`,
             {
                 id: id,
                 name: name,
@@ -1770,7 +1770,7 @@ function TeacherLectureInfo(props) {
     // 가격 수정하기
     const updateLecturePrice = async (id, price) => { // id: 강의아이디, price: 가격
         const response = await axios.post(
-            `http://localhost:8099/lecture/update/price`,
+            `${process.env.REACT_APP_API_URL}/lecture/update/price`,
             {
                 id: id,
                 price: price,
@@ -1786,7 +1786,7 @@ function TeacherLectureInfo(props) {
     // 강의 상태 수정
     const updateLectureState = async (id, state) => { // id: 강의아이디, price: 가격
         const response = await axios.post(
-            `http://localhost:8099/lecture/update/state`,
+            `${process.env.REACT_APP_API_URL}/lecture/update/state`,
             {
                 id: id,
                 state: state,
@@ -1802,7 +1802,7 @@ function TeacherLectureInfo(props) {
     // 강의 학년
     const updateLectureGrade = async (id, grade) => { // id: 강의아이디, price: 가격
         const response = await axios.post(
-            `http://localhost:8099/lecture/update/grade`,
+            `${process.env.REACT_APP_API_URL}/lecture/update/grade`,
             {
                 id: id,
                 grade: grade,
@@ -1818,7 +1818,7 @@ function TeacherLectureInfo(props) {
     // 강의 설명 수정
     const updateLectureDescription = async (id, description) => { // id: 강의아이디, price: 가격
         const response = await axios.post(
-            `http://localhost:8099/lecture/update/description`,
+            `${process.env.REACT_APP_API_URL}/lecture/update/description`,
             {
                 id: id,
                 description: description,
@@ -1834,7 +1834,7 @@ function TeacherLectureInfo(props) {
     // Section 추가하기
     const addSection = async (id, name, seq, timeTaken) => { // id: 강의아이디, price: 가격
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/add`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/add`,
             {
                 lectureId: id,
                 name: name,
@@ -1852,7 +1852,7 @@ function TeacherLectureInfo(props) {
     // Section 삭제하기
     const delSection = async(sectionId) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/delete`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/delete`,
             {
                 id: sectionId,
             },
@@ -1867,7 +1867,7 @@ function TeacherLectureInfo(props) {
     // Section up
     const upSection = async(sectionId) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/sequence/up`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/sequence/up`,
             {
                 id: sectionId,
             },
@@ -1882,7 +1882,7 @@ function TeacherLectureInfo(props) {
     // Section down
     const downSection = async(sectionId) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/sequence/down`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/sequence/down`,
             {
                 id: sectionId,
             },
@@ -1897,7 +1897,7 @@ function TeacherLectureInfo(props) {
     // timetaken 수정
     const editSectionTimeTaken = async(sectionId, timeTaken) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/update/time_taken`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/update/time_taken`,
             {
                 id: sectionId,
                 timeTaken: timeTaken
@@ -1916,7 +1916,7 @@ function TeacherLectureInfo(props) {
         console.log(questionId)
         console.log(content)
         const response = await axios.post(
-            `http://localhost:8099/lecture/question/comment/write`,
+            `${process.env.REACT_APP_API_URL}/lecture/question/comment/write`,
             {
                 questionId:parseInt(questionId),
                 content:content
@@ -1993,7 +1993,7 @@ function TeacherLectureInfo(props) {
 
         try {
             console.log(formData.get('videoFile'));
-            const response = await axios.post(`http://localhost:8099/lecture/section/video/uploadWithProgress`, formData, config);
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/lecture/section/video/uploadWithProgress`, formData, config);
             return response.data;
         } catch (error) {
             throw error;
@@ -2003,7 +2003,7 @@ function TeacherLectureInfo(props) {
     // 영상 삭제
     const delVideo = async(videoId) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/video/delete`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/video/delete`,
             {
                 id: videoId,
             },
@@ -2018,7 +2018,7 @@ function TeacherLectureInfo(props) {
     // 영상 위로
     const upVideo = async(videoId) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/video/sequence/up`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/video/sequence/up`,
             {
                 id: videoId,
             },
@@ -2033,7 +2033,7 @@ function TeacherLectureInfo(props) {
     // 영상 아래로
     const downVideo = async(videoId) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/video/sequence/down`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/video/sequence/down`,
             {
                 id: videoId,
             },
@@ -2049,7 +2049,7 @@ function TeacherLectureInfo(props) {
     const getVideoInfo = async(videoId) => {
         console.log("영상정보불러오기...")
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/video/view?id=${videoId}`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/video/view?id=${videoId}`,
             {},
             {
                 headers:{
@@ -2070,7 +2070,7 @@ function TeacherLectureInfo(props) {
     // 영상 제목 수정
     const updateVideoName = async(videoId, name) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/video/update/name`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/video/update/name`,
             {
                 id: videoId,
                 name: name,
@@ -2086,7 +2086,7 @@ function TeacherLectureInfo(props) {
     // 리뷰 가져오기
     const getReviewList = async (id, paramPage) => {
         const response = await axios.get(
-            `http://localhost:8099/lecture/review/unauth/list?id=${id}&page=${paramPage}`
+            `${process.env.REACT_APP_API_URL}/lecture/review/unauth/list?id=${id}&page=${paramPage}`
         ).then((res) => {
             console.log("리뷰가져옴")
             console.log(res)
@@ -2110,7 +2110,7 @@ function TeacherLectureInfo(props) {
     // 리뷰 답변 작성
     const addReviewComment = async (reviewId, content) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/review/comment/write`,
+            `${process.env.REACT_APP_API_URL}/lecture/review/comment/write`,
             {
                 reviewId: reviewId,
                 content: content,
@@ -2126,7 +2126,7 @@ function TeacherLectureInfo(props) {
     // 리뷰 답변 삭제
     const delReviewComment = async (commentId) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/review/comment/delete`,
+            `${process.env.REACT_APP_API_URL}/lecture/review/comment/delete`,
             {
                 id: commentId,
             },
@@ -2142,7 +2142,7 @@ function TeacherLectureInfo(props) {
     const getVideoTestList = async (videoId, idx, subIdx) => {
         console.log("video test list 가져오기. id : " + videoId)
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/video/test/list`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/video/test/list`,
             {
                 id:videoId
             },
@@ -2176,7 +2176,7 @@ function TeacherLectureInfo(props) {
     const getMainTestInfo = async (id) => {
         console.log("메인테스트정보 가져오기")
         const response = await axios.get(
-            `http://localhost:8099/lecture/section/test/unauth/view?lectureId=${id}`
+            `${process.env.REACT_APP_API_URL}/lecture/section/test/unauth/view?lectureId=${id}`
         ).then((res) => {
             console.log("메인테스트정보")
             console.log(res)
@@ -2199,7 +2199,7 @@ function TeacherLectureInfo(props) {
     const updateMainTestSection = async (sectionId, type) => {
         console.log("메인테스트 섹션정보 수정하기... section Id : " + sectionId + " type : " + type)
         const response = await axios.put(
-            `http://localhost:8099/lecture/section/test/updateSection`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/test/updateSection`,
             {
                 lectureId : parseInt(params.value),
                 mainTestId : 0,
@@ -2220,7 +2220,7 @@ function TeacherLectureInfo(props) {
         try {
             console.log("메인테스트 문제 삭제하기... questionId : " + questionId);
             const response = await axios.post(
-                `http://localhost:8099/lecture/section/test/deleteQuestion?questionId=${questionId}`,
+                `${process.env.REACT_APP_API_URL}/lecture/section/test/deleteQuestion?questionId=${questionId}`,
                 null,
                 {
                     headers: {
@@ -2238,7 +2238,7 @@ function TeacherLectureInfo(props) {
         try {
             console.log("videoTest 문제 삭제하기... id : " + id);
             const response = await axios.post(
-                `http://localhost:8099/lecture/section/video/test/delete`,
+                `${process.env.REACT_APP_API_URL}/lecture/section/video/test/delete`,
                 {
                     id: id,
                 },
@@ -3052,7 +3052,7 @@ function TeacherLectureInfo(props) {
                                                                                 </Typography>
                                                                                 {/* 삭제 버튼 */}
                                                                                 <IconButton onClick={() => {
-                                                                                    deleteVideoTestQuestion(testItem.id).then((res) => {getMainTestInfo(params.value)})
+                                                                                    deleteVideoTestQuestion(testItem.id).then((res) => {getVideoTestList(subItem.id, idx, subIdx)})
                                                                                 }} aria-label="delete">
                                                                                     <CloseIcon />
                                                                                 </IconButton>

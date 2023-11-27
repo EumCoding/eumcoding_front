@@ -70,7 +70,7 @@ function MyReview(props) {
         console.log("리뷰목록 가져오기...")
         console.log(data);
         const response = await axios.post(
-            `http://localhost:8099/lecture/review/my_list?page=${pageParam}`, // defaultSize가 10이므로 따로 보내지 않음
+            `${process.env.REACT_APP_API_URL}/lecture/review/my_list?page=${pageParam}`, // defaultSize가 10이므로 따로 보내지 않음
             data,
             {
                 headers: {
@@ -104,7 +104,7 @@ function MyReview(props) {
         console.log("리뷰삭제하기...")
         try{
             const response = await axios.post(
-                `http://localhost:8099/lecture/review/delete`,
+                `${process.env.REACT_APP_API_URL}/lecture/review/delete`,
                 {
                     id: reviewId,
                 },
@@ -128,7 +128,7 @@ function MyReview(props) {
         console.log("리뷰수정하기...")
         try{
             const response = await axios.post(
-                `http://localhost:8099/lecture/review/update`,
+                `${process.env.REACT_APP_API_URL}/lecture/review/update`,
                 {
                     id: reviewId,
                     content: reviewContent,

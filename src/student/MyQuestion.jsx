@@ -206,7 +206,7 @@ function MyQuestion(props) {
     // 내 질문 목록 가져오기
     const getMyQuestion = async (end, start, page, size) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/question/mylist?page=${page}&size=${size}&end=${end.format("YYYY-MM-DD").toString()}&start=${start.format("YYYY-MM-DD").toString()}`,
+            `${process.env.REACT_APP_API_URL}/lecture/question/mylist?page=${page}&size=${size}&end=${end.format("YYYY-MM-DD").toString()}&start=${start.format("YYYY-MM-DD").toString()}`,
             {},
             {
                 headers:{Authorization: `${accessToken}`,}
@@ -243,7 +243,7 @@ function MyQuestion(props) {
     // 답변 리스트 가져오기
     const getAnswerList = async (id, idx) => {
         const response = await axios.get(
-            `http://localhost:8099/lecture/question/comment/auth/list?questionId=${id}`,
+            `${process.env.REACT_APP_API_URL}/lecture/question/comment/auth/list?questionId=${id}`,
             {
                 headers:{
                     Authorization: `${accessToken}`,
@@ -273,7 +273,7 @@ function MyQuestion(props) {
     // 답변 삭제하기
     const deleteAnswer = async (id) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/question/comment/delete`,
+            `${process.env.REACT_APP_API_URL}/lecture/question/comment/delete`,
             {
                 questionCommentId: id,
             },
@@ -291,7 +291,7 @@ function MyQuestion(props) {
         console.log(questionId)
         console.log(content)
         const response = await axios.post(
-            `http://localhost:8099/lecture/question/comment/write`,
+            `${process.env.REACT_APP_API_URL}/lecture/question/comment/write`,
             {
                 questionId:parseInt(questionId),
                 content:content
@@ -308,7 +308,7 @@ function MyQuestion(props) {
     const deleteQuestion = async (id) => {
         try{
             const response = await axios.post(
-                `http://localhost:8099/lecture/question/delete?questionId=${id}`,
+                `${process.env.REACT_APP_API_URL}/lecture/question/delete?questionId=${id}`,
                 {
                 },
                 {
@@ -343,7 +343,7 @@ function MyQuestion(props) {
             formData.append("title", title);
             formData.append("content", content);
             const response = await axios.post(
-                `http://localhost:8099/lecture/question/update`,
+                `${process.env.REACT_APP_API_URL}/lecture/question/update`,
                 formData,
                 {
                     headers:{

@@ -54,7 +54,7 @@ function Login(props) {
             password : pw,
         };
         const response = await axios.post(
-            `http://localhost:8099/unauth/member/signin`, req
+            `${process.env.REACT_APP_API_URL}/unauth/member/signin`, req
         ).catch((err) => {
             console.log(req)
             console.log(err)

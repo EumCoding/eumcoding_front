@@ -57,7 +57,7 @@ function NewLecture(props) {
             fd.append('grade', grade);
 
             const response = await axios.post(
-                `http://localhost:8099/lecture/create`,
+                `${process.env.REACT_APP_API_URL}/lecture/create`,
                 fd,
                 {
                     headers:{

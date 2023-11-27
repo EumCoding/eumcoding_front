@@ -26,7 +26,7 @@ function Basket(props) {
     // 장바구니 내용 가져오기
     const getBasket = async () => {
         const response = await axios.post(
-            `http://localhost:8099/basket/list?page=1`,
+            `${process.env.REACT_APP_API_URL}/basket/list?page=1`,
             null,
             {
                 headers:{Authorization: `${accessToken}`,}
@@ -46,7 +46,7 @@ function Basket(props) {
     // 장바구니에서 제거
     const delBasket = async (id) => {
         const response = await axios.post(
-            `http://localhost:8099/basket/delete?basketId=${id}`,
+            `${process.env.REACT_APP_API_URL}/basket/delete?basketId=${id}`,
             null,
             {
                 headers: {Authorization: `${accessToken}`,}
@@ -64,7 +64,7 @@ function Basket(props) {
             checked.forEach(id => params.append('basketId', id));
 
             const response = await axios.post(
-                `http://localhost:8099/payment/ok`,
+                `${process.env.REACT_APP_API_URL}/payment/ok`,
                 params,
                 {
                     headers: {
@@ -86,7 +86,7 @@ function Basket(props) {
     // 내 정보 가져오기
     const getMember = async () => {
         const response = await axios.post(
-            `http://localhost:8099/member/info`,
+            `${process.env.REACT_APP_API_URL}/member/info`,
             null,
             {
                 headers:{Authorization: `${accessToken}`,}

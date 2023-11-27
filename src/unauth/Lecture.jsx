@@ -122,7 +122,7 @@ function Lecture(props) {
     // 강의 정보 가져오기 1
     const getLectureInfo = async (id) => { // id: 강의아이디
         const response = await axios.get(
-            `http://localhost:8099/lecture/unauth/view?id=${id}`
+            `${process.env.REACT_APP_API_URL}/lecture/unauth/view?id=${id}`
         ).then((res) => {
             console.log(res)
             res.data && setResult(res.data);
@@ -132,7 +132,7 @@ function Lecture(props) {
     // 좋아요 추가
     const addLike = async (id) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/heart/add`,
+            `${process.env.REACT_APP_API_URL}/lecture/heart/add`,
             {
                 lectureId:id
             },
@@ -146,7 +146,7 @@ function Lecture(props) {
     // 좋아요 삭제
     const deleteLike = async (id) => {
         const response = await axios.post(
-            `http://localhost:8099/lecture/heart/delete`,
+            `${process.env.REACT_APP_API_URL}/lecture/heart/delete`,
             {
                 lectureId:id
             },
@@ -160,7 +160,7 @@ function Lecture(props) {
     // 강사정보 가져오기
     const getTeacherInfo = async (id) => { // id: 강의아이디
         const response = await axios.get(
-            `http://localhost:8099/unauth/profile/teacher/${id}`
+            `${process.env.REACT_APP_API_URL}/unauth/profile/teacher/${id}`
         ).then((res) => {
             console.log(res)
             res.data && setTeacher(res.data);
@@ -170,7 +170,7 @@ function Lecture(props) {
     // 섹션 정보 가져오기
     const getSectionInfo = async (id) => { // id: 강의아이디
         const response = await axios.get(
-            `http://localhost:8099/lecture/section/unauth/list?id=${id}`
+            `${process.env.REACT_APP_API_URL}/lecture/section/unauth/list?id=${id}`
         ).then((res) => {
             console.log(res)
             res.data && setSection(res.data);
@@ -180,7 +180,7 @@ function Lecture(props) {
     // 비디오 정보 가져오기
     const getVideoInfo = async (id) => { // id: 강의아이디
         const response = await axios.post(
-            `http://localhost:8099/lecture/section/video/view?id=${id}`,
+            `${process.env.REACT_APP_API_URL}/lecture/section/video/view?id=${id}`,
             null,
                 {headers:{Authorization: `${accessToken}`,}}
         ).then((res) => {
@@ -199,7 +199,7 @@ function Lecture(props) {
     // 리뷰 가져오기
     const getReviewList = async (id, paramPage) => {
         const response = await axios.get(
-            `http://localhost:8099/lecture/review/unauth/list?id=${id}&page=${paramPage}`
+            `${process.env.REACT_APP_API_URL}/lecture/review/unauth/list?id=${id}&page=${paramPage}`
         ).then((res) => {
             console.log("리뷰가져옴")
             console.log(res)
@@ -221,7 +221,7 @@ function Lecture(props) {
             navigate("/login")
         }
         const response = await axios.post(
-            `http://localhost:8099/basket/add`,
+            `${process.env.REACT_APP_API_URL}/basket/add`,
             {lectureId : id},
             {
                 headers:{Authorization: `${accessToken}`,}
@@ -245,7 +245,7 @@ function Lecture(props) {
     const getLikeCount = async (id) => {
         console.log("좋아요 갯수 가져오기(비회원)...")
         const response = await axios.get(
-            `http://localhost:8099/lecture/heart/unauth/view?id=${id}`
+            `${process.env.REACT_APP_API_URL}/lecture/heart/unauth/view?id=${id}`
         ).then((res) => {
             console.log(res)
             if(res && res.data){
@@ -259,7 +259,7 @@ function Lecture(props) {
     const getLikeCountMember = async (id) => {
         console.log("좋아요 갯수 가져오기(회원)...")
         const response = await axios.get(
-            `http://localhost:8099/lecture/heart/auth/view?id=${id}`,
+            `${process.env.REACT_APP_API_URL}/lecture/heart/auth/view?id=${id}`,
             {headers:{Authorization: `${accessToken}`,}}
         ).then((res) => {
             console.log(res)

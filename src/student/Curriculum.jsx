@@ -111,11 +111,11 @@ function Curriculum(props) {
     const getPlan = async (start, end) => {
         const tempStart = start.format('YYYY-MM-DDT00:00:00');
         const tempEnd = end.format('YYYY-MM-DDT00:00:00');
-        console.log(`URL: http://localhost:8099/member/myplan/list/info?startDateStr=${tempStart}&endDateStr=${tempEnd}`);
+        console.log(`URL: ${process.env.REACT_APP_API_URL}/member/myplan/list/info?startDateStr=${tempStart}&endDateStr=${tempEnd}`);
 
         try {
             const response = await axios.post(
-                `http://localhost:8099/member/myplan/list/info?startDateStr=${tempStart}&endDateStr=${tempEnd}`,
+                `${process.env.REACT_APP_API_URL}/member/myplan/list/info?startDateStr=${tempStart}&endDateStr=${tempEnd}`,
                 null,
                 { headers: { Authorization: `${accessToken}` } }
             );

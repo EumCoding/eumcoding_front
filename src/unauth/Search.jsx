@@ -38,7 +38,7 @@ function Search(props) {
     // 검색 api 호출
     const search = async (pageParam, keywordParam) => {
         const response = await axios.get(
-            `http://localhost:8099/unauth/search/lecture?searchKeyword=${keywordParam}&size=12&page=${pageParam}`
+            `${process.env.REACT_APP_API_URL}/unauth/search/lecture?searchKeyword=${keywordParam}&size=12&page=${pageParam}`
         ).then((res) => {
             console.log(res.data);
             setResult(res.data);
