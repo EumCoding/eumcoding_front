@@ -330,6 +330,7 @@ function LectureInfo(props) {
         const response = await axios.get(
             `http://localhost:8099/lecture/section/unauth/list?id=${id}`
         ).then((res) => {
+            console.log("섹션정보...")
             console.log(res)
             res.data && setSection(res.data);
         })

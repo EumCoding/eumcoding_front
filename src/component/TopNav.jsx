@@ -17,7 +17,7 @@ import testImg from "../images/test.png"
 
 
 
-const pages = ["강의", "테마별 강의", "장바구니", "대시보드"];
+const pages = ["강의", "장바구니", "대시보드"];
 
 
 export default function TopBar(props) {
@@ -106,7 +106,7 @@ export default function TopBar(props) {
                             }}
                             onClick={() => navigate("/main")}
                         >
-                            <img className="logoImg" alt="logoImg" src="img/logo.svg" style={{ height: "100%",objectFit: "cover" }}/>
+                            <img className="logoImg" src={`${process.env.PUBLIC_URL}/img/logo.svg`} alt="Logo" style={{ height: "100%",objectFit: "cover" }}/>
                         </Box>
 
                         <Box sx={{flexGrow: 1, display: {xs: 'flex', md: 'none'}}} justifyContent={"flex-end"}>
@@ -167,7 +167,7 @@ export default function TopBar(props) {
                                 {pages.map((page) => (
                                     <Grid item md={12/(pages.length+1)}>
 
-                                        <Typography  textAlign="center" sx={{color:'#000000'}}
+                                        <Typography  textAlign="center" sx={{ color: '#000000', cursor: 'default' }}
                                             onClick={() => {
                                                 if(page === "대시보드") {
                                                     if(!accessToken) navigate("/login");

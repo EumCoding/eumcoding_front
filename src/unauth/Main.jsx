@@ -235,7 +235,7 @@ function Main(props) {
                                                         className={styles.image_thumbnail}
                                                         alt={'banner1'}
                                                     />
-                                                    <Typography sx={{color:"#FFFFFF", fontWeight:"700", fontSize:"1rem"}}>강의명들어가요</Typography>
+                                                    <Typography sx={{color:"#FFFFFF", fontWeight:"700", fontSize:"1rem"}}>{item.lectureName}</Typography>
                                                 </Box>
                                             </Grid>
                                         </Grid>
@@ -279,7 +279,7 @@ function Main(props) {
                                                     className={styles.image_thumbnail}
                                                     alt={'banner1'}
                                                 />
-                                                <Typography sx={{color:"#000000", fontWeight:"700", fontSize:"1rem"}}>강의명들어가요</Typography>
+                                                <Typography sx={{color:"#000000", fontWeight:"700", fontSize:"1rem"}}>{item.lectureName}</Typography>
                                             </Box>
                                         </Grid>
                                     </Grid>
@@ -324,6 +324,7 @@ function Main(props) {
                                         transition: 'background-color 0.3s'
                                     }
                                 }}
+                                onClick={() => alert("준비중입니다.")}
                             >
                                 <Grid container display={"flex"} justifyContent={"center"} alignItems={"center"}>
                                     <Grid item xs={12} display={"flex"} justifyContent={"center"} alignItems={"center"}>

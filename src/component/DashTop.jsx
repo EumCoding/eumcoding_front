@@ -33,7 +33,7 @@ function DashTop(props) {
     return (
         <ThemeProvider theme={theme}>
             <AppBar position="sticky" sx={{background:"#0B401D", px: { xs: "5%", sm: "10%", md: "10%" }}}>
-                <Toolbar sx={{height:"5rem"}}>
+                <Toolbar sx={{height:"5rem", cursor: 'default'}}>
                     <Box flexGrow={1}>
                         <div className={styles.font_logo}>
                             <span onClick={() => navigate("/main")}>이음코딩</span> <span onClick={() => navigate("/dashboard")}>대시보드</span>
@@ -43,9 +43,11 @@ function DashTop(props) {
                             sx={{
                                 borderRadius:"20px", border:"2px", background:"#FFFFFF",
                                 width:"8rem"
-                                }}>
+                                }}
+                            onClick={() => accessToken ? logout() : navigate("/login")}
+                    >
                         <div className={styles.font_menu}>
-                            <Typography sx={{whiteSpace:"nowrap", color:"#000000"}}>{accessToken?"로그아웃":"로그인"}</Typography>
+                            <Typography sx={{whiteSpace:"nowrap", color:"#000000", cursor: 'default'}}>{accessToken?"로그아웃":"로그인"}</Typography>
                         </div>
                     </Button>
                 </Toolbar>

@@ -449,12 +449,72 @@ function Video(props) {
         }
     }
 
+    // 블록코딩 답안 저장 후 채점
+    const saveBlockAnswer = async (list, id) => {
+        console.log("블록코딩 답안 전송")
+        console.log(
+            {
+                blockList: list,
+                videoTestId: id
+            }
+        )
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/video/test/block/result`,
+            {
+                blockList: list,
+                videoTestId: id
+            },
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            console.log(res)
+            if(res.data === true){
+                alert("정답입니다.")
+            }else{
+                alert("틀렸습니다.")
+            }
+        }).catch((err) => {
+            alert("전송실패")
+        })
+    }
+
+    // 객관식 답안 저장 후 채점
+    const saveMultipleAnswer = async (answer, id) => {
+        console.log("객관식 답안 전송")
+        console.log(
+            parseInt(answer)
+        )
+        console.log({
+            answerList: [parseInt(answer)],
+            videoTestId: id
+        })
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/video/test/multiple_list/result`,
+            {
+                answerList: [parseInt(answer)],
+                videoTestId: id
+            },
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            if(res.data === true){
+                alert("정답입니다.")
+            }else{
+                alert("틀렸습니다.")
+            }
+        }).catch((err) => {
+            alert("전송실패")
+        })
+    }
+
     useEffect(() => {
         if(currentTime > 1 && currentTime === duration){
             alert("시청을 마쳤습니다.")
             navigate(-1);
         }
     },[currentTime])
+
+    useEffect(() => {
+        console.log(answerGrid)
+    },[answerGrid])
 
 
 
@@ -488,11 +548,14 @@ function Video(props) {
                         </Button>
                         {videoTest[videoTestIdx].type === 0 && (
                             <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-                                <RadioGroup onChange={(e) => setAnswer(e.target.value)}>
-                                    { videoTest[videoTestIdx].videoTestMultipleListDTOs.map((item, idx) => {
+                                <RadioGroup onChange={(e) => {
+                                    console.log(e.target.value)
+                                    setAnswer(e.target.value)
+                                }}>
+                                    { videoTest[videoTestIdx].videoTestMultipleListDTOs.map((item, subIdx) => {
                                         return(
                                             <Typography>
-                                                <Radio value={item.id} />{idx + 1}번. {item.content}
+                                                <Radio value={subIdx + 1} />{subIdx + 1}번. {item.content}
                                             </Typography>
                                         )
                                     })}
@@ -500,7 +563,7 @@ function Video(props) {
                             </Typography>
                         )}
                         {videoTest[videoTestIdx].type === 1 && (
-                            <Grid container sx={{width:"100%", overflow:"auto"}}>
+                            <Grid container sx={{width:"100%"}}>
                                 <DragDropContext onDragEnd={onDragEnd}>
                                     <Grid container sx={{width:"100%", height:"500"}}>
                                         <Grid xs={12} item sx={{width:"100%", height:"200", border:1, overflow:"auto"}}>
@@ -575,13 +638,7 @@ function Video(props) {
                         <Button sx={{mt:"1rem"}} onClick={() => {
                             // 1. 서버에 결과를 제출
                             if(videoTest[videoTestIdx].type === 0) {
-                                // 문제가 틀린지 맞는지 알려주기
-                                if(videoTest[videoTestIdx].testAnswerDTO.answer === answer.toString()) {
-                                    alert("정답입니다")
-                                }else {
-                                    alert("틀렸습니다")
-                                }
-                                videoTestResult(answer, videoTest[videoTestIdx].id)
+                                saveMultipleAnswer(answer, videoTest[videoTestIdx].id)
                             }else {
                                 // 블록코딩인 경우
                                 // 1. 깊은복사 (내용 없는 줄 제거)
@@ -589,13 +646,10 @@ function Video(props) {
                                 console.log(`깊은 복사 직후 : ${tempArr}`)
                                 // 3. 서버에 전송
                                 // 전송전에 문제가 틀린지 맞는지 알려주기
-                                console.log(`answer : ${videoTest[videoTestIdx].testAnswerDTO.answer} / tempArr : ${JSON.stringify(tempArr)}`)
-                                if(videoTest[videoTestIdx].testAnswerDTO.answer === JSON.stringify(tempArr)) {
-                                    alert("정답입니다")
-                                }else {
-                                    alert("틀렸습니다")
-                                }
-                                videoTestResult(tempArr, videoTest[videoTestIdx].id)
+                                // 2차원 배열인 answerGrid를 1차원 배열로 변환
+                                let tempArr2 = answerGrid.flat();
+                                console.log(`tempArr2 : ${JSON.stringify(tempArr2)}`)
+                                saveBlockAnswer(tempArr2, videoTest[videoTestIdx].id)
                             }
 
                             // 2. testArr에 해당 index 푼걸로 표시하기

@@ -78,6 +78,9 @@ function TeacherLectureInfo(props) {
     const [firstTestExpand, setFirstTestExpand] = useState(false);
     const [secondTestExpand, setSecondTestExpand] = useState(false);
 
+    const [firstTestSectionId, setFirstTestSectionId] = useState(0);
+    const [secondTestSectionId, setSecondTestSectionId] = useState(0);
+
     const [newSectionName, setNewSectionName] = useState(""); // 새로운 Section 이름
 
     const [selectedTime, setSelectedTime] = useState(dayjs("00:00:00", "HH:mm:ss"));
@@ -251,6 +254,13 @@ function TeacherLectureInfo(props) {
     // video test용 modal state의 함수
     const handleVideoTestAddOpen = () => setVideoTestAddOpen(true);
     const handleVideoTestAddClose = () => setVideoTestAddOpen(false);
+
+    // main test용 state
+    const [mainTestAddModalOpen, setMainTestAddModalOpen] = useState(false);
+
+    // main test용 modal state의 함수
+    const handleMainTestAddModalOpen = () => setMainTestAddModalOpen(true);
+    const handleMainTestAddModalClose = () => setMainTestAddModalOpen(false);
 
     // 아코디언 모두 닫기
     const closeExpanded = () => {
@@ -714,7 +724,7 @@ function TeacherLectureInfo(props) {
                                     })
 
                                 }).catch((res) => {alert("동영상 업로드 실패")})
-                                
+
                             }else if(!videoFile) {
                                 alert("동영상 파일을 선택해주세요")
                             }
@@ -1136,7 +1146,7 @@ function TeacherLectureInfo(props) {
                                     }
                                     // [number] 또는 [String]가 선택된 경우에는 textfield에서 값을 가져와서 tempValue에 넣음
                                     let tempValue = "";
-                                    if(videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]") {
+                                    if(videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]" || videoTestBlock.code === "[StringVal]" || videoTestBlock.code === "[numberVal]" ) {
                                         tempValue = document.getElementById("videoTestBlockInput").value;
                                     }else {
                                         // 아닌 경우에는 videoTestBlock에 할당된 값을 tempValue에
@@ -1151,7 +1161,7 @@ function TeacherLectureInfo(props) {
                                     setVideoTestBlock(null);
                                     document.getElementById("videoTestBlockSelect").value = "[for]";
                                     // 추가 후 input 초기화([number] 또는 [String]의 경우에만)
-                                    if(videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]") {
+                                    if(videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]" || videoTestBlock.code === "[StringVal]" || videoTestBlock.code === "[numberVal]") {
                                         document.getElementById("videoTestBlockInput").value = "";
                                     }
                                 }}
@@ -1232,6 +1242,438 @@ function TeacherLectureInfo(props) {
         </Grid>
     )
 
+    // main test 추가하기
+    const addMainTest = async (answer, blockList, choices, description, score, sectionId, type, mainTestType) => {
+        console.log(`answer: ${answer}`)
+        console.log(`blockList:`)
+        console.log(blockList)
+        console.log(`choices:`)
+        console.log(choices)
+        console.log("data...")
+        // blockList에서 text 속성명을 value로 바꾸기
+        const updatedBlockList = blockList.map(item => {
+            return { ...item, value: item.text, text: undefined, block:item.code, code:undefined };
+        });
+        console.log(
+            {
+                lectureId: params.value,
+                answer: [answer],
+                blockList: updatedBlockList,
+                choices: choices,
+                description: description,
+                score: score,
+                sectionId: sectionId,
+                type: type,
+                mainTestType:mainTestType
+            }
+        )
+
+        const response = await axios.post(
+            `http://localhost:8099/lecture/section/test/add`,
+            {
+                lectureId: params.value,
+                answer: [answer],
+                blockList: updatedBlockList,
+                choices: choices,
+                description: description,
+                score: score,
+                sectionId: sectionId,
+                type: type,
+                mainTestType:mainTestType
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        ).catch((err) => {
+            console.log(err);
+        })
+    }
+
+    const [mainTestType, setMainTestType] = useState(0); // 0: 객관식, 1: 블럭코딩
+    const [mainTestSectionId, setMainTestSectionId] = useState(0); // main test 추가 시 해당 sectionId
+
+    // main test 추가용 modal
+    const mainTestAddBody = (
+        <Grid
+            container
+            sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '80vw',
+                maxWidth: 800,
+                bgcolor: 'background.paper',
+                border: '1px solid #e0e0e0',
+                borderRadius: 2,
+                boxShadow: 24,
+                p: 7,
+            }}
+        >
+            <Grid xs={12} item sx={{display:"flex", justifyContent:"center", alignItems:"center", py:"1rem"}}>
+                <Typography sx={{fontWeight:"800", fontSize:"1.5rem"}}>
+                    문제추가
+                </Typography>
+            </Grid>
+            {/* 문제 type **/}
+            <Grid item xs={12} sx={{display:"flex", justifyContent:"center", alignItems:"center"}}>
+                <RadioGroup
+                    row // 이 속성을 추가하여 라디오 버튼들이 가로로 표시되도록 함
+                    id="addVideoTestRadio"
+                    value={videoTestType.toString()} // videoTestType 상태를 문자열로 변환
+                    onChange={(e) => {
+                        // int형으로 변환해 videoTestType state에 할당
+                        setVideoTestType(parseInt(e.target.value));
+                        // 바뀔 때 마다 videoTestBlockList 초기화
+                        setVideoTestBlockList([]);
+                        // 답도 초기화
+                        document.getElementById("videoTestAnswerInput").value = "";
+                    }}
+                >
+                    {/* 객관식... value 0 */}
+                    <FormControlLabel value="0" control={<Radio />} defaultValue label="객관식"/>
+                    {/* 블럭코딩... value 1 */}
+                    <FormControlLabel value="1" control={<Radio />} label="블럭코딩"/>
+                </RadioGroup>
+            </Grid>
+            {/* 점수 **/}
+            <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                <TextField
+                    id="videoTestScoreInput"
+                    fullWidth
+                    label="점수"
+                    size="small"
+                    type={"number"}
+                    sx={{
+                        '& .MuiInputBase-root': {
+                            height: '40px', // TextField 높이 설정
+                        },
+                        display:"inline",
+                        }}
+                />
+            </Grid>
+            {/* 문제제목 **/}
+            <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                <TextField
+                    id="videoTestTitleInput"
+                    fullWidth
+                    label="문제 제목"
+                    size="small"
+                    sx={{
+                        '& .MuiInputBase-root': {
+                            height: '40px', // TextField 높이 설정
+                        },
+                        display:"inline",
+                    }}
+                />
+            </Grid>
+            {/* 답 **/}
+            <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                <TextField
+                    id="videoTestAnswerInput"
+                    fullWidth
+                    label="답"
+                    size="small"
+                    sx={{
+                        '& .MuiInputBase-root': {
+                            height: '40px', // TextField 높이 설정
+                        },
+                        display:"inline",
+                    }}
+                    type={videoTestType === 0 ? "number" : "text"}
+                />
+            </Grid>
+            <Grid xs={12} item sx={{mt:"2rem"}}>
+                <Typography sx={{fontWeight:"700", fontSize:"1rem"}}>
+                    [{videoTestType === 0 ? "보기" : "블럭"}]
+                </Typography>
+            </Grid>
+            {/* videoTestType이 0인 경우... 객관식 보기 리스트 추가 **/}
+            {videoTestType === 0 && videoTestBlockList.map((item, idx) => {
+                return(
+                    <Grid xs={12} item sx={{pt:"0.3rem"}}>
+                        <Typography sx={{fontWeight:"500", fontSize:"1rem", display:"flex", alignItems:"center"}}>
+                            [{idx+1}]. {item} <ClearIcon onClick={() =>
+                            // 해당 idx의 item만 pop
+                            setVideoTestBlockList(videoTestBlockList.filter((item, index) => index !== idx))
+                        } />
+                        </Typography>
+                    </Grid>
+                )
+            })}
+            {videoTestType === 0 && (
+                <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                    <TextField
+                        id="videoTestMultipleInput"
+                        fullWidth
+                        label="보기"
+                        size="small"
+                        sx={{
+                            '& .MuiInputBase-root': {
+                                height: '40px', // TextField 높이 설정
+                            },
+                            display:"inline",
+                            width:"80%"
+                        }}
+                    />
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon sx={{ color: "#FFFFFF" }} />}
+                        sx={{
+                            height: '40px', // 버튼 높이를 TextField와 동일하게 설정
+                            background: '#4caf50',
+                            borderRadius: '10px',
+                            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                            '&:hover': {
+                                background: "#388e3c",
+                            },
+                            width:"15%"
+                        }}
+                        onClick={() => {
+                            // 추가 버튼 클릭 시 실행될 로직
+                            // videoTestBlockList state에 추가
+                            const temp = JSON.parse(JSON.stringify(videoTestBlockList)); // 깊은복사
+                            // 값이 없을때에 대한 예외처리
+                            if(document.getElementById("videoTestMultipleInput").value === ""){
+                                alert("값을 입력해주세요");
+                                return;
+                            }
+                            temp.push(document.getElementById("videoTestMultipleInput").value);
+                            setVideoTestBlockList(temp);
+                            // 추가 후 input 초기화
+                            document.getElementById("videoTestMultipleInput").value = "";
+                        }}
+                    >
+                        <Typography sx={{ color: "#FFFFFF" }}>추가</Typography>
+                    </Button>
+                </Grid>
+            )}
+            {videoTestType === 1 && blockData && (
+                <Grid container item xs={12} spacing={2} sx={{ flexWrap: 'wrap', flexDirection: 'row', alignItems: 'center' }}>
+                    {blockData.map((block, index) => (
+                        <Grid item key={index} sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
+                            <Block
+                                code={block.code}
+                                text={block.text}
+                                color={getBlockColor(block.code)}
+                                isSpecial={block.code === "[String]" || block.code === "[number]" || block.code === "[numberVal]" || block.code === "[StringVal]"}
+                            />
+                            <IconButton
+                                onClick={() => handleDeleteBlock(index)}
+                                sx={{ ml: 1 }}
+                            >
+                                <CloseIcon />
+                            </IconButton>
+                        </Grid>
+                    ))}
+                </Grid>
+            )}
+            {/* 블록코딩을 선택한 경우에는 블록 드랍다운 출력 **/}
+            {videoTestType === 1 && (
+                <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                    <Grid xs={12} item>
+                        <FormControl fullWidth size="small">
+                            <InputLabel id="videoTestBlockLabel">블록선택</InputLabel>
+                            <Select
+                                labelId="videoTestBlockLabel"
+                                id="videoTestBlockSelect"
+                                value={videoTestBlock}
+                                onChange={(e) => {
+                                    //선택한 MenuItem의 값을 videoTestBlock state에 할당
+                                    setVideoTestBlock(e.target.value);
+                                    console.log(e.target.value);
+                                }}
+                                label="블록선택" // 여기에 라벨을 지정
+                                MenuProps={{
+                                    PaperProps: {
+                                        style: {
+                                            maxHeight: 48 * 4.5, // 드롭다운 메뉴의 최대 높이
+                                        },
+                                    },
+                                }}
+                                sx={{
+                                    '& .MuiSelect-select': {
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                    },
+                                }}
+                            >
+                                {BlockList.map((blockItem, blockIdx) => (
+                                    <MenuItem key={blockIdx} value={blockItem}>
+                                        {blockItem.text}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    {/* number 또는 text가 선택된 경우 **/}
+
+                    <Grid xs={12} item container sx={{mt:"2rem", display:"flex", justifyContent:(videoTestBlock && ( videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]" || videoTestBlock.code === "[numberVal]" || videoTestBlock.code === "[StringVal]")) ? "space-between" : "flex-end", alignItems:"flex-start"}}>
+                        {videoTestBlock && (videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]" || videoTestBlock.code === "[numberVal]" || videoTestBlock.code === "[StringVal]") && (
+                            <TextField
+                                id="videoTestBlockInput"
+                                type={videoTestBlock.code === "[number]" ? "number" : "text"}
+                                fullWidth
+                                label="보기"
+                                size="small"
+                                onChange={(e) => {
+                                    const newValue = e.target.value;
+                                    // 대괄호를 포함하고 있는지 검사
+                                    if (newValue.includes('[') || newValue.includes(']')) {
+                                        // 대괄호를 제거하고 값을 업데이트
+                                        e.target.value = newValue.replace(/[\[\]]/g, '');
+                                        // helperText를 통해 사용자에게 안내 메시지 표시
+                                        e.target.nextSibling.textContent = '대괄호 [ ]는 입력할 수 없습니다.';
+                                    } else {
+                                        // 대괄호가 없으면 안내 메시지 제거
+                                        e.target.nextSibling.textContent = '';
+                                    }
+                                }}
+                                helperText="대괄호 [ ]는 입력할 수 없습니다."
+                                sx={{
+                                    '& .MuiInputBase-root': {
+                                        height: '40px',
+                                    },
+                                    display: "inline",
+                                    width: "80%"
+                                }}
+                            />
+                        )}
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon sx={{ color: "#FFFFFF" }} />}
+                            sx={{
+                                height: '40px', // 버튼 높이를 TextField와 동일하게 설정
+                                background: '#4caf50',
+                                borderRadius: '10px',
+                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                                '&:hover': {
+                                    background: "#388e3c",
+                                },
+                                width:"15%"
+                            }}
+
+                            onClick={() => {
+                                // videoTestBlock 없을때 예외처리
+                                if(!videoTestBlock){
+                                    alert("블록을 선택해주세요");
+                                    return;
+                                }
+                                // [number] 또는 [String]가 선택된 경우에는 textfield에서 값을 가져와서 tempValue에 넣음
+                                let tempValue = "";
+                                if(videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]" || videoTestBlock.code === "[numberVal]" || videoTestBlock.code === "[StringVal]") {
+                                    tempValue = document.getElementById("videoTestBlockInput").value;
+                                }else {
+                                    // 아닌 경우에는 videoTestBlock에 할당된 값을 tempValue에
+                                    tempValue = videoTestBlock.text;
+                                }
+                                // { code: videoTestBlock, text: tempValue } 양식에 맞추어서 blockData state에 추가
+                                // blockData state에 추가
+                                const temp = JSON.parse(JSON.stringify(blockData)); // 깊은복사
+                                temp.push({ code: videoTestBlock.code, text: tempValue });
+                                setBlockData(temp);
+                                // 추가 후 videoTestBlock 초기화
+                                setVideoTestBlock(null);
+                                document.getElementById("videoTestBlockSelect").value = "[for]";
+                                // 추가 후 input 초기화([number] 또는 [String]의 경우에만)
+                                if(videoTestBlock.code === "[String]" || videoTestBlock.code === "[number]" || videoTestBlock.code === "[numberVal]" || videoTestBlock.code === "[StringVal]") {
+                                    document.getElementById("videoTestBlockInput").value = "";
+                                }
+                            }}
+                        >
+                            <Typography sx={{ color: "#FFFFFF" }}>추가</Typography>
+                        </Button>
+                    </Grid>
+                </Grid>
+            )}
+            <Grid xs={12} item sx={{mt:"4rem"}}>
+                <Button
+                    variant="contained"
+                    sx={{
+                        height: '40px', // 버튼 높이를 TextField와 동일하게 설정
+                        background: '#4caf50',
+                        borderRadius: '10px',
+                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                        '&:hover': {
+                            background: "#388e3c",
+                        },
+                        width:"100%"
+                    }}
+                    onClick={() => {
+                        //모든 요소가 다 작성되었는지 검사
+                        //videoTestType
+                        if(videoTestType === null){
+                            alert("문제 타입을 선택해주세요");
+                            return;
+                        }
+                        //videoTestTitleInput
+                        if(document.getElementById("videoTestTitleInput").value === ""){
+                            alert("문제 제목을 입력해주세요");
+                            return;
+                        }
+                        //videoTestAnswerInput
+                        if(document.getElementById("videoTestAnswerInput").value === ""){
+                            alert("답을 입력해주세요");
+                            return;
+                        }
+                        //videoTestBlockList
+                        if(videoTestType === 1 && blockData.length === 0){
+                            alert("블록을 추가해주세요");
+                            return;
+                        }
+                        //videoTestMultipleList
+                        if(videoTestType === 0 && videoTestBlockList.length === 0){
+                            alert("보기를 추가해주세요");
+                            return;
+                        }
+                        // 모든 요소가 다 작성되었으면 문제 추가 api 호출
+                        addMainTest(document.getElementById("videoTestAnswerInput").value, blockData, videoTestBlockList, document.getElementById("videoTestTitleInput").value, document.getElementById("videoTestScoreInput").value, mainTestSectionId, videoTestType, mainTestType).then((res) => {
+                            // 문제 추가 후 main test 리스트 다시 불러옴
+                            getMainTestInfo(params.value);
+                            // 사용한 state와 input들 초기화
+                            setVideoTestType(0);
+                            setVideoTestBlock(null);
+                            setVideoTestBlockList([]);
+                            setBlockData([]);
+                            document.getElementById("videoTestTitleInput").value = "";
+                            document.getElementById("videoTestAnswerInput").value = "";
+                            if(videoTestType === 1) {
+                                document.getElementById("videoTestBlockSelect").value = "[for]";
+                            }
+                            handleMainTestAddModalClose(); // 완료시 닫음
+                        })
+                    }}
+                >
+                    <Typography sx={{ color: "#FFFFFF" }}>문제추가</Typography>
+                </Button>
+            </Grid>
+        </Grid>
+    )
+
+    const [mainTestQuestionList, setMainTestQuestionList] = useState([[],[]]); // main test 문제 리스트
+
+    // main test 가져오는 api 호출... /lecture/section/test/view/question
+    const getMainTestQuestion = async (id, idx) => { // id: 강의아이디
+        const response = await axios.get(
+            `http://localhost:8099/lecture/section/test/view/question?mainTestId=${id}`,
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                },
+            }
+        ).then((res) => {
+            console.log(res)
+            if(res.data){
+                //mainTestQuestionList[idx]에 res.data를 넣음
+                const temp = JSON.parse(JSON.stringify(mainTestQuestionList)); // 깊은복사
+                temp[idx] = res.data;
+                setMainTestQuestionList(temp);
+            }
+        }
+        )
+    }
 
 
     // 블록 삭제 함수
@@ -1698,6 +2140,7 @@ function TeacherLectureInfo(props) {
 
     // video test list 가져오는 api
     const getVideoTestList = async (videoId, idx, subIdx) => {
+        console.log("video test list 가져오기. id : " + videoId)
         const response = await axios.post(
             `http://localhost:8099/lecture/section/video/test/list`,
             {
@@ -1739,15 +2182,76 @@ function TeacherLectureInfo(props) {
             console.log(res)
             if(res && res.data){
                 res.data.forEach((item) => {
-                    if(item.type === 0){
+                    if(item.type === 0 || item.type === "0"){
                         setFirstTestResult(item);
+                        setFirstTestSectionId(item.sectionId)
                     }
-                    if(item.type === 1){
+                    if(item.type === 1 || item.type === "1"){
                         setSecondTestResult(item);
+                        setSecondTestSectionId(item.sectionId)
                     }
                 })
             }
         })
+    }
+
+    // main test section 정보 수정하기 ... /lecture/section/test/updateSection
+    const updateMainTestSection = async (sectionId, type) => {
+        console.log("메인테스트 섹션정보 수정하기... section Id : " + sectionId + " type : " + type)
+        const response = await axios.put(
+            `http://localhost:8099/lecture/section/test/updateSection`,
+            {
+                lectureId : parseInt(params.value),
+                mainTestId : 0,
+                sectionId: sectionId,
+                type: type,
+            },
+            {
+                headers:{
+                    Authorization: `${accessToken}`,
+                }
+            }
+        ).catch((err) => {
+            alert("메인테스트 섹션정보 수정 실패");
+        })
+    }
+
+    const deleteMainTestQuestion = async (questionId) => {
+        try {
+            console.log("메인테스트 문제 삭제하기... questionId : " + questionId);
+            const response = await axios.post(
+                `http://localhost:8099/lecture/section/test/deleteQuestion?questionId=${questionId}`,
+                null,
+                {
+                    headers: {
+                        Authorization: `${accessToken}`,
+                    }
+                }
+            );
+            // 여기서 response를 처리하는 로직을 추가할 수 있습니다.
+        } catch (err) {
+            alert("메인테스트 문제 삭제 실패");
+        }
+    }
+
+    const deleteVideoTestQuestion = async (id) => {
+        try {
+            console.log("videoTest 문제 삭제하기... id : " + id);
+            const response = await axios.post(
+                `http://localhost:8099/lecture/section/video/test/delete`,
+                {
+                    id: id,
+                },
+                {
+                    headers: {
+                        Authorization: `${accessToken}`,
+                    }
+                }
+            );
+            // 여기서 response를 처리하는 로직을 추가할 수 있습니다.
+        } catch (err) {
+            alert("videoTest 문제 삭제 실패");
+        }
     }
 
     useEffect(() => {
@@ -1763,6 +2267,22 @@ function TeacherLectureInfo(props) {
         result && getTeacherInfo(result.memberId);
         result && getSectionInfo(params.value);
     }, [result])
+
+    useEffect(() => {
+        if(accessToken){
+            if(firstTestResult){
+                getMainTestQuestion(firstTestResult.mainTestId, 0);
+            }
+        }
+    }, [accessToken, firstTestResult])
+
+    useEffect(() => {
+        if(accessToken){
+            if(secondTestResult){
+                getMainTestQuestion(secondTestResult.mainTestId, 1);
+            }
+        }
+    }, [accessToken, secondTestResult])
 
     return (
         <ThemeProvider theme={theme}>
@@ -1803,9 +2323,9 @@ function TeacherLectureInfo(props) {
 
             {/* Edit Video Modal **/}
             <Modal
-                open={videoEditOpen}
+                open={videoOpen}
 
-                onClose={handleVideoEditClose}
+                onClose={handleVideoClose}
                 aria-labelledby="modal-title"
                 aria-describedby="modal-description"
             >
@@ -1821,6 +2341,17 @@ function TeacherLectureInfo(props) {
                 aria-describedby="modal-description"
             >
                 {videoTestAddBody}
+            </Modal>
+
+            {/* add main test Modal **/}
+            <Modal
+                open={mainTestAddModalOpen}
+
+                onClose={handleMainTestAddModalClose}
+                aria-labelledby="modal-title"
+                aria-describedby="modal-description"
+            >
+                {mainTestAddBody}
             </Modal>
 
             <Grid container sx={{width:"100%", mb:"10rem"}}>
@@ -2356,11 +2887,11 @@ function TeacherLectureInfo(props) {
                                                             onClick={() => {
                                                                 // 해당하는 video의 test list를 가져옴
                                                                 getVideoTestList(subItem.id, idx, subIdx).then((res) => {
-                                                                    // 문제수정 collpase open
-                                                                    let array = JSON.parse(JSON.stringify(videoTestCollapse)); // 깊은 복사
-                                                                    array[idx][subIdx] = !array[idx][subIdx];
-                                                                    setVideoTestCollapse(array);
-                                                                })
+                                                                }).catch((err) => console.log(err))
+                                                                // 문제수정 collpase open
+                                                                let array = JSON.parse(JSON.stringify(videoTestCollapse)); // 깊은 복사
+                                                                array[idx][subIdx] = !array[idx][subIdx];
+                                                                setVideoTestCollapse(array);
                                                             }}
                                                             startIcon={<EditIcon sx={{ color: "#FFFFFF" }} />} // 아이콘의 색상을 흰색으로 설정
                                                             sx={{
@@ -2519,6 +3050,12 @@ function TeacherLectureInfo(props) {
                                                                                 <Typography sx={{fontWeight:"800", fontSize:"1rem"}}>
                                                                                     {testItem.title}
                                                                                 </Typography>
+                                                                                {/* 삭제 버튼 */}
+                                                                                <IconButton onClick={() => {
+                                                                                    deleteVideoTestQuestion(testItem.id).then((res) => {getMainTestInfo(params.value)})
+                                                                                }} aria-label="delete">
+                                                                                    <CloseIcon />
+                                                                                </IconButton>
                                                                             </Grid>
                                                                             {/* 노출시간 **/}
                                                                             <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
@@ -2621,26 +3158,132 @@ function TeacherLectureInfo(props) {
                                 <Grid container sx={{width:"100%"}}>
                                     {/* section 선택 **/}
                                     <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                        <FormControl sx={{ width: "100px", ml: "1rem", my: 'auto' }}>
+                                        <Typography>Section 선택</Typography>
+                                        <FormControl sx={{ width: "150px", ml: "1rem", my: 'auto' }}>
                                             <Select
                                                 label={"Section 선택"}
                                                 id="sectionSelect1"
                                                 variant="standard"
+                                                value={firstTestSectionId}
                                                 size="small"
-                                                //defaultValue={myLectureList[0].id}
-                                                onChange={(event) => {
-                                                    // sectionSelect2의 값보다 작을때만 변경
+                                                defaultValue={firstTestResult && firstTestResult.length > 0 && firstTestResult[0].sectionId}
+                                                onChange={(e) => {
+                                                    if(parseInt(e.target.value) === 0) {
+                                                        alert("section을 선택해 주세요.")
+                                                        return;
+                                                    }
+                                                    updateMainTestSection(parseInt(e.target.value), 0).then((res) => {
+                                                        // main test 정보 다시 가져옴
+                                                        getMainTestInfo(params.value)
+                                                    })
                                                 }}
                                             >
-                                                {/*강의리스트... 기본값은 lectureList[0]이고 두번째 select에서 선택된 강의는 선택불가**/}
-                                                            <MenuItem value={""}>""</MenuItem>
+                                                {section && section.map((item, idx) => {
+                                                    return(
+                                                        <MenuItem value={item.id}>{item.name}</MenuItem>
+                                                    )
+                                            })}
 
                                             </Select>
                                         </FormControl>
+
+                                        <Button
+                                            variant="contained" // 배경색이 있는 버튼으로 변경
+                                            color="primary" // 기본 색상을 'primary'로 설정
+                                            sx={{
+                                                ml: 2,
+                                                my: 'auto',
+                                                boxShadow: 2, // 그림자 효과 추가
+                                                '&:hover': {
+                                                    backgroundColor: 'secondary.main', // 호버 시 배경 색상 변경
+                                                    boxShadow: 4, // 호버 시 그림자 강조
+                                                },
+                                                textTransform: 'none', // 텍스트 대문자 자동 변환 비활성화
+                                                fontWeight: 'bold', // 글꼴 두께 변경
+                                            }}
+                                            onClick={() => {
+                                                if(!section)
+                                                {
+                                                    alert("")
+                                                    return;
+                                                }
+                                                // sectionId 초기화
+                                                setMainTestSectionId(firstTestResult ? firstTestResult.sectionId : 0);
+                                                //mainTestType 초기화
+                                                setMainTestType(0); // 중간평가
+                                                //modal 열기
+                                                handleMainTestAddModalOpen();
+                                            }}
+                                        >
+                                            문제추가
+                                        </Button>
                                     </Grid>
-                                    <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                        <Typography>중간평가가 없습니다.</Typography>
-                                    </Grid>
+                                    {/* 중간평가 값 없을때 출력 **/}
+                                    {!firstTestResult && (
+                                        <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                            <Typography>중간평가가 없습니다.</Typography>
+                                        </Grid>
+                                    )}
+                                    {/* 문제리스트 **/}
+                                    {firstTestResult && (
+                                        <Grid container item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                            {mainTestQuestionList[0] && mainTestQuestionList[0].map((testItem, testIdx) => {
+                                                return(
+                                                    <Grid xs={12} container item>
+                                                        {/* title **/}
+                                                        <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                            <Typography sx={{fontWeight:"800", fontSize:"1rem"}}>
+                                                                {testItem.title}
+                                                            </Typography>
+
+                                                            {/* 삭제 버튼 */}
+                                                            <IconButton onClick={() => {
+                                                                deleteMainTestQuestion(testItem.mainTestQuestionId).then((res) => {getMainTestInfo(params.value)})
+                                                            }} aria-label="delete">
+                                                                <CloseIcon />
+                                                            </IconButton>
+                                                        </Grid>
+                                                        <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                            <Typography sx={{fontWeight:"800", fontSize:"0.8rem"}}>
+                                                                답 : {testItem.answer && testItem.answer.map((answerItem, answerIdx) => {return(answerItem + " ")})}
+                                                            </Typography>
+                                                        </Grid>
+                                                        {/* 객관식인 경우 문제 보기 **/}
+                                                        <Grid xs={12} item container sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                            <Grid xs={12} item>
+                                                                <Typography sx={{fontWeight:"800", fontSize:"0.8rem"}}>{testItem.type === 0 ? "[보기]" : "[블럭목록]"}</Typography>
+                                                            </Grid>
+                                                            {testItem.type === 0 && testItem.choices.map((multipleItem, multipleIdx) => {
+                                                                    return(
+                                                                        <Grid xs={12} item>
+                                                                            <Typography sx={{fontWeight:"500", fontSize:"0.8rem"}} id={`multipleTypography${multipleItem.id}`}>
+                                                                                ({multipleIdx + 1}) : {multipleItem}
+                                                                            </Typography>
+                                                                        </Grid>
+                                                                    )
+                                                                }
+                                                            )}
+                                                            {testItem.type === 1 && testItem.blockList.map((blockItem, blockIdx) => {
+                                                                return(
+                                                                    <Box sx={{pr:"0.3rem"}}>
+                                                                        <Block
+                                                                            code={blockItem.block}
+                                                                            text={blockItem.value}
+                                                                            color={getBlockColor(blockItem.block)}
+                                                                            isSpecial={blockItem.block === "[String]" || blockItem.block === "[number]" || blockItem.block === "[StringVal]" || blockItem.block === "[numberVal]"}
+                                                                        />
+                                                                    </Box>
+                                                                )
+                                                            })}
+                                                        </Grid>
+                                                        <Grid xs={12} item sx={{py:"1rem"}}>
+                                                            <Divider fullWidth />
+                                                        </Grid>
+                                                    </Grid>
+                                                )
+                                            })}
+                                        </Grid>
+                                    )}
                                 </Grid>
                             </AccordionDetails>
                         </Accordion>
@@ -2653,9 +3296,71 @@ function TeacherLectureInfo(props) {
                             </AccordionSummary>
                             <AccordionDetails>
                                 <Grid container sx={{width:"100%"}}>
+                                    {/* section 선택 **/}
                                     <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                        <Typography>최종평가가 없습니다.</Typography>
+                                        <Typography>Section 선택</Typography>
+                                        <FormControl sx={{ width: "150px", ml: "1rem", my: 'auto' }}>
+                                            <Select
+                                                label={"Section 선택"}
+                                                id="sectionSelect1"
+                                                variant="standard"
+                                                size="small"
+                                                value={secondTestSectionId}
+                                                defaultValue={secondTestResult ? secondTestResult.sectionId : 0}
+                                                onChange={(e) => {
+                                                    if(parseInt(e.target.value) === 0) {
+                                                        alert("section을 선택해 주세요.")
+                                                        return;
+                                                    }
+                                                    updateMainTestSection(parseInt(e.target.value), 1).then((res) => {
+                                                        // main test 정보 다시 가져옴
+                                                        getMainTestInfo(params.value)
+                                                    })
+                                                }}
+                                            >
+                                                {section && section.map((item, idx) => {
+                                                    return(
+                                                        <MenuItem value={item.id}>{item.name}</MenuItem>
+                                                    )
+                                                })}
+
+                                            </Select>
+                                        </FormControl>
+                                        <Button
+                                            variant="contained" // 배경색이 있는 버튼으로 변경
+                                            color="primary" // 기본 색상을 'primary'로 설정
+                                            sx={{
+                                                ml: 2,
+                                                my: 'auto',
+                                                boxShadow: 2, // 그림자 효과 추가
+                                                '&:hover': {
+                                                    backgroundColor: 'secondary.main', // 호버 시 배경 색상 변경
+                                                    boxShadow: 4, // 호버 시 그림자 강조
+                                                },
+                                                textTransform: 'none', // 텍스트 대문자 자동 변환 비활성화
+                                                fontWeight: 'bold', // 글꼴 두께 변경
+                                            }}
+                                            onClick={() => {
+                                                if(!section)
+                                                {
+                                                    alert("")
+                                                    return;
+                                                }
+                                                setMainTestSectionId((secondTestResult && (secondTestResult.length>0)) ? secondTestResult[0].sectionId : 0);
+                                                //mainTestType 초기화
+                                                setMainTestType(1); // 최종평가
+                                                //modal 열기
+                                                handleMainTestAddModalOpen();
+                                            }}
+                                        >
+                                            문제추가
+                                        </Button>
                                     </Grid>
+                                    {!secondTestResult && (
+                                        <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                            <Typography>최종평가가 없습니다.</Typography>
+                                        </Grid>
+                                    )}
                                 </Grid>
                             </AccordionDetails>
                         </Accordion>
