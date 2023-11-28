@@ -156,19 +156,46 @@ function Main(props) {
                 {/* Banner **/}
                 <Grid item xs={12} sx={{px:{xs:"3%", md:"5%", lg:"20%"}, width:"100%", pb:"30px",}}>
                     <Slider {...settings}>
-                        {popular && popular.map((item, idx) => {
-                            return(
-                                <div className={styles.image_banner}
-                                    onClick={() => navigate(`/lecture/${item.lectureId}`)}
-                                >
-                                    <img
-                                        src={item.lectureThumb}
-                                        className={styles.image_thumbnail}
-                                        alt={'banner1'}
-                                    />
-                                </div>
-                            )
-                        })}
+                        <div className={styles.image_banner}
+                        >
+                            <img
+                                src={`${process.env.PUBLIC_URL}/img/a1.jpg`}
+                                className={styles.image_thumbnail}
+                                alt={'banner1'}
+                            />
+                        </div>
+                        <div className={styles.image_banner}
+                        >
+                            <img
+                                src={`${process.env.PUBLIC_URL}/img/a2.jpg`}
+                                className={styles.image_thumbnail}
+                                alt={'banner1'}
+                            />
+                        </div>
+                        <div className={styles.image_banner}
+                        >
+                            <img
+                                src={`${process.env.PUBLIC_URL}/img/a3.jpg`}
+                                className={styles.image_thumbnail}
+                                alt={'banner1'}
+                            />
+                        </div>
+                        <div className={styles.image_banner}
+                        >
+                            <img
+                                src={`${process.env.PUBLIC_URL}/img/a4.jpg`}
+                                className={styles.image_thumbnail}
+                                alt={'banner1'}
+                            />
+                        </div>
+                        <div className={styles.image_banner}
+                        >
+                            <img
+                                src={`${process.env.PUBLIC_URL}/img/a5.jpg`}
+                                className={styles.image_thumbnail}
+                                alt={'banner1'}
+                            />
+                        </div>
                     </Slider>
                 </Grid>
                 {/* 인기강의 **/}

@@ -20,6 +20,10 @@ import Grid from "@mui/material/Grid";
 import Block from "../component/Block";
 
 function MainTest(props) {
+    const [blockList, setBlockList] = useState([]);
+    const [answerGrid, setAnswerGrid] = useState([[]]);
+    const [answerBlockGrid, setAnswerBlockGrid] = useState([]);
+
 
     const getBlockColor = (code) => {
         switch (code) {
@@ -52,7 +56,7 @@ function MainTest(props) {
     const params = useParams();
 
     const [questionList, setQuestionList] = useState([]); // 문제 리스트
-    const [blockAnswerList, setBlockAnswerList] = useState([]); // 블록 답안 리스트... 이 배열의 내부에는 2차원 배열이 들어갑니다.
+    const [blockAnswerList, setBlockAnswerList] = useState([]); //
     const [answerList, setAnswerList] = useState([]); // 답안 리스트...
 
     // mainTest문제 리스트 가져오기... /lecture/section/test/view/question?mainTestId...
@@ -64,16 +68,17 @@ function MainTest(props) {
             if(res && res.data){
                 console.log(res.data);
                 setQuestionList(res.data);
-                // res.data의 길이만큼 초기화한 배열에 빈 이차원 배열로 채움
-                let temp = Array(res.data.length).fill([[]]); // 모든 요소를 빈 2차원 배열로 초기화
-                setBlockAnswerList(temp);
-                console.log("blockAnswerList...")
-                console.log(blockAnswerList);
                 // res.data의 길이만츰 초기화한 배열에 빈 일차원 배열로 채워서 answerList에 넣음
-                temp = Array(res.data.length).fill([]); // 모든 요소를 빈 배열로 초기화
+                let temp = Array(res.data.length).fill([]); // 모든 요소를 빈 배열로 초기화
                 setAnswerList(temp);
                 console.log("answerList...")
                 console.log(answerList);
+                // res.data의 길이만큼 초기화한 배열에 모두 false로 채움
+                let initializedArray = Array(res.data.length).fill(false);
+                setBlockAnswerList(initializedArray)
+                // res.data의 길이만큼 초기화한 빈 배열을 answerBlockGrid에 넣음
+                let tempAnswerBlockGrid = Array(res.data.length).fill([]);
+                setAnswerBlockGrid(tempAnswerBlockGrid);
             }
         })
     }
@@ -92,79 +97,7 @@ function MainTest(props) {
         });
     };
 
-    // 2차원 배열 answerGrid의 행을 늘리는 함수
-    // addRow 함수 수정
-    const addRow = (questionIndex) => {
-        setBlockAnswerList(prev => {
-            const newBlockAnswers = [...prev];
-            newBlockAnswers[questionIndex] = [...newBlockAnswers[questionIndex], []];
-            return newBlockAnswers;
-        });
-    };
-
-    const onDragEnd = (result) => {
-        const { source, destination } = result;
-
-        // 드롭되지 않은 경우
-        if (!destination) {
-            return;
-        }
-
-        // sourceIndex와 destinationIndex를 파싱
-        const sourceIndex = source.droppableId.split('_')[1] ? parseInt(source.droppableId.split('_')[1]) : 0;
-        const destIndex = destination.droppableId.split('_')[1] ? parseInt(destination.droppableId.split('_')[1]) : 0;
-
-        // source와 destination의 리스트를 결정
-        const sourceList = source.droppableId.startsWith('droppableOne')
-            ? questionList[sourceIndex]?.blockList || []
-            : blockAnswerList[sourceIndex]?.[parseInt(source.droppableId.split('_')[2])] || [];
-        const destList = destination.droppableId.startsWith('droppableOne')
-            ? questionList[destIndex]?.blockList || []
-            : blockAnswerList[destIndex]?.[parseInt(destination.droppableId.split('_')[2])] || [];
-
-        // 같은 리스트 내에서 항목이 이동하는 경우
-        if (source.droppableId === destination.droppableId) {
-            const items = reorder(sourceList, source.index, destination.index);
-
-            if (source.droppableId.startsWith('droppableOne')) {
-                // questionList 업데이트
-                const newQuestionList = [...questionList];
-                newQuestionList[sourceIndex].blockList = items;
-                setQuestionList(newQuestionList);
-            } else {
-                // blockAnswerList 업데이트
-                const newBlockAnswerList = [...blockAnswerList];
-                newBlockAnswerList[sourceIndex][parseInt(source.droppableId.split('_')[2])] = items;
-                setBlockAnswerList(newBlockAnswerList);
-            }
-        } else {
-            // 다른 리스트로 항목 이동
-            const result = moveItem(sourceList, destList, source, destination);
-
-            // questionList 및 blockAnswerList 업데이트
-            if (source.droppableId.startsWith('droppableOne')) {
-                const newQuestionList = [...questionList];
-                newQuestionList[sourceIndex].blockList = result[source.droppableId];
-                if (destination.droppableId.startsWith('droppableOne')) {
-                    newQuestionList[destIndex].blockList = result[destination.droppableId];
-                }
-                setQuestionList(newQuestionList);
-            }
-
-            if (!source.droppableId.startsWith('droppableOne') || !destination.droppableId.startsWith('droppableOne')) {
-                const newBlockAnswerList = [...blockAnswerList];
-                if (!source.droppableId.startsWith('droppableOne')) {
-                    newBlockAnswerList[sourceIndex][parseInt(source.droppableId.split('_')[2])] = result[source.droppableId];
-                }
-                if (!destination.droppableId.startsWith('droppableOne')) {
-                    newBlockAnswerList[destIndex][parseInt(destination.droppableId.split('_')[2])] = result[destination.droppableId];
-                }
-                setBlockAnswerList(newBlockAnswerList);
-            }
-        }
-    };
-
-// reorder 함수
+    // 리스트 내 항목 순서 변경
     const reorder = (list, startIndex, endIndex) => {
         const result = Array.from(list);
         const [removed] = result.splice(startIndex, 1);
@@ -172,7 +105,7 @@ function MainTest(props) {
         return result;
     };
 
-// moveItem 함수
+// 다른 리스트로 항목 이동
     const moveItem = (source, destination, droppableSource, droppableDestination) => {
         const sourceClone = Array.from(source);
         const destClone = Array.from(destination);
@@ -186,6 +119,102 @@ function MainTest(props) {
 
         return result;
     };
+
+    // 제출하고 점수받아오는 api
+    const checkAnswer = async () => {
+        // dto 만들기
+        let temp = questionList.map((question, idx) => {
+            if(question.type === 0){
+                return(
+                    {
+                        mainTestQuestionId:question.mainTestQuestionId,
+                        multipleChoiceList:answerList[idx]
+                    }
+                )
+            }
+            if(question.type === 1){
+                return(
+                    {
+                        mainTestQuestionId:question.mainTestQuestionId,
+                        blockList:answerBlockGrid[idx]
+                    }
+                )
+            }
+        })
+        console.log("제출하고 점수받아오기...")
+        console.log(temp);
+        let temp2 = {
+            logDTOList : temp,
+            mainTestId : params.value
+        }
+        const response = await axios.post(
+            `${process.env.REACT_APP_API_URL}/lecture/section/test/question/log/scoring`,
+            temp2,
+            {headers: {Authorization: `${accessToken}`}}
+        ).then((res) => {
+            alert("점수는 " + res.data + "점 입니다.")
+            // 대시보드 강의 리스트로 이동
+            navigate("/my/lectureList")
+        })
+    }
+
+
+    const onDragEnd = (result) => {
+        const { source, destination } = result;
+
+        // 드롭되지 않은 경우
+        if (!destination) {
+            return;
+        }
+
+        if (source.droppableId === destination.droppableId) {
+            const items = reorder(
+                source.droppableId === 'droppableOne' ? blockList : answerGrid[parseInt(source.droppableId.split('_')[1])],
+                source.index,
+                destination.index
+            );
+
+            if (source.droppableId === 'droppableOne') {
+                setBlockList(items);
+            } else {
+                const newAnswerGrid = Array.from(answerGrid);
+                newAnswerGrid[parseInt(source.droppableId.split('_')[1])] = items;
+                setAnswerGrid(newAnswerGrid);
+            }
+        } else {
+            const sourceList = source.droppableId === 'droppableOne' ? blockList : answerGrid[parseInt(source.droppableId.split('_')[1])];
+            const destList = destination.droppableId === 'droppableOne' ? blockList : answerGrid[parseInt(destination.droppableId.split('_')[1])];
+            const result = moveItem(
+                sourceList,
+                destList,
+                source,
+                destination
+            );
+
+            if (source.droppableId === 'droppableOne') {
+                setBlockList(result[source.droppableId]);
+                setAnswerGrid(prev => {
+                    const newGrid = Array.from(prev);
+                    newGrid[parseInt(destination.droppableId.split('_')[1])] = result[destination.droppableId];
+                    return newGrid;
+                });
+            } else {
+                setAnswerGrid(prev => {
+                    const newGrid = Array.from(prev);
+                    newGrid[parseInt(source.droppableId.split('_')[1])] = result[source.droppableId];
+                    newGrid[parseInt(destination.droppableId.split('_')[1])] = result[destination.droppableId];
+                    return newGrid;
+                });
+            }
+        }
+    };
+
+    // 2차원 배열 answerGrid의 행을 늘리는 함수
+    const addRow = () => {
+        setAnswerGrid(answerGrid.concat([[]]));
+    };
+
+
 
     useEffect(() => {
         if(accessToken){
@@ -203,6 +232,27 @@ function MainTest(props) {
                 <Paper elevation={3} style={{ margin: '16px', padding: '16px' }} key={question.mainTestQuestionId}>
                     <Typography variant="h5">문제 {index + 1}</Typography>
                     <Typography variant="body1">{question.title}</Typography>
+                    {question.type === 1 && (
+                        <Button
+                            onClick={() =>{
+                                // qustionAnswer을 temp에 깊은 복사 후 모두 false로 채움. 그 후 [index]부분만 true로 바꾸어 setQuestionAnswer
+                                // 깊은 복사를 사용하여 questionAnswer 배열 복사
+                                let temp = [...blockAnswerList];
+                                temp.fill(false);
+                                temp[index] = true;
+                                setBlockAnswerList(temp);
+                                // question.blockList의 내용을 blockList에 넣음(깊은복사)
+                                let tempBlockList = [...question.blockList];
+                                setBlockList(tempBlockList);
+                                // answerGrid 2차원배열로 초기화
+                                let tempAnswerGrid = [[]];
+                                setAnswerGrid(tempAnswerGrid);
+
+                            }}
+                        >
+                            <Typography>풀이시작하기</Typography>
+                        </Button>
+                    )}
                     {question.type === 0 && // 객관식 문제일 경우
                         <FormGroup>
                             {question.choices.map((choice, choiceIndex) => (
@@ -219,26 +269,26 @@ function MainTest(props) {
                             ))}
                         </FormGroup>
                     }
-                    {question.type === 1 && // 객관식 문제일 경우
-                        <Grid container sx={{ width: "100%" }}>
+                    {question.type === 1 && blockAnswerList[index] === true && (
+                        <Grid container sx={{width:"100%"}}>
                             <DragDropContext onDragEnd={onDragEnd}>
-                                <Grid container sx={{ width: "100%", height: "500px" }}>
-                                    <Grid xs={12} item sx={{ width: "100%", height: "200px", border: 1, overflow: "auto" }}>
-                                        <Droppable droppableId={`droppable_${index}`} direction="horizontal">
+                                <Grid container sx={{width:"100%", height:"500"}}>
+                                    <Grid xs={12} item sx={{width:"100%", height:"200", border:1, overflow:"auto"}}>
+                                        <Droppable droppableId="droppableOne" direction="horizontal">
                                             {(provided) => (
-                                                <Grid item xs={12} ref={provided.innerRef} {...provided.droppableProps} sx={{ display: "flex" }}>
-                                                    {question.blockList && question.blockList.map((block, blockIndex) => (
-                                                        <Draggable key={block.id} draggableId={`block_${index}_${blockIndex}`}  index={blockIndex}>
+                                                <Grid item xs={12} ref={provided.innerRef} {...provided.droppableProps} sx={{display:"flex"}}>
+                                                    {blockList.map((block, index) => (
+                                                        <Draggable key={block.id} draggableId={block.id.toString()} index={index} >
                                                             {(provided) => (
                                                                 <Box
                                                                     ref={provided.innerRef}
                                                                     {...provided.draggableProps}
                                                                     {...provided.dragHandleProps}
-                                                                    sx={{ display: "flex", alignItems: "center", justifyContent: "center", margin: "0.3rem" }}
+                                                                    sx={{display:"flex", alignItems:"center", justifyContent:"flex", m:"0.3rem"}}
                                                                 >
                                                                     <Block code={block.block} color={getBlockColor(block.block)} text={block.value && block.value}
                                                                            isSpecial={
-                                                                               ["[number]", "[String]", "[numberVal]", "[StringVal]"].includes(block.block)
+                                                                               (block.block === "[number]" || block.block === "[String]" || block.block === "[numberVal]" || block.block === "[StringVal]")
                                                                            } />
                                                                 </Box>
                                                             )}
@@ -249,46 +299,80 @@ function MainTest(props) {
                                             )}
                                         </Droppable>
                                     </Grid>
-                                    {blockAnswerList[index].map((row, rowIdx) => (
-                                        <Grid xs={12} item sx={{ width: "100%", height: "200px", border: 1, overflow: "auto" }} key={rowIdx}>
-                                            <Droppable droppableId={`droppable_${index}_${rowIdx}`} direction="horizontal">
-                                                {(provided) => (
-                                                    <Grid item xs={12} ref={provided.innerRef} {...provided.droppableProps} sx={{ display: "flex" }}>
-                                                        {row.length > 0 && row.map((block, blockIndex) => (
-                                                            <Draggable key={block.id} draggableId={`answer_${index}_${rowIdx}_${blockIndex}`} index={blockIndex}>
-                                                                {(provided) => (
-                                                                    <Box
-                                                                        ref={provided.innerRef}
-                                                                        {...provided.draggableProps}
-                                                                        {...provided.dragHandleProps}
-                                                                        sx={{ display: "flex", alignItems: "center", justifyContent: "center", margin: "0.3rem" }}
-                                                                    >
-                                                                        <Block code={block.block} color={getBlockColor(block.block)} text={block.value && block.value}
-                                                                               isSpecial={
-                                                                                   ["[number]", "[String]", "[numberVal]", "[StringVal]"].includes(block.block)
-                                                                               } />
-                                                                    </Box>
-                                                                )}
-                                                            </Draggable>
-                                                        ))}
-                                                        {provided.placeholder}
-                                                        <Button
-                                                            sx={{ display: "flex", alignItems: "center", justifyContent: "center", margin: "0.3rem" }}
-                                                            onClick={() => addRow(index)}
-                                                        >
-                                                            <Block code={"[enter]"} color={getBlockColor("[enter]")} text={"줄바꿈"} />
-                                                        </Button>
-                                                    </Grid>
-                                                )}
-                                            </Droppable>
-                                        </Grid>
-                                    ))}
+                                    {answerGrid && answerGrid.map((row, idx) => {
+                                        return(
+                                            <Grid xs={12} item sx={{width:"100%", height:"200", border:1, overflow:"auto"}}>
+                                                <Droppable droppableId={"droppable_" + idx} direction="horizontal">
+                                                    {(provided) => (
+                                                        <Grid item xs={12} ref={provided.innerRef} {...provided.droppableProps} sx={{display:"flex"}}>
+                                                            {answerGrid[idx].length > 0 && answerGrid[idx].map((block, index) => (
+                                                                <Draggable key={block.id} draggableId={"answer" + block.id.toString()} index={index}>
+                                                                    {(provided) => (
+                                                                        <Box
+                                                                            ref={provided.innerRef}
+                                                                            {...provided.draggableProps}
+                                                                            {...provided.dragHandleProps}
+                                                                            sx={{display:"flex", alignItems:"center", justifyContent:"flex", m:"0.3rem"}}
+                                                                        >
+                                                                            <Block code={block.block} color={getBlockColor(block.block)} text={block.value && block.value}
+                                                                                   isSpecial={
+                                                                                       (block.block === "[number]" || block.block === "[String]" || block.block === "[numberVal]" || block.block === "[StringVal]")
+                                                                                   } />
+                                                                        </Box>
+                                                                    )}
+                                                                </Draggable>
+                                                            ))}
+                                                            {provided.placeholder}
+                                                            <Button
+                                                                sx={{display:"flex", alignItems:"center", justifyContent:"flex", m:"0.3rem"}}
+                                                                onClick={() => {
+                                                                    // answerGrid의 행을 늘립니다.
+                                                                    addRow();
+                                                                }}
+                                                            >
+                                                                <Block code={"[enter]"} color={getBlockColor("[enter]")} text={"줄바꿈"} />
+                                                            </Button>
+                                                        </Grid>
+                                                    )}
+                                                </Droppable>
+                                            </Grid>
+                                        )
+                                    })}
+                                    {question.type === 1 && (
+                                        <Button
+                                            onClick={() =>{
+                                                // answerBlockGrid[index]에 answerGrid를 1차원 배열로 변환해서 넣음
+                                                // 2차원 배열인 answerGrid를 1차원 배열로 변환
+                                                let tempArr2 = answerGrid.flat();
+                                                // questionList의 길이만큼 빈 배열을 생성
+                                                let tempArr1 = Array(questionList.length).fill([]);
+                                                tempArr1[index] = tempArr2;
+                                                setAnswerBlockGrid(tempArr1);
+                                                // qustionAnswer을 temp에 깊은 복사 후 모두 false로 채움. 그 후 [index]부분만 true로 바꾸어 setQuestionAnswer
+                                                // 깊은 복사를 사용하여 questionAnswer 배열 복사
+                                                let temp = [...blockAnswerList];
+                                                temp.fill(false);
+                                                temp[index] = false;
+                                                setBlockAnswerList(temp);
+                                            }}
+                                        >
+                                            <Typography>풀이 종료</Typography>
+                                        </Button>
+                                    )}
                                 </Grid>
                             </DragDropContext>
                         </Grid>
-                    }
+                    )}
+
                 </Paper>
             ))}
+            <Button
+                onClick={() => {
+                    checkAnswer();
+                }}
+            >
+                <Typography>제출하기</Typography>
+            </Button>
         </ThemeProvider>
     );
 }
