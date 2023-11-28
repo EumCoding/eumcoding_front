@@ -5,8 +5,8 @@ import {
     AccordionSummary,
     Box, Button, Collapse,
     createTheme,
-    Divider, Fade, FormControlLabel,
-    Grid, keyframes, LinearProgress, Modal, Radio, RadioGroup, TextField,
+    Divider, Fade, FormControl, FormControlLabel,
+    Grid, keyframes, LinearProgress, MenuItem, Modal, Radio, RadioGroup, Select, TextField,
     ThemeProvider
 } from "@mui/material";
 import TopBar from "../component/TopNav";
@@ -26,6 +26,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import ClearIcon from "@mui/icons-material/Clear";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import CheckIcon from "@mui/icons-material/Check";
+import Block from "../component/Block";
 
 // @emotion/react의 keyframes를 사용하여 애니메이션 정의
 const heartBurst = keyframes`
@@ -40,6 +41,9 @@ const heartBurst = keyframes`
 `;
 
 function LectureInfo(props) {
+    const [firstTestExpand, setFirstTestExpand] = useState(false);
+    const [secondTestExpand, setSecondTestExpand] = useState(false);
+
     const navigate = useNavigate();
 
     const accessToken = useSelector((state) => state.accessToken);
@@ -412,6 +416,48 @@ function LectureInfo(props) {
         })
     }
 
+    // main test 응시 자격 확인
+    const [testResult, setTestResult] = useState(null); // 응시자격 확인 결과
+    // 메인 평가 정보 가져오기
+    const [mainTestResult, setMainTestResult] = useState(null); // 메인 평가 정보
+    const checkTest = async (id) => { // id는 maintest
+        const response = await axios.post(
+            `${process.env.REACT_APP_API_URL}/lecture/section/test/confirmation-of-ofeligibility`,
+            {
+                mainTestId:id
+            },
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            console.log("maintest 응시 자격 확인 결과")
+            console.log(res)
+            // mainTestResult 배열내의 JSON에 mainTestId = id인 JSON에 test : res.data 추가
+            const temp = JSON.parse(JSON.stringify(mainTestResult));
+            temp.forEach((item, idx) => {
+                if(item.mainTestId === id){
+                    item.test = res.data;
+                }
+            })
+            setMainTestResult(temp);
+
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
+
+
+    const getMainTestInfo = async (id) => { // id는 maintest
+        const response = await axios.get(
+            `${process.env.REACT_APP_API_URL}/lecture/section/test/unauth/view?lectureId=${id}`
+        ).then((res) => {
+            console.log("메인 평가 정보")
+            console.log(res)
+            res.data && setMainTestResult(res.data);
+            return res;
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
+
     const handleLikeClick = () => {
         //setLiked(!liked);
         // 여기서 애니메이션 상태를 관리하거나 트리거 할 수 있습니다.
@@ -451,6 +497,8 @@ function LectureInfo(props) {
             getQuestionList(params.value, 1).catch((err) => {
                 alert("질문리스트를 가져오는 데 실패했습니다.");
             })
+            // 메인테스트 정보 가져옴
+            getMainTestInfo(params.value)
         }
     },[accessToken])
 
@@ -458,6 +506,17 @@ function LectureInfo(props) {
         result && getTeacherInfo(result.memberId);
         result && getSectionInfo(params.value);
     }, [result])
+
+    useEffect(() => {
+        console.log("mainTestResult")
+        console.log(mainTestResult)
+        // mainTestResult 배열에 item이 있고 item.test가 존재하지 않을 경우 checkTest 호출
+        mainTestResult && mainTestResult.forEach((item, idx) => {
+            if(item.test === null || item.test === undefined){
+                checkTest(item.mainTestId);
+            }
+        })
+    },[mainTestResult])
 
     return (
         <ThemeProvider theme={theme}>
@@ -475,7 +534,7 @@ function LectureInfo(props) {
 
             {/* TopBar 띄우기 위한 Box*/}
             <Grid container sx={{width:"100%", mb:"10rem"}}>
-                <Grid xs={12} item container display={"flex"} justtifyContent={"center"} alignItems={"stretch"}
+                <Grid xs={12} item container display={"flex"} justifyContent={"center"} alignItems={"stretch"}
                     sx={{backgroundColor:"#1B65FF", px:{xs:"3vw", md:"10vw", lg:"20vw"},  py:"3rem", m:0}}
                       spacing={5}
                 >
@@ -655,6 +714,156 @@ function LectureInfo(props) {
                                 </Accordion>
                             )
                         })}
+                    </Container>
+                </Grid>
+
+                {/* 중간평가 최종평가 **/}
+                <Grid item xs={12}
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                      sx={{px:{xs:"3vw", md:"10vw", lg:"20vw"}, mt:"3rem"}}
+                >
+                    <Container>
+                        <Accordion expanded={firstTestExpand}>
+                            <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />}
+                                              onClick={() => {
+                                                  let temp = !firstTestExpand;
+                                                  setFirstTestExpand(temp);
+                                              }
+                                              }>
+                                <span className={styles.font_curriculum_title}>중간평가</span>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Grid container sx={{width:"100%"}}>
+                                    <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                        {/* mainTestResult 배열에 들어있는 JSON중 type이 0이고 test가 0인 아이템이 있는 경우에 버튼 출력 **/}
+                                        {mainTestResult && mainTestResult.map((item, idx) => {
+                                            if(item.type === 0 && item.test === 0){
+                                                return(
+                                                    <Button
+                                                        variant="contained" // 배경색이 있는 버튼으로 변경
+                                                        color="primary" // 기본 색상을 'primary'로 설정
+                                                        sx={{
+                                                            ml: 2,
+                                                            my: 'auto',
+                                                            boxShadow: 2, // 그림자 효과 추가
+                                                            '&:hover': {
+                                                                backgroundColor: 'secondary.main', // 호버 시 배경 색상 변경
+                                                                boxShadow: 4, // 호버 시 그림자 강조
+                                                            },
+                                                            textTransform: 'none', // 텍스트 대문자 자동 변환 비활성화
+                                                            fontWeight: 'bold', // 글꼴 두께 변경
+                                                        }}
+                                                        onClick={() => {
+                                                            // 메인 테스트 화면으로 이동하기
+                                                            navigate("/main/test/" + item.mainTestId)
+                                                        }}
+                                                    >
+                                                        응시하기
+                                                    </Button>
+                                                )
+                                            }
+                                        })}
+                                        {/* mainTestResult 배열에 들어있는 JSON중 type이 0이고 test가 2인 아이템이 있는 경우에는 이미 응시했다는 텍스트 출력 **/}
+                                        {mainTestResult && mainTestResult.map((item, idx) => {
+                                            if(item.type === 0 && item.test === 2){
+                                                return(
+                                                    <Typography>이미 응시하셨습니다.</Typography>
+                                                )
+                                            }
+                                        })}
+                                        {/* mainTestResult 배열에 들어있는 JSON중 type이 0이고 test가 1인 아이템이 있는 경우에는 섹션 몇을 들어야 응시할수있는지 출력 **/}
+                                        {mainTestResult && mainTestResult.map((item, idx) => {
+                                            if(item.type === 0 && item.test === 1){
+                                                return(
+                                                    <Typography>
+                                                        {/* 서버에서 받아온 section 리스트에서 sectionId가 item.sectionId인 것을 찾아서 리턴**/}
+                                                        {section && section.map((subItem, idx) => {
+                                                            if(subItem.id === item.sectionId){
+                                                                return(
+                                                                    <Typography sx={{fontWeight:"700"}}>{subItem.name}</Typography>
+                                                                )
+                                                            }
+                                                        })}
+                                                        섹션을 들어야 응시할 수 있습니다.
+                                                    </Typography>
+                                                )
+                                            }
+                                        })}
+                                    </Grid>
+                                </Grid>
+                            </AccordionDetails>
+                        </Accordion>
+                        <Accordion expanded={secondTestExpand}>
+                            <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />} onClick={() => {
+                                let temp = !secondTestExpand;
+                                setSecondTestExpand(temp);
+                            }}>
+                                <span className={styles.font_curriculum_title}>최종평가</span>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Grid container sx={{width:"100%"}}>
+                                    {/* section 선택 **/}
+                                    <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                        {/* mainTestResult 배열에 들어있는 JSON중 type이 0이고 test가 0인 아이템이 있는 경우에 버튼 출력 **/}
+                                        {mainTestResult && mainTestResult.map((item, idx) => {
+                                            if(item.type === 1 && item.test === 0){
+                                                return(
+                                                    <Button
+                                                        variant="contained" // 배경색이 있는 버튼으로 변경
+                                                        color="primary" // 기본 색상을 'primary'로 설정
+                                                        sx={{
+                                                            ml: 2,
+                                                            my: 'auto',
+                                                            boxShadow: 2, // 그림자 효과 추가
+                                                            '&:hover': {
+                                                                backgroundColor: 'secondary.main', // 호버 시 배경 색상 변경
+                                                                boxShadow: 4, // 호버 시 그림자 강조
+                                                            },
+                                                            textTransform: 'none', // 텍스트 대문자 자동 변환 비활성화
+                                                            fontWeight: 'bold', // 글꼴 두께 변경
+                                                        }}
+                                                        onClick={() => {
+                                                            // 메인 테스트 화면으로 이동하기
+                                                            navigate("/main/test/" + item.mainTestId)
+                                                        }}
+                                                    >
+                                                        응시하기
+                                                    </Button>
+                                                )
+                                            }
+                                        })}
+                                        {/* mainTestResult 배열에 들어있는 JSON중 type이 0이고 test가 2인 아이템이 있는 경우에는 이미 응시했다는 텍스트 출력 **/}
+                                        {mainTestResult && mainTestResult.map((item, idx) => {
+                                            if(item.type === 1 && item.test === 2){
+                                                return(
+                                                    <Typography>이미 응시하셨습니다.</Typography>
+                                                )
+                                            }
+                                        })}
+                                        {/* mainTestResult 배열에 들어있는 JSON중 type이 0이고 test가 1인 아이템이 있는 경우에는 섹션 몇을 들어야 응시할수있는지 출력 **/}
+                                        {mainTestResult && mainTestResult.map((item, idx) => {
+                                            if(item.type === 1 && item.test === 1){
+                                                return(
+                                                    <Typography>
+                                                        {/* 서버에서 받아온 section 리스트에서 sectionId가 item.sectionId인 것을 찾아서 리턴**/}
+                                                        {section && section.map((subItem, idx) => {
+                                                            if(subItem.id === item.sectionId){
+                                                                return(
+                                                                    <Typography>subItem.name</Typography>
+                                                                )
+                                                            }
+                                                        })}
+                                                        섹션을 들어야. 응시할 수 있습니다.
+                                                    </Typography>
+                                                )
+                                            }
+                                        })}
+                                    </Grid>
+                                </Grid>
+                            </AccordionDetails>
+                        </Accordion>
                     </Container>
                 </Grid>
 

@@ -31,6 +31,7 @@ import EmailConfirm from "./unauth/EmailConfirm";
 import ParentDashboard from "./parent/ParentDashboard";
 import ParentCurriculum from "./parent/ParentCurriculum";
 import TeacherStats from "./teacher/TeacherStats";
+import MainTest from "./student/MainTest";
 
 
 function App() {
@@ -106,6 +107,8 @@ function App() {
             <Route path={"/parent/curriculum"} element={<ParentCurriculum />}/>
             {/* 강사통계 **/}
             <Route path={"/teacher/stats"} element={<TeacherStats />}/>
+            {/* main test **/}
+            <Route path={"/main/test/:value"} element={<MainTest />}/>
 
 
         </Routes>

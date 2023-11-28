@@ -180,7 +180,6 @@ export default function TopBar(props) {
                                                     if(role === "3") {
                                                         navigate("/parent/dashboard");
                                                     }
-                                                    console.log(role);
                                                 }
                                                 if(page === "강의") {
                                                     if(!accessToken) navigate("/login");
