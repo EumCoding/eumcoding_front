@@ -32,6 +32,7 @@ import ParentDashboard from "./parent/ParentDashboard";
 import ParentCurriculum from "./parent/ParentCurriculum";
 import TeacherStats from "./teacher/TeacherStats";
 import MainTest from "./student/MainTest";
+import BlockCodingTest from "./unauth/BlockCodingTest";
 
 
 function App() {
@@ -109,6 +110,8 @@ function App() {
             <Route path={"/teacher/stats"} element={<TeacherStats />}/>
             {/* main test **/}
             <Route path={"/main/test/:value"} element={<MainTest />}/>
+                {/* block coding **/}
+                <Route path={"/block"} element={<BlockCodingTest />}/>
 
 
         </Routes>

@@ -40,7 +40,7 @@ function TeacherStats(props) {
 
     // 전체 강좌 갯수 가져오기
     const getLectureCnt = () => {
-        axios.post("${process.env.REACT_APP_API_URL}/stats/total-cnt",null, {
+        axios.post(`${process.env.REACT_APP_API_URL}/stats/total-cnt`,null, {
             headers: {
                 Authorization: `${accessToken}`
             }
@@ -56,7 +56,7 @@ function TeacherStats(props) {
 
     // 전체 별점 가져오기
     const getTotalStar = () => {
-        axios.post("${process.env.REACT_APP_API_URL}/stats/total-rating",null, {
+        axios.post(`${process.env.REACT_APP_API_URL}/stats/total-rating`,null, {
             headers: {
                 Authorization: `${accessToken}`
             }
@@ -72,7 +72,7 @@ function TeacherStats(props) {
 
     // 전체 수강생 수 가져오기
     const getTotalStudent = () => {
-        axios.post("${process.env.REACT_APP_API_URL}/stats/total-student",null, {
+        axios.post(`${process.env.REACT_APP_API_URL}/stats/total-student`,null, {
             headers: {
                 Authorization: `${accessToken}`
             }
@@ -88,7 +88,7 @@ function TeacherStats(props) {
     }
     // 강의 총 수익
     const getTotalRevenue = () => {
-        axios.post("${process.env.REACT_APP_API_URL}/stats/total-revenue",null, {
+        axios.post(`${process.env.REACT_APP_API_URL}/stats/total-revenue`,null, {
             headers: {
                 Authorization: `${accessToken}`
             }
@@ -105,7 +105,7 @@ function TeacherStats(props) {
     const [thisMonthSalesRatio, setThisMonthSalesRatio] = useState(null);
     // 이번달 판매 비율
     const getThisMonthSalesRatio = () => {
-        axios.post("${process.env.REACT_APP_API_URL}/stats/total-volume-percentage",null, {
+        axios.post(`${process.env.REACT_APP_API_URL}/stats/total-volume-percentage`,null, {
             headers: {
                 Authorization: `${accessToken}`
             }
@@ -143,7 +143,7 @@ function TeacherStats(props) {
         // public static final int SIX_MONTH = 3;
         //
         // public static final int YEAR = 4;
-        axios.post("${process.env.REACT_APP_API_URL}/stats/revenue-distribution",{
+        axios.post(`${process.env.REACT_APP_API_URL}/stats/revenue-distribution`,{
             periodOption: periodOption,
         }, {
             headers: {
@@ -184,7 +184,7 @@ function TeacherStats(props) {
     const [totalSalesTrendPeriodOption, setTotalSalesTrendPeriodOption] = useState(0); // [0: 주, 1: 한달, 2: 3개월, 3: 6개월, 4: 1년
     // 종합 판매 추이
     const getTotalSalesTrend = (periodOption) => {
-        axios.post("${process.env.REACT_APP_API_URL}/stats/sales-volume-progress",
+        axios.post(`${process.env.REACT_APP_API_URL}/stats/sales-volume-progress`,
             {
                 periodOption: periodOption,
             }, {
@@ -229,7 +229,7 @@ function TeacherStats(props) {
 
     // 비교 판매 현황 가져오기
     const getCompareSalesStatus = (firstLectureId, secondLectureId, periodOption) => {
-        axios.post("${process.env.REACT_APP_API_URL}/stats/compare-lecture",{
+        axios.post(`${process.env.REACT_APP_API_URL}/stats/compare-lecture`,{
             firstLectureId: firstLectureId,
             secondLectureId: secondLectureId,
             periodOption: periodOption,
@@ -279,7 +279,7 @@ function TeacherStats(props) {
     // 내 강의 리스트 가져오기
     const getMyLectureList = () => {
         console.log("내 강의 리스트 가져오기...");
-        axios.get("${process.env.REACT_APP_API_URL}/lecture/list", {
+        axios.get(`${process.env.REACT_APP_API_URL}/lecture/list`, {
             headers: {
                 Authorization: `${accessToken}`
             }
@@ -310,7 +310,7 @@ function TeacherStats(props) {
     // 수강률 구간별 추이 가져오기
     const getLectureSalesVolumeProgress = (lectureId) => {
         console.log("수강률 구간별 추이 가져오기...");
-        axios.post("${process.env.REACT_APP_API_URL}/stats/lecture-progress",{
+        axios.post(`${process.env.REACT_APP_API_URL}/stats/lecture-progress`,{
             id: lectureId,
         }, {
             headers: {
@@ -940,7 +940,7 @@ function TeacherStats(props) {
                 <Grid xs={12} item sx={{width:"100%", height:"500px"}}>
                     <Grid container sx={{width:"100%", height:"100%", backgroundColor:"#FFFFFF", boxShadow: 3}}>
                         <Grid item xs={12} sx={{borderBottom:1, borderColor:"#A2A2A2", height:"15%", display:"flex", justifyContent:"flex-start", alignItems:"center", px:2}}>
-                            <Typography sx={{ justifyContent: "space-between", alignItems: "center", display: "inline", mr: 2, lineHeight: 'normal' }}>비교 판매 추이</Typography>
+                            <Typography sx={{ justifyContent: "space-between", alignItems: "center", display: "inline", mr: 2, lineHeight: 'normal' }}>수강률 구간</Typography>
                             {myLectureList && (myLectureList.length > 0) && (
                                 <FormControl sx={{ width: "100px", ml: "1rem", my: 'auto' }}>
                                     <Select

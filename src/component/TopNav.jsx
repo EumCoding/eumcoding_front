@@ -17,7 +17,7 @@ import testImg from "../images/test.png"
 
 
 
-const pages = ["강의", "장바구니", "대시보드"];
+const pages = ["강의", "블록코딩", "장바구니", "대시보드"];
 
 
 export default function TopBar(props) {
@@ -184,6 +184,9 @@ export default function TopBar(props) {
                                                 if(page === "강의") {
                                                     if(!accessToken) navigate("/login");
                                                     navigate("/search?keyword=&page=1&sort=0");
+                                                }
+                                                if(page === "블록코딩") {
+                                                    navigate("/block");
                                                 }
                                                 if(page === "장바구니") {
                                                     if(!accessToken) navigate("/login");
