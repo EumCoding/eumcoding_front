@@ -2323,9 +2323,9 @@ function TeacherLectureInfo(props) {
 
             {/* Edit Video Modal **/}
             <Modal
-                open={videoOpen}
+                open={videoEditOpen}
 
-                onClose={handleVideoClose}
+                onClose={handleVideoEditOpen}
                 aria-labelledby="modal-title"
                 aria-describedby="modal-description"
             >

@@ -39,6 +39,8 @@ const getBlockColor = (code) => {
 
 function BlockCodingTest(props) {
 
+    const [blockId, setBlockId] = useState(0);
+
     const getBlockColor = (code) => {
         switch (code) {
             case "[for]": return "#6495ED"; // 옥스퍼드 블루
@@ -302,7 +304,8 @@ function BlockCodingTest(props) {
                                         // { code: videoTestBlock, text: tempValue } 양식에 맞추어서 blockData state에 추가
                                         // blockData state에 추가
                                         const temp = JSON.parse(JSON.stringify(blockList)); // 깊은복사
-                                        temp.push({ code: selectBlock.code, text: tempValue });
+                                        temp.push({ code: selectBlock.code, text: tempValue, id: blockId });
+                                        setBlockId(blockId + 1);
                                         setBlockList(temp);
                                         // 추가 후 videoTestBlock 초기화
                                         setSelectBlock(null);
@@ -338,7 +341,7 @@ function BlockCodingTest(props) {
                                             {(provided) => (
                                                 <Grid item xs={12} ref={provided.innerRef} {...provided.droppableProps} sx={{display:"flex"}}>
                                                     {blockList && blockList.map((block, index) => (
-                                                        <Draggable key={"block_" + index} draggableId={"block" + index} index={index} >
+                                                        <Draggable key={block.id} draggableId={block.id.toString()} index={index} >
                                                             {(provided) => (
                                                                 <Box
                                                                     ref={provided.innerRef}
@@ -376,7 +379,7 @@ function BlockCodingTest(props) {
                                                     {(provided) => (
                                                         <Grid item xs={12} ref={provided.innerRef} {...provided.droppableProps} sx={{display:"flex"}}>
                                                             {answerGrid[idx].length > 0 && answerGrid[idx].map((block, index) => (
-                                                                <Draggable key={"answer_" + index} draggableId={"answer_" + index} index={index}>
+                                                                <Draggable key={block.id} draggableId={"answer" + block.id.toString()} index={index}>
                                                                     {(provided) => (
                                                                         <Box
                                                                             ref={provided.innerRef}
