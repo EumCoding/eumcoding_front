@@ -12,6 +12,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import Cookies from "js-cookie"
 import {postcodeScriptUrl} from "react-daum-postcode/lib/loadPostcode";
 import {useDaumPostcodePopup} from "react-daum-postcode";
+import kakao from "../images/kakao.svg"
+
 
 
 function MyPage(props) {
@@ -239,6 +241,13 @@ function MyPage(props) {
             alert("인증번호가 틀렸습니다.")
         })
     }
+
+    const handleKakaoLogin = () => {
+        const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.REACT_APP_KAKAO_REST_API_KEY}&redirect_uri=${process.env.REACT_APP_MY_URL}/oauth/callback/kakao&response_type=code`;
+        window.location.href = KAKAO_AUTH_URL; // 리디렉션 방식
+        // 또는
+        // window.open(KAKAO_AUTH_URL, "카카오 로그인", "width=500, height=500"); // 팝업 방식
+    };
 
     useEffect(() => {
         if(role === "3"){
@@ -575,6 +584,84 @@ function MyPage(props) {
                         </Grid>
                     </Grid>
                 )}
+                <Grid item xs={12}
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                      sx={{pb:"3rem"}}>
+                    {profile && profile.kakaoConnect === "카카오 계정이랑 연동" ? (
+                        <Box
+                            sx={{
+                                borderRadius: '10vw',
+                                width: "100%",
+                                m: 0,
+                                p: 1,
+                                border: 0,
+                                background: "#FFE812",
+                                '& p': {
+                                    color: '#000000',
+                                },
+                                justifyContent:"center",
+                            }}
+                        >
+                            <Box sx={{
+                                fontFamily: 'NanumSquareNeo',
+                                fontWeight: "900",
+                                fontSize: "1.5rem",
+                                textAlign: "center",
+                                color: "#000000",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center"
+                            }}>
+                                <img src={kakao} alt="Kakao" style={{
+                                    marginRight: "1rem",
+                                    width: "2rem",
+                                    textAlign: "left"
+                                }}/>
+                                <Typography display={"inline"}>카카오 연동 완료</Typography>
+                            </Box>
+                        </Box>
+                    ) : (
+                        <Button
+                            onClick={handleKakaoLogin}
+                            sx={{
+                                borderRadius: '10vw',
+                                width: "100%",
+                                height: "2.5vw",
+                                m: 0,
+                                p: 1,
+                                border: 0,
+                                background: "#FFE812",
+                                '& p': {
+                                    color: '#000000',
+                                },
+                                '&:hover': {
+                                    background: "skyblue",
+                                }
+                            }}
+                        >
+                            <Box sx={{
+                                fontFamily: 'NanumSquareNeo',
+                                fontWeight: "900",
+                                fontSize: "1.5rem",
+                                textAlign: "center",
+                                color: "#000000",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center"
+                            }}>
+                                <img src={kakao} alt="Kakao" style={{
+                                    marginRight: "1rem",
+                                    width: "2rem",
+                                    textAlign: "left"
+                                }}/>
+                                <Typography display={"inline"}>카카오 연동하기</Typography>
+                            </Box>
+                        </Button>
+                    )}
+
+                </Grid>
             </Grid>
         </ThemeProvider>
     );

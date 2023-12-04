@@ -33,6 +33,8 @@ import ParentCurriculum from "./parent/ParentCurriculum";
 import TeacherStats from "./teacher/TeacherStats";
 import MainTest from "./student/MainTest";
 import BlockCodingTest from "./unauth/BlockCodingTest";
+import KakaoRedirect from "./unauth/KakaoRedirect";
+import KakaoLogin from "./unauth/KakaoLogin";
 
 
 function App() {
@@ -112,6 +114,8 @@ function App() {
             <Route path={"/main/test/:value"} element={<MainTest />}/>
                 {/* block coding **/}
                 <Route path={"/block"} element={<BlockCodingTest />}/>
+            <Route path={"/oauth/callback/kakao"} element={<KakaoRedirect/>}/>
+            <Route path={"/oauth/login/kakao"} element={<KakaoLogin/>}/>
 
 
         </Routes>

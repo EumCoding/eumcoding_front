@@ -19,6 +19,8 @@ function Login(props) {
         },
     });
 
+    const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.REACT_APP_KAKAO_REST_API_KEY}&redirect_uri=${process.env.REACT_APP_API_URL}/oauth/callback/kakao&response_type=code`
+
     const navigate = useNavigate();// 페이지 이동
 
     const dispatch = useDispatch();// redux dispatch
@@ -40,6 +42,7 @@ function Login(props) {
     },[accessToken])
 
     useEffect(() => {
+        window.Kakao.init(`${process.env.REACT_APP_KAKAO_JS_KEY}`); // 여기에 카카오 JavaScript 키 입력
         // 이미 로그인 상태인 경우 메인 페이지로 이동
         if (accessToken) {
             navigate("/main")
@@ -61,7 +64,6 @@ function Login(props) {
             alert("이메일 또는 비밀번호가 다릅니다.")
             window.location.replace("/login")
         }).then((res) => {
-            console.log(res);
             // 쿠키에 저장(임시)
             Cookies.set('accessToken', res.data.token, { sameSite: 'lax' })
             Cookies.set('role', res.data.role, { sameSite: 'lax' })
@@ -83,6 +85,12 @@ function Login(props) {
             }
         })
     }
+
+    const handleKakaoLogin = () => {
+        window.Kakao.Auth.authorize({
+            redirectUri: `${process.env.REACT_APP_MY_URL}/oauth/login/kakao`
+        });
+    };
 
 
     return (
@@ -165,6 +173,9 @@ function Login(props) {
                       xs={12} sx={{pt:2}}>
 
                     <Button display="flex"
+                            onClick={() => {
+                                handleKakaoLogin()
+                            }}
                          justifyContent="center"
                          alignItems="center"
                             sx={{
