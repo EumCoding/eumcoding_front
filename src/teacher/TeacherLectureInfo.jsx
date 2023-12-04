@@ -41,10 +41,11 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import AddIcon from '@mui/icons-material/Add';
 import BlockList from "../component/BlockList";
 import Block from "../component/Block";
-import { TimePicker } from '@mui/x-date-pickers';
-import { LocalizationProvider } from '@mui/x-date-pickers';
+import {LocalizationProvider, TimePicker} from '@mui/x-date-pickers';
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import {DemoContainer, DemoItem} from "@mui/x-date-pickers/internals/demo";
+import CustomTextField from "../component/CustomTextField";
+import RenderText from "../component/RenderText";
 
 // @emotion/react의 keyframes를 사용하여 애니메이션 정의
 const heartBurst = keyframes`
@@ -75,6 +76,10 @@ const modalStyle = {
 
 // 강사 side의 강의 정보를 표시하고 수정합니다.
 function TeacherLectureInfo(props) {
+    //강의설명
+    const [descriptionEdit, setDescriptionEdit] = useState(false);
+    const [description, setDescription] = useState('');
+
     const [firstTestExpand, setFirstTestExpand] = useState(false);
     const [secondTestExpand, setSecondTestExpand] = useState(false);
 
@@ -83,22 +88,23 @@ function TeacherLectureInfo(props) {
 
     const [newSectionName, setNewSectionName] = useState(""); // 새로운 Section 이름
 
-    const [selectedTime, setSelectedTime] = useState(dayjs("00:00:00", "HH:mm:ss"));
+    const [selectedTime, setSelectedTime] = useState(dayjs().startOf('day'));
     const [maxTimeDayjs, setMaxTimeDayjs] = useState(dayjs());
 
     const [stateIdx, setIdx] = useState([]); // 문제추가용 state
     const [stateSubIdx, setSubIdx] = useState([]); // 문제추가용 state
 
     const handleTimeChange = (newValue) => {
-        if (newValue.isBefore(maxTimeDayjs) || newValue.isSame(maxTimeDayjs)) {
+        if (newValue.isBefore(maxTimeDayjs)) {
             console.log(newValue.format("HH:mm:ss"));
             setSelectedTime(newValue);
         } else {
-            // 최대 시간을 초과할 경우 경고 또는 자동 조정
+            console.log(newValue.format("HH:mm:ss"))
             console.log('Selected time exceeds the maximum limit');
+            // 최대 시간을 초과할 경우 선택된 시간을 최대 시간으로 설정
+            setSelectedTime(maxTimeDayjs);
         }
     };
-
     const navigate = useNavigate();
 
     const inputRef = useRef(null);
@@ -504,12 +510,16 @@ function TeacherLectureInfo(props) {
     }
 
     useEffect(() => {
-        if(videoResult){
-            //maxTimeDayjs 설정
+        if (videoResult) {
+            console.log("videoResult.playTime:", videoResult.playTime); // 로깅
+
             const temp = dayjs(videoResult.playTime, "HH:mm:ss");
+            console.log("Parsed time:", temp.format("HH:mm:ss")); // 로깅
+            setSelectedTime(temp);
+
             setMaxTimeDayjs(temp);
         }
-    }, [videoResult])
+    }, [videoResult]);
 
     const sectionModalBody = (
         <Box
@@ -735,6 +745,10 @@ function TeacherLectureInfo(props) {
         </Box>
     );
 
+    useEffect(() => {
+        console.log(selectedTime)
+    }, [selectedTime])
+
     // Video edit modal body
     const editVideoBody = (
         <Box sx={modalStyle} >
@@ -868,6 +882,25 @@ function TeacherLectureInfo(props) {
         console.log(selectedTime);
     }, [selectedTime]);
 
+    const [minutes, setMinutes] = useState('');
+    const [seconds, setSeconds] = useState('');
+    const handleMinutesChange = (event) => {
+        const newMinutes = event.target.value;
+        setMinutes(newMinutes);
+        updateSelectedTime(newMinutes, seconds);
+    };
+
+    const handleSecondsChange = (event) => {
+        const newSeconds = event.target.value;
+        setSeconds(newSeconds);
+        updateSelectedTime(minutes, newSeconds);
+    };
+
+    const updateSelectedTime = (newMinutes, newSeconds) => {
+        const time = dayjs().startOf('day').add(newMinutes, 'minute').add(newSeconds, 'second');
+        setSelectedTime(time);
+    };
+
     // video test 추가용 modal
     const videoTestAddBody = (
         <Grid
@@ -921,19 +954,21 @@ function TeacherLectureInfo(props) {
                         </Typography>
                     </Grid>
                     <Grid item xs={12}>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <TimePicker
-                                    ampm={false}
-                                    openTo="seconds"
-                                    views={['minutes', 'seconds']}
-                                    label="Select Time"
-                                    value={selectedTime}
-                                    onChange={handleTimeChange}
-                                    renderInput={(params) => <TextField {...params} />}
-                                    // 기본값
-                                    defaultValue={dayjs("00:00:00", "HH:mm:ss")}
-                                />
-                        </LocalizationProvider>
+                            <TextField
+                                label="Minutes"
+                                value={minutes}
+                                onChange={handleMinutesChange}
+                                type="number"
+                                inputProps={{ min: 0, max: 59 }}
+                            />
+                            <TextField
+                                label="Seconds"
+                                value={seconds}
+                                onChange={handleSecondsChange}
+                                type="number"
+                                inputProps={{ min: 0, max: 59 }}
+                            />
+                            <p>Selected Time: {selectedTime.format('HH:mm:ss')}</p>
                     </Grid>
                 </Grid>
                 )}
@@ -1230,9 +1265,6 @@ function TeacherLectureInfo(props) {
                             document.getElementById("videoTestBlockSelect").value = "[for]";
                             setSelectedTime(dayjs("00:00", "HH:mm"));
                             handleVideoTestAddClose(); // 완료시 닫음
-                        }).catch((err) => {
-                            console.log(err);
-                            alert("문제 추가 실패");
                         })
                     }}
                 >
@@ -2325,7 +2357,7 @@ function TeacherLectureInfo(props) {
             <Modal
                 open={videoEditOpen}
 
-                onClose={handleVideoEditOpen}
+                onClose={handleVideoEditClose}
                 aria-labelledby="modal-title"
                 aria-describedby="modal-description"
             >
@@ -2690,6 +2722,74 @@ function TeacherLectureInfo(props) {
                                 </p>
                             </Button>
                         </Grid>
+                    </Grid>
+                </Grid>
+                {/* 강의소개 **/}
+                <Grid container item xs={12} sx={{px:'20%', pt:0, mt:0}}>
+                    {/* 이미지먼저 들어갑니다 **/}
+                    <Grid
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        item xs={12}>
+                        <div className={styles.image_description}>
+                            <img className={styles.image} src={result && result.image}/>
+                        </div>
+                    </Grid>
+                    {/* 강의설명 텍스트 **/}
+                    <Grid
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        item xs={12}
+                        sx={{py:'7vw'}}
+                    >
+                        {
+                            descriptionEdit ? (
+                                <>
+                                    <TextField
+                                        multiline
+                                        rows={4}
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        variant="outlined"
+                                        fullWidth
+                                    />
+                                    <IconButton onClick={() => {
+                                        setDescriptionEdit(false);
+                                        setDescription("");
+                                    }}>
+                                        <ClearIcon/>
+                                    </IconButton>
+                                    <IconButton onClick={() => {
+                                        updateLectureDescription(params.value, description).then(
+                                            res => {
+                                                setDescription("");
+                                                setDescriptionEdit(false);
+                                                alert("수정완료");
+                                                getLectureInfo(params.value);
+                                            }).catch((err) => {
+                                            alert("수정실패")
+                                        })
+                                    }}>
+                                        <CheckIcon/>
+                                    </IconButton>
+                                </>
+                            ) : (
+                                <>
+                                    <Typography sx={{ whiteSpace: 'pre-line', display:"inline" }}>
+                                        {result && result.description.replace(/<br\/>/g, '\n')}
+                                    </Typography>
+                                    <IconButton onClick={() => {
+                                        setDescription(result.description.replace(/<br\/>/g, '\n'));
+                                        setDescriptionEdit(true);
+                                    }}>
+                                        <EditIcon/>
+                                    </IconButton>
+                                </>
+                            )
+                        }
+
                     </Grid>
                 </Grid>
                 <Grid item xs={12}

@@ -473,7 +473,7 @@ function Video(props) {
                 alert("틀렸습니다.")
             }
         }).catch((err) => {
-            alert("전송실패")
+            alert("문법이 틀렸습니다.")
         })
     }
 
@@ -540,12 +540,6 @@ function Video(props) {
                         <Typography id="modal-modal-title" variant="h6" component="h2" sx={{fontSize:"1.5rem", fontWeight:"700", py:"1rem"}}>
                             {videoTest[videoTestIdx].title}
                         </Typography>
-                        <Button onClick={() => console.log(answerGrid)} >
-                            answerGrid
-                        </Button>
-                        <Button onClick={() => console.log(blockList)} >
-                            blockList
-                        </Button>
                         {videoTest[videoTestIdx].type === 0 && (
                             <Typography id="modal-modal-description" sx={{ mt: 2 }}>
                                 <RadioGroup onChange={(e) => {
@@ -567,6 +561,7 @@ function Video(props) {
                                 <DragDropContext onDragEnd={onDragEnd}>
                                     <Grid container sx={{width:"100%", height:"500"}}>
                                         <Grid xs={12} item sx={{width:"100%", height:"200", border:1, overflow:"auto"}}>
+                                            <Typography>블럭목록</Typography>
                                             <Droppable droppableId="droppableOne" direction="horizontal">
                                                 {(provided) => (
                                                     <Grid item xs={12} ref={provided.innerRef} {...provided.droppableProps} sx={{display:"flex"}}>
@@ -592,6 +587,7 @@ function Video(props) {
                                                 )}
                                             </Droppable>
                                         </Grid>
+                                        <Typography>답안</Typography>
                                         {answerGrid && answerGrid.map((row, idx) => {
                                             return(
                                                 <Grid xs={12} item sx={{width:"100%", height:"200", border:1, overflow:"auto"}}>
@@ -709,7 +705,7 @@ function Video(props) {
                                     onChange={handleSeek}
                                     valueLabelDisplay="auto"
                                 />
-                                <Button variant="contained" color="primary" onClick={() => playerWrapperRef.current && toggleFullScreen(playerWrapperRef.current)}>전체화면</Button>
+                                <Button variant="contained" color="primary" onClick={() => playerWrapperRef.current && toggleFullScreen(playerWrapperRef.current)}>Full</Button>
                             </Grid>
                             <Grid item xs={1} display={"flex"} justifyContent="center" alignItems={"center"}>
                                 <VolumeDownIcon />

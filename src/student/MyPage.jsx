@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Box, Button, Collapse, createTheme, Divider, Grid, TextField, ThemeProvider} from "@mui/material";
+import {Avatar, Box, Button, Collapse, createTheme, Divider, Grid, TextField, ThemeProvider} from "@mui/material";
 import DashTop from "../component/DashTop";
 import FaceIcon from "@mui/icons-material/Face6";
 import Typography from "@mui/material/Typography";
@@ -13,6 +13,7 @@ import Cookies from "js-cookie"
 import {postcodeScriptUrl} from "react-daum-postcode/lib/loadPostcode";
 import {useDaumPostcodePopup} from "react-daum-postcode";
 import kakao from "../images/kakao.svg"
+import IconButton from "@mui/material/IconButton";
 
 
 
@@ -257,18 +258,69 @@ function MyPage(props) {
         }
     }, [role]);
 
+    const uploadImage = (file) => {
+        const formData = new FormData();
+
+        // 이미지 파일이 선택된 경우
+        if (file) {
+            formData.append('profileImgRequest', file);
+        }else{
+            alert("이미지를 선택해주세요")
+            return;
+        }
+
+        axios.post(`${process.env.REACT_APP_API_URL}/member/updateProfileImg`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `${accessToken}`,
+            }
+        }).then(response => {
+            // 이미지 업로드 성공 시 처리
+            console.log(response.data);
+            alert('이미지 업로드 성공');
+        }).catch(error => {
+            // 에러 처리
+            console.error('이미지 업로드 실패:', error);
+            alert('이미지 업로드 실패');
+        });
+    };
+    const handleImageChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            uploadImage(file);
+        }
+    };
+
+
+
     return (
         <ThemeProvider theme={theme}>
             <DashTop/>
             <Grid justifyContent='center' container sx={{px:'20%', pt:"2rem"}}>
-                <Grid item xs={4}
+                <Grid item xs={5}
                       display="flex"
                       justifyContent="center"
                       alignItems="center"
-                      >
-                    <FaceIcon sx={{fontSize: '5rem'}}/>
+                >
+                    {profile && profile.profile ? (
+                        <Avatar src={profile.profile} sx={{ width: '5rem', height: '5rem' }}/>
+                    ) : (
+                        <Avatar sx={{ width: '5rem', height: '5rem' }} />
+                    )}
+                    <input
+                        accept="image/*"
+                        type="file"
+                        hidden
+                        onChange={handleImageChange}
+                        id="upload-profile-image"
+                    />
+                    <label htmlFor="upload-profile-image">
+                        <IconButton component="span">
+                            <EditIcon />
+                        </IconButton>
+                    </label>
                 </Grid>
-                <Grid item xs={8}
+                <Grid item xs={7}
                       display="flex"
                       justifyContent="flex-start"
                       alignItems={"center"}

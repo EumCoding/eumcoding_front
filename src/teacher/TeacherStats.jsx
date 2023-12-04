@@ -439,7 +439,7 @@ function TeacherStats(props) {
                 <Grid xs={3} item sx={{width:"100%", aspectRatio:"1/1"}}>
                     <Grid container sx={{width:"100%", height:"100%", backgroundColor:"#FFFFFF", boxShadow: 3}}>
                         <Grid item xs={12} sx={{borderBottom:1, borderColor:"#A2A2A2", height:"15%", display:"flex", justifyContent:"flex-start", alignItems:"center", px:2}}>
-                            <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>강의 총 수익</Typography>
+                            <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>이번달 강의 수익</Typography>
                         </Grid>
                         <Grid item xs={12} sx={{display:"flex", justifyContent:"center", alignItems:"center", height: '85%'}}>
                             <Typography sx={{fontSize:"2.5rem", color:"#8D8D8D", fontWeight:"bold", display:"flex", justifyContent:"center", alignItems:"center"}}>{totalRevenue.toLocaleString()}원</Typography>

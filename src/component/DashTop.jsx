@@ -24,6 +24,9 @@ function DashTop(props) {
     const accessToken = useSelector((state) => state.accessToken); // redux access token
     const navigate = useNavigate();
 
+    const role = useSelector((state) => state.role); // role
+
+
     // 로그아웃
     const logout = () => {
         dispatch(clearAccessToken()); // 리덕스에서 토큰 제거
@@ -36,7 +39,18 @@ function DashTop(props) {
                 <Toolbar sx={{height:"5rem", cursor: 'default'}}>
                     <Box flexGrow={1}>
                         <div className={styles.font_logo}>
-                            <span onClick={() => navigate("/main")}>이음코딩</span> <span onClick={() => navigate("/dashboard")}>대시보드</span>
+                            <span onClick={() => navigate("/main")}>이음코딩</span> <span onClick={() => {
+                            if(!accessToken) navigate("/login");
+                            if(role === "0") {
+                                navigate("/dashboard");
+                            }
+                            if(role === "1") {
+                                navigate("/teacher/dashboard");
+                            }
+                            if(role === "3") {
+                                navigate("/parent/dashboard");
+                            }
+                        }}>대시보드</span>
                         </div>
                     </Box>
                     <Button color="inherit"

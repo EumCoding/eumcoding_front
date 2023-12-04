@@ -97,7 +97,7 @@ function TeacherMyLectureList(props) {
     return (
         <ThemeProvider theme={theme}>
             <DashTop/>
-            <Grid container sx={{px:"5rem", pt:"2rem", width:"100vw"}} spacing={2}>
+            <Grid container sx={{px:"5rem", pt:"2rem", width:"100%"}} spacing={2}>
                 <Grid xs={12} item display='flex' justifyContent='flex-start' alignItems='center' sx={{mb:"2rem"}}>
                     <Typography sx={{color:"#000000", fontSize:"2rem", fontWeight:"800"}}>
                         내 강의 목록
@@ -111,7 +111,7 @@ function TeacherMyLectureList(props) {
                         return(
                             <Grid xs={3} container item sx={{width:"100%"}} onClick={() => navigate(`/teacher/lectureInfo/${item.id}`)}>
                                 <Grid xs={12} item sx={{width:"100%"}} >
-                                    <div style={{width:"100%", aspectRatio: "8:5", overflow:"hidden"}} >
+                                    <div style={{width:"100%", aspectRatio: "8/5", overflow:"hidden"}} >
                                         <img style={{width: "100%", height: "100%", objectFit: "cover"}} src={item.thumb} />
                                     </div>
                                 </Grid>

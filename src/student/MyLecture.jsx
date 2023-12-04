@@ -105,7 +105,7 @@ function MyLecture(props) {
                         return(
                             <Grid xs={3} container item sx={{width:"100%"}} onClick={() => navigate(`/my/lectureInfo/${item.lectureId}`)}>
                                 <Grid xs={12} item sx={{width:"100%"}} >
-                                    <div style={{width:"100%", aspectRatio: "8:5", overflow:"hidden"}} >
+                                    <div style={{width:"100%", aspectRatio: "8/5", overflow:"hidden"}} >
                                         <img style={{width: "100%", height: "100%", objectFit: "cover"}} src={item.thumb} />
                                     </div>
                                 </Grid>

@@ -486,9 +486,9 @@ function Lecture(props) {
                         item xs={12}
                         sx={{py:'7vw'}}
                     >
-                        <span className={styles.font_description}>
-                            {result && result.description}
-                        </span>
+                        <Typography sx={{ whiteSpace: 'pre-line' }}>
+                            {result && result.description.replace(/<br\/>/g, '\n')}
+                        </Typography>
                     </Grid>
                 </Grid>
 
@@ -502,27 +502,6 @@ function Lecture(props) {
                           sx={{pt:'7vw'}}
                     >
                         <span className={styles.font_curriculum_main}>커리큘럼</span>
-                    </Grid>
-                    <Grid item
-                          display="flex"
-                          justifyContent="center"
-                          alignItems="center"
-                          xs={12}
-                          sx={{py:'1.5vw'}}
-                    >
-                        <span className={styles.font_curriculum_sub}>커리큘럼은 1주 1섹션으로 제공됩니다.</span>
-                    </Grid>
-                    <Grid item
-                          display="flex"
-                          justifyContent="center"
-                          alignItems="center"
-                          xs={12}
-                          sx={{pb:'3vw'}}
-                    >
-                        <span className={styles.font_curriculum_sub}>
-                            Section06 이후에 중간평가,
-                            Section12 이후에 최종평가가 제공됩니다.
-                        </span>
                     </Grid>
                     {/* 아코디언 **/}
                     <Grid item
