@@ -76,6 +76,8 @@ const modalStyle = {
 
 // 강사 side의 강의 정보를 표시하고 수정합니다.
 function TeacherLectureInfo(props) {
+    const [mainTestType, setMainTestType] = useState(0);
+    const [mainTestSectionId, setMainTestSectionId] = useState(0); // main test 추가 시 해당 sectionId
     //강의설명
     const [descriptionEdit, setDescriptionEdit] = useState(false);
     const [description, setDescription] = useState('');
@@ -1274,8 +1276,13 @@ function TeacherLectureInfo(props) {
         </Grid>
     )
 
+    useEffect(() => {
+        console.log(mainTestType);
+    },[mainTestType])
+
+
     // main test 추가하기
-    const addMainTest = async (answer, blockList, choices, description, score, sectionId, type, mainTestType) => {
+    const addMainTest = async (answer, blockList, choices, description, score, sectionId, type, testType) => {
         console.log(`answer: ${answer}`)
         console.log(`blockList:`)
         console.log(blockList)
@@ -1296,7 +1303,7 @@ function TeacherLectureInfo(props) {
                 score: score,
                 sectionId: sectionId,
                 type: type,
-                mainTestType:mainTestType
+                mainTestType:testType
             }
         )
 
@@ -1311,7 +1318,7 @@ function TeacherLectureInfo(props) {
                 score: score,
                 sectionId: sectionId,
                 type: type,
-                mainTestType:mainTestType
+                mainTestType:testType
             },
             {
                 headers:{
@@ -1323,8 +1330,7 @@ function TeacherLectureInfo(props) {
         })
     }
 
-    const [mainTestType, setMainTestType] = useState(0); // 0: 객관식, 1: 블럭코딩
-    const [mainTestSectionId, setMainTestSectionId] = useState(0); // main test 추가 시 해당 sectionId
+
 
     // main test 추가용 modal
     const mainTestAddBody = (
@@ -1696,6 +1702,7 @@ function TeacherLectureInfo(props) {
                 },
             }
         ).then((res) => {
+            console.log("메인테스트 가져오는 api " + idx)
             console.log(res)
             if(res.data){
                 //mainTestQuestionList[idx]에 res.data를 넣음
@@ -1705,6 +1712,7 @@ function TeacherLectureInfo(props) {
             }
         }
         )
+        return response;
     }
 
 
@@ -2303,7 +2311,11 @@ function TeacherLectureInfo(props) {
     useEffect(() => {
         if(accessToken){
             if(firstTestResult){
-                getMainTestQuestion(firstTestResult.mainTestId, 0);
+                getMainTestQuestion(firstTestResult.mainTestId, 0).then((res) => {
+                    if(secondTestResult){
+                        getMainTestQuestion(secondTestResult.mainTestId, 1);
+                    }
+                })
             }
         }
     }, [accessToken, firstTestResult])
@@ -2312,9 +2324,40 @@ function TeacherLectureInfo(props) {
         if(accessToken){
             if(secondTestResult){
                 getMainTestQuestion(secondTestResult.mainTestId, 1);
+                if(firstTestResult){
+                    getMainTestQuestion(firstTestResult.mainTestId, 0)
+                }
             }
         }
     }, [accessToken, secondTestResult])
+
+    const [image, setImage] = useState(null);
+    const fileInputRef = useRef();
+
+    const handleButtonClick = () => {
+        fileInputRef.current.click();
+    };
+
+    const handleImageChange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append('lecture', params.value);
+            formData.append('image', file);
+
+            try {
+                const response = await axios.post('/lecture/update/image', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+                // 이미지 URL 업데이트 (응답에 따라 조정)
+                setImage(URL.createObjectURL(file));
+            } catch (error) {
+                console.error('이미지 업로드 실패:', error);
+            }
+        }
+    };
 
     return (
         <ThemeProvider theme={theme}>
@@ -2728,13 +2771,24 @@ function TeacherLectureInfo(props) {
                 <Grid container item xs={12} sx={{px:'20%', pt:0, mt:0}}>
                     {/* 이미지먼저 들어갑니다 **/}
                     <Grid
+                        container
                         display="flex"
                         justifyContent="center"
-                        alignItems="center"
-                        item xs={12}>
-                        <div className={styles.image_description}>
-                            <img className={styles.image} src={result && result.image}/>
-                        </div>
+                        alignItems="center">
+                        {(result && result.image) ? (
+                                <div className={styles.image_description}>
+                                    <img src={result.image} className={styles.image} />
+                                </div>
+                        ) : (
+                            <Button variant="contained" color="primary" onClick={handleButtonClick}>
+                                이미지 추가
+                            </Button>
+                        )}
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageChange}
+                            style={{ display: 'none' }} />
                     </Grid>
                     {/* 강의설명 텍스트 **/}
                     <Grid
@@ -3456,9 +3510,70 @@ function TeacherLectureInfo(props) {
                                             문제추가
                                         </Button>
                                     </Grid>
+                                    {/* 중간평가 값 없을때 출력 **/}
                                     {!secondTestResult && (
                                         <Grid item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                            <Typography>최종평가가 없습니다.</Typography>
+                                            <Typography>중간평가가 없습니다.</Typography>
+                                        </Grid>
+                                    )}
+                                    {/* 문제리스트 **/}
+                                    {secondTestResult && (
+                                        <Grid container item xs={12} sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                            {mainTestQuestionList[1] && mainTestQuestionList[1].map((testItem, testIdx) => {
+                                                return(
+                                                    <Grid xs={12} container item>
+                                                        {/* title **/}
+                                                        <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                            <Typography sx={{fontWeight:"800", fontSize:"1rem"}}>
+                                                                {testItem.title}
+                                                            </Typography>
+
+                                                            {/* 삭제 버튼 */}
+                                                            <IconButton onClick={() => {
+                                                                deleteMainTestQuestion(testItem.mainTestQuestionId).then((res) => {getMainTestInfo(params.value)})
+                                                            }} aria-label="delete">
+                                                                <CloseIcon />
+                                                            </IconButton>
+                                                        </Grid>
+                                                        <Grid xs={12} item sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                            <Typography sx={{fontWeight:"800", fontSize:"0.8rem"}}>
+                                                                답 : {testItem.answer && testItem.answer.map((answerItem, answerIdx) => {return(answerItem + " ")})}
+                                                            </Typography>
+                                                        </Grid>
+                                                        {/* 객관식인 경우 문제 보기 **/}
+                                                        <Grid xs={12} item container sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                            <Grid xs={12} item>
+                                                                <Typography sx={{fontWeight:"800", fontSize:"0.8rem"}}>{testItem.type === 0 ? "[보기]" : "[블럭목록]"}</Typography>
+                                                            </Grid>
+                                                            {testItem.type === 0 && testItem.choices.map((multipleItem, multipleIdx) => {
+                                                                    return(
+                                                                        <Grid xs={12} item>
+                                                                            <Typography sx={{fontWeight:"500", fontSize:"0.8rem"}} id={`multipleTypography${multipleItem.id}`}>
+                                                                                ({multipleIdx + 1}) : {multipleItem}
+                                                                            </Typography>
+                                                                        </Grid>
+                                                                    )
+                                                                }
+                                                            )}
+                                                            {testItem.type === 1 && testItem.blockList.map((blockItem, blockIdx) => {
+                                                                return(
+                                                                    <Box sx={{pr:"0.3rem"}}>
+                                                                        <Block
+                                                                            code={blockItem.block}
+                                                                            text={blockItem.value}
+                                                                            color={getBlockColor(blockItem.block)}
+                                                                            isSpecial={blockItem.block === "[String]" || blockItem.block === "[number]" || blockItem.block === "[StringVal]" || blockItem.block === "[numberVal]"}
+                                                                        />
+                                                                    </Box>
+                                                                )
+                                                            })}
+                                                        </Grid>
+                                                        <Grid xs={12} item sx={{py:"1rem"}}>
+                                                            <Divider fullWidth />
+                                                        </Grid>
+                                                    </Grid>
+                                                )
+                                            })}
                                         </Grid>
                                     )}
                                 </Grid>

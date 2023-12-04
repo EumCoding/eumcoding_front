@@ -80,7 +80,7 @@ function BlockCodingTest(props) {
         ).then((res) => {
             alert(res.data);}
         ).catch((err) => {
-            alert(err.data);
+            alert("문법이 잘못됐어요! 다시 확인해주세요!");
         })
 
     }

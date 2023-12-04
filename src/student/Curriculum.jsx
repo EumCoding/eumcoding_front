@@ -283,9 +283,7 @@ function Curriculum(props) {
                                 <Grid xs={3} item sx={{display:'flex', justifyContent:"flex-end"}}>
                                     <Typography sx={{fontWeight:"600", fontSize:"0.7rem", color:"#8D8D8D", display:"flex"}}>
                                         진행률 : {item.sectionDTOList && item.sectionDTOList[0].progress}  %
-                                        {item.sectionDTOList && item.sectionDTOList[0].over >= 1 && (
-                                            "(초과됨)"
-                                        )}
+                                        ({ item.sectionDTOList && item.sectionDTOList[0].message})
                                     </Typography>
                                 </Grid>
                             </Grid>
@@ -463,9 +461,7 @@ function Curriculum(props) {
                                                     <Typography sx={{fontWeight:"600", fontSize:"0.7rem", color:"#8D8D8D", display:"flex"}}>
                                                         진행률 : {item.sectionDTOList && item.sectionDTOList[0].progress}  %
                                                         {/* over >= 1인경우 넘었다고 초과됨이라고 표시 **/}
-                                                        {item.sectionDTOList && item.sectionDTOList[0].over >= 1 && (
-                                                            "(초과됨)"
-                                                        )}
+                                                        ({ item.sectionDTOList && item.sectionDTOList[0].message})
                                                     </Typography>
                                                 </Grid>
                                             </Grid>

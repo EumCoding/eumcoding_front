@@ -72,7 +72,7 @@ function PayLog(props) {
     const [startDate, setStartDate] = useState(dayjs().subtract(6, 'month')); // 초기값은 현재시간 - 6개월로
     const [endDate, setEndDate] = useState(dayjs()); // 종료일
 
-    const [page, setPage] = useState(0); // 현재 페이지
+    const [page, setPage] = useState(1); // 현재 페이지
 
     const [more, setMore] = useState(true); // 더 가져올 데이터가 있는지
 
@@ -124,13 +124,9 @@ function PayLog(props) {
 
             console.log("시작일 " + startParam);
 
-            const url = `${process.env.REACT_APP_API_URL}/payment/myPayment?size=10&page=${pageParam}`;
+            const url = `${process.env.REACT_APP_API_URL}/payment/myPayment?size=10&page=${pageParam}&startDateStr=${startParam}&endDateStr=${endParam}`;
 
-            const response = await axios.post(url,
-            {
-                startDateStr:startParam,
-                endDateStr:endParam
-            },{
+            const response = await axios.post(url, null,{
                 headers: {
                     Authorization: `${accessToken}`,
                 }
@@ -141,13 +137,14 @@ function PayLog(props) {
             if (response.data && response.data.length < 10) {
                 setMore(false);
             }
-
-            if(pageParam !== 0){ // 1페이지가 아닌 경우
-                // 깊은복사
-                const temp = JSON.parse(JSON.stringify(result))
-                response && response.data && setResult(temp.concat(response.data));
-            }else{ // 1페이지인 경우
-                setResult(response.data);
+            if(response && response.data){
+                if(pageParam !== 1){ // 1페이지가 아닌 경우
+                    // 깊은복사
+                    const temp = JSON.parse(JSON.stringify(result))
+                    response && response.data && setResult(temp.concat(response.data));
+                }else{ // 1페이지인 경우
+                    setResult(response.data);
+                }
             }
         } catch (err) {
             console.log(err);
@@ -177,7 +174,7 @@ function PayLog(props) {
 
     useEffect(() => {
         if(accessToken){
-            getPayLog(0); // 최초 로드 시 0페이지 로드
+            getPayLog(1); // 최초 로드 시 0페이지 로드
         }
     }, [accessToken]);
 
@@ -364,8 +361,8 @@ function PayLog(props) {
                             }
                         }}
                         onClick={() => {
-                        setPage(0);
-                        getPayLog(0);
+                        setPage(1);
+                        getPayLog(1);
                     }} >검색</Button>
                 </Grid>
                 <Grid container item xs={12} sx={{pb:"2rem"}} display={"flex"} justifyContent={"center"} alignItems={"stretch"}>
@@ -375,7 +372,7 @@ function PayLog(props) {
                                 <Grid item xs={12}>
                                     {/* item.data를 yyyy년mm월dd일 hh:mm:ss 의 양식에 맞게 출력합니다. **/}
                                     <Typography sx={{fontSize:"1.2rem", fontWeight:"800", my:"1rem"}}>
-                                        {dayjs(item.data).format('YYYY년MM월DD일 HH:mm:ss')}
+                                        {dayjs(item.date).format('YYYY년MM월DD일 HH:mm:ss')}
                                     </Typography>
                                 </Grid>
                                 {/* 내용물 **/}
@@ -464,7 +461,7 @@ function PayLog(props) {
                                   justifyContent="center"
                                   alignItems="center">
                                 <Button fullWidth variant="outlined" sx={{borderRadius:"0.5vw", backgroundColor:"#FFFFFF", borderColor:"#000000", py:"1rem",}}
-                                        onClick={() => setPage(page+1)}
+                                        onClick={() => setPage(page + 1)}
                                 >
                                     <Typography sx={{fontWeight:"700", fontSize:"1rem", color:"#000000"}}>
                                         더보기

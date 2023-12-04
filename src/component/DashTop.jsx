@@ -31,6 +31,7 @@ function DashTop(props) {
     const logout = () => {
         dispatch(clearAccessToken()); // 리덕스에서 토큰 제거
         Cookies.remove('accessToken'); // 쿠키에 들어있던 accessToken 제거
+        navigate("/login"); // 로그인 페이지로 이동
     }
 
     return (

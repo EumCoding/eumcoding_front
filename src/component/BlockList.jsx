@@ -6,10 +6,10 @@ const BlockList = [
         code:"[for]",
         text:"반복"
     },
-    // {
-    //     code:"[if]",
-    //     text:"조건"
-    // },
+    {
+        code:"[if]",
+        text:"조건"
+    },
     {
         code:"[print]",
         text:"출력"

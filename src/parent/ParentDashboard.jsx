@@ -233,7 +233,7 @@ function DashBoard(props) {
                         position: "relative"
                     }}>
                         <Grid item xs={12} sx={{pt: "2rem"}}>
-                            <span className={styles.font_main}>자녀 학습통계</span>
+                            <span className={styles.font_main}>자녀 시험 현황</span>
                         </Grid>
                         <Grid item
                               container
@@ -249,7 +249,7 @@ function DashBoard(props) {
                                   sx={{mt:'1rem'}}
                             >
                                 <span className={styles.font_normal}>
-                                    자녀학습통계...
+                                    자녀 시험 현황을 확인하세요!
                                 </span>
                             </Grid>
                         </Grid>
@@ -266,6 +266,7 @@ function DashBoard(props) {
                                         background: "green",  // 호버시 버튼 배경색
                                     }
                                 }}
+                                onClick={() => navigate("/parent/exam")}
                             >
                                 <span className={styles.font_btn}>자세히보기</span>
                             </Button>

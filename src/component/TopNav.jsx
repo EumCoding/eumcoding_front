@@ -86,6 +86,7 @@ export default function TopBar(props) {
     const logout = () => {
         dispatch(clearAccessToken()); // 리덕스에서 토큰 제거
         Cookies.remove('accessToken'); // 쿠키에 들어있던 accessToken 제거
+        navigate("/login"); // 로그인 페이지로 이동
     }
 
     return (
@@ -165,34 +166,38 @@ export default function TopBar(props) {
                             {/*))}*/}
                             <Grid container justifyContent="center" alignItems="center" spacing={0} sx={{flexGrow:1, height:'100%'}}>
                                 {pages.map((page) => (
-                                    <Grid item md={12/(pages.length+1)}>
+                                    <Grid item md={12/(pages.length+1)}
+                                          onClick={() => {
+                                              if(page === "대시보드") {
+                                                  if(accessToken) {
+                                                      if(role === "0") {
+                                                          navigate("/dashboard");
+                                                      }
+                                                      if(role === "1") {
+                                                          navigate("/teacher/dashboard");
+                                                      }
+                                                      if(role === "3") {
+                                                          navigate("/parent/dashboard");
+                                                      }
+                                                  }else {
+                                                      navigate("/login")
+                                                  }
+
+                                              }
+                                              if(page === "강의") {
+                                                  navigate("/search?keyword=&page=1&sort=0");
+                                              }
+                                              if(page === "블록코딩") {
+                                                  navigate("/block");
+                                              }
+                                              if(page === "장바구니") {
+                                                  if(!accessToken) navigate("/login");
+                                                  navigate("/my/basket");
+                                              }
+                                          }}
+                                    >
 
                                         <Typography  textAlign="center" sx={{ color: '#000000', cursor: 'default' }}
-                                            onClick={() => {
-                                                if(page === "대시보드") {
-                                                    if(!accessToken) navigate("/login");
-                                                    if(role === "0") {
-                                                        navigate("/dashboard");
-                                                    }
-                                                    if(role === "1") {
-                                                        navigate("/teacher/dashboard");
-                                                    }
-                                                    if(role === "3") {
-                                                        navigate("/parent/dashboard");
-                                                    }
-                                                }
-                                                if(page === "강의") {
-                                                    if(!accessToken) navigate("/login");
-                                                    navigate("/search?keyword=&page=1&sort=0");
-                                                }
-                                                if(page === "블록코딩") {
-                                                    navigate("/block");
-                                                }
-                                                if(page === "장바구니") {
-                                                    if(!accessToken) navigate("/login");
-                                                    navigate("/my/basket");
-                                                }
-                                            }}
                                         >
                                             <b className={styles.font_menu}>{page}</b>
                                         </Typography>

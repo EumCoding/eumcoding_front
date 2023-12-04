@@ -315,6 +315,7 @@ function ParentCurriculum(props) {
                                     <Grid xs={3} item sx={{display:'flex', justifyContent:"flex-end"}}>
                                         <Typography sx={{fontWeight:"600", fontSize:"0.7rem", color:"#8D8D8D", display:"flex"}}>
                                             진행률 : {item.sectionDTOList && item.sectionDTOList[0].progress}  %
+                                            ({ item.sectionDTOList && item.sectionDTOList[0].message})
                                         </Typography>
                                     </Grid>
                                 </Grid>
@@ -491,6 +492,7 @@ function ParentCurriculum(props) {
                                                 <Grid xs={3} item sx={{display:'flex', justifyContent:"flex-end"}}>
                                                     <Typography sx={{fontWeight:"600", fontSize:"0.7rem", color:"#8D8D8D", display:"flex"}}>
                                                         진행률 : {item.sectionDTOList && item.sectionDTOList[0].progress}  %
+                                                        ({ item.sectionDTOList && item.sectionDTOList[0].message})
                                                     </Typography>
                                                 </Grid>
                                             </Grid>

@@ -27,6 +27,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import CheckIcon from "@mui/icons-material/Check";
 import Block from "../component/Block";
+import dayjs from "dayjs";
 
 // @emotion/react의 keyframes를 사용하여 애니메이션 정의
 const heartBurst = keyframes`
@@ -113,9 +114,11 @@ function LectureInfo(props) {
         fd.append('title', title);
         fd.append('content', content);
         fd.append('lectureId', id);
-        Object.values(image).forEach((file) => {
-            fd.append('imgRequest', file);
-        });
+        if(image){
+            Object.values(image).forEach((file) => {
+                fd.append('imgRequest', file);
+            });
+        }
         // api 호출...
         const response = await axios.post(
             `${process.env.REACT_APP_API_URL}/lecture/question/write`,
@@ -158,37 +161,37 @@ function LectureInfo(props) {
                 <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
                     <TextField fullWidth rows={6} multiline variant="outlined" id={'writeQuestionContent'} />
                 </Grid>
-                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center" sx={{mt:2}}>
-                    <Typography>이미지 업로드</Typography>
-                </Grid>
-                <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
-                    <Button
-                        variant="contained"
-                        component="label"
-                        sx={{
-                            background: '#0B401D',
-                            borderRadius: '10px',
-                            '&:hover': {
-                                background: "green",
-                            }
-                        }}
-                    >
-                        <Typography sx={{ color: "#FFFFFF" }}>파일업로드</Typography>
-                        <input
-                            accept={"image/*"}
-                            type="file"
-                            hidden
-                            onChange={(e) => setFile(e.target.files)}
-                        />
-                    </Button>
-                </Grid>
-                {file && (
-                    <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
-                        <Box sx={{width:"50%", aspectRatio:"16/9", overflow:"hidden"}}>
-                            <img src={URL.createObjectURL(file[0])} style={{width:"100%", height:"100%", objectFit:"cover", objectPosition: "center center"}} />
-                        </Box>
-                    </Grid>
-                )}
+                {/*<Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center" sx={{mt:2}}>*/}
+                {/*    <Typography>이미지 업로드</Typography>*/}
+                {/*</Grid>*/}
+                {/*<Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">*/}
+                {/*    <Button*/}
+                {/*        variant="contained"*/}
+                {/*        component="label"*/}
+                {/*        sx={{*/}
+                {/*            background: '#0B401D',*/}
+                {/*            borderRadius: '10px',*/}
+                {/*            '&:hover': {*/}
+                {/*                background: "green",*/}
+                {/*            }*/}
+                {/*        }}*/}
+                {/*    >*/}
+                {/*        <Typography sx={{ color: "#FFFFFF" }}>파일업로드</Typography>*/}
+                {/*        <input*/}
+                {/*            accept={"image/*"}*/}
+                {/*            type="file"*/}
+                {/*            hidden*/}
+                {/*            onChange={(e) => setFile(e.target.files)}*/}
+                {/*        />*/}
+                {/*    </Button>*/}
+                {/*</Grid>*/}
+                {/*{file && (*/}
+                {/*    <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">*/}
+                {/*        <Box sx={{width:"50%", aspectRatio:"16/9", overflow:"hidden"}}>*/}
+                {/*            <img src={URL.createObjectURL(file[0])} style={{width:"100%", height:"100%", objectFit:"cover", objectPosition: "center center"}} />*/}
+                {/*        </Box>*/}
+                {/*    </Grid>*/}
+                {/*)}*/}
             <Box mt={2}>
                 <Button color="primary"
                     onClick={() => {
@@ -458,6 +461,32 @@ function LectureInfo(props) {
         })
     }
 
+    const [curriculum, setCurriculum] = useState(null); // 커리큘럼 정보
+    const [editTimetaken, setEditTimetaken] = useState([]); // 시간 수정 모드
+    //newTimeTaken
+    const [newTimeTaken, setNewTimeTaken] = useState(0); // 시간 수정 모드
+
+    // 커리큘럼 가져오기
+    const getCurriculum = async (id) => {
+        // startDate는 오늘으로부터 1년 전... dayjs 사용
+        const startDate = dayjs().subtract(1, 'year').format('YYYY-MM-DDTHH:mm:ss'); // startDate
+        // endDate는 오늘으로부터 1년 후...
+        const endDate = dayjs().add(1, 'year').format('YYYY-MM-DDTHH:mm:ss'); // endDate
+        const response = await axios.post(
+            `${process.env.REACT_APP_API_URL}/member/myplan/list/info?lectureId=${id}&startDateStr=${startDate}&endDateStr=${endDate}`,null,
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            console.log("커리큘럼 가져오기")
+            console.log(res)
+            res.data && setCurriculum(res.data);
+            // 길이만큼 editTimetaken 초기화
+            const temp = Array(res.data.length).fill(false);
+            setEditTimetaken(temp);
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
+
     const handleLikeClick = () => {
         //setLiked(!liked);
         // 여기서 애니메이션 상태를 관리하거나 트리거 할 수 있습니다.
@@ -499,6 +528,7 @@ function LectureInfo(props) {
             })
             // 메인테스트 정보 가져옴
             getMainTestInfo(params.value)
+            getCurriculum(params.value)
         }
     },[accessToken])
 
@@ -517,6 +547,32 @@ function LectureInfo(props) {
             }
         })
     },[mainTestResult])
+
+    // 동영상 정보 가져오는 함수... /lecture/section/video/view
+    const getVideoInfo = async (id) => {
+        const response = await axios.post(
+            `${process.env.REACT_APP_API_URL}/lecture/section/video/view?id=${id}`,null,
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            console.log(res)
+            return res;
+        }).catch((err) => {
+            console.log(err)
+        })
+        return response;
+    }
+
+    // 커리큘럼 timeTaken 수정
+    const editTimeTaken = async (id, timeTaken) => {
+        const response = await axios.post(
+            `${process.env.REACT_APP_API_URL}/member/myplan/update/${id}?newTimeTaken=${timeTaken}`,null,
+            {headers:{Authorization: `${accessToken}`,}}
+        ).then((res) => {
+            console.log(res)
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
 
     return (
         <ThemeProvider theme={theme}>
@@ -621,7 +677,21 @@ function LectureInfo(props) {
                                      '&:active': {
                                          backgroundColor: "#FFC300"  // 클릭 시 변경될 배경색
                                      }
-                                 }}>
+                                 }}
+                                onClick={() => {
+                                    axios.post(
+                                        `${process.env.REACT_APP_API_URL}/lecture/section/video/last-view`, null,
+                                        {headers:{Authorization: `${accessToken}`,}}
+                                    ).then(res => {
+                                        // 동영상 정보 가져오기
+                                        getVideoInfo(res.data).then(res => {
+                                            navigate(`/my/lecture/video?id=${res.data.id}`)
+                                        }).catch(err => {
+                                            alert("현재는 들을 수 없는 강의입니다.")
+                                        })
+                                    })
+                                }}
+                            >
                                 <p className={styles.font_sugang}>
                                     이어서 수강하기
                                 </p>
@@ -680,7 +750,58 @@ function LectureInfo(props) {
                                     <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />}>
                                         <span className={styles.font_curriculum_title}>{item.name}</span>
                                     </AccordionSummary>
-                                    {item.videoDTOList && item.videoDTOList.map((subItem, idx) => {
+                                    <Grid container sx={{width:"100%", mb:"0.8rem", pl:"1rem",
+                                        display:"flex", justifyContent:"flex-start", alignItems:"center"
+                                    }} >
+                                        <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                            소요시간 :
+                                        </Typography>
+                                        {editTimetaken[idx] && (
+                                            <TextField type={"number"} variant={"standard"} value={newTimeTaken} onChange={(e) => setNewTimeTaken(e.target.value)} />
+                                        )}
+                                        {!editTimetaken[idx] && (
+                                            <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>{curriculum[idx].sectionDTOList[0].timetaken}</Typography>
+                                        )}
+                                        <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>일
+                                            {!editTimetaken[idx] && (
+                                                <EditIcon
+                                                    onClick={() => {
+                                                        // 클릭시 해당 idx의 editTimetaken을 true로 변경
+                                                        let array = JSON.parse(JSON.stringify(editTimetaken)); // 깊은 복사
+                                                        array[idx] = true;
+                                                        console.log(array);
+                                                        setEditTimetaken(array);
+                                                        setNewTimeTaken(curriculum[idx].sectionDTOList[0].timetaken); // newTimetaken를 기존의 timeTaken으로 초기화
+                                                    }}
+                                                />
+                                            )}
+                                            {editTimetaken[idx] && (
+                                                <ClearIcon
+                                                    onClick={() => {
+                                                        // 클릭시 해당 idx의 editTimetaken을 true로 변경
+                                                        let array = JSON.parse(JSON.stringify(editTimetaken)); // 깊은 복사
+                                                        array[idx] = false;
+                                                        console.log(array);
+                                                        setEditTimetaken(array);
+                                                    }}
+                                                />
+                                            )}
+                                            {editTimetaken[idx] && (
+                                                <CheckIcon
+                                                    onClick={() => {
+                                                         editTimeTaken(curriculum[idx].curriculumId, newTimeTaken).then((res) => {
+                                                                 getSectionInfo(params.value); // Section 정보 다시 불러옴
+                                                                 // 커리큘럼 정보도 다시 불러옴
+                                                                 getCurriculum(params.value);
+                                                             }
+                                                         )
+                                                    }}
+                                                />
+                                            )}
+
+                                        </Typography>
+                                    </Grid>
+                                    {item.videoDTOList && item.videoDTOList.map((subItem, subIdx) => {
                                         return(
                                             <AccordionDetails>
                                                 <Grid container sx={{width:"100%"}}>
@@ -696,7 +817,12 @@ function LectureInfo(props) {
                                                         <Button variant="outlined" color="primary" sx={{borderColor:"#000000"}}
                                                                 onClick={() => {
                                                                     if(accessToken){
-                                                                        navigate(`/my/lecture/video?id=${subItem.id}`)
+                                                                        getVideoInfo(subItem.id).then(res => {
+                                                                            navigate(`/my/lecture/video?id=${subItem.id}`)
+                                                                        }).catch(err => {
+                                                                            alert("현재는 들을 수 없는 강의입니다.")
+                                                                        })
+
                                                                     }else{
                                                                         //로그인 안된 상태면 alert
                                                                         alert("로그인이 필요한 서비스입니다.")

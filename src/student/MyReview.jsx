@@ -318,60 +318,60 @@ const body = (
             </Modal>
 
             <Grid container sx={{pr:{xs:"0rem", md:"2rem"}, pl:{xs:"2rem", md:"2rem"} , py:"2rem"}}>
-                <Grid item xs={12}>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DesktopDatePicker
-                            label="출발일"
-                            inputFormat="MM-DD-YYYY"
-                            value={startDate}
-                            onChange={(e) => {
-                                if (dateCheck(e, endDate)) {
-                                    setStartDate(e);
-                                }else {
-                                    setStartDate(e);
-                                    setEndDate(e);
-                                }
-                            }}
-                            renderInput={(params) => <TextField {...params} />}
-                        />
-                    </LocalizationProvider>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DesktopDatePicker
-                            label="종료일"
-                            inputFormat="MM/DD/YYYY"
-                            value={endDate}
-                            minDate={startDate}
-                            disablePast
-                            sx={{ml:"1rem"}}
-                            onChange={(e) => {
-                                console.log(e);
-                                if (startDate <= e) {
-                                    console.log("여기걸림")
-                                    setEndDate(e);
-                                }else {
-                                    setEndDate(startDate);
-                                }
-                            }}
-                            renderInput={(params) => <TextField {...params} />}
-                        />
-                    </LocalizationProvider>
-                    <Button
-                        variant="contained"
-                        sx={{
-                            py:"1rem",
-                            mx:"1rem",
-                            bgcolor: 'primary.main', // 버튼 배경색
-                            '&:hover': {
-                                bgcolor: 'primary.dark', // 호버 시 배경색 변경
-                            },
-                        }}
-                        onClick={() => {
-                            // 검색 버튼 클릭 시 로직...
-                        }}
-                    >
-                        검색
-                    </Button>
-                </Grid>
+                {/*<Grid item xs={12}>*/}
+                {/*    <LocalizationProvider dateAdapter={AdapterDayjs}>*/}
+                {/*        <DesktopDatePicker*/}
+                {/*            label="출발일"*/}
+                {/*            inputFormat="MM-DD-YYYY"*/}
+                {/*            value={startDate}*/}
+                {/*            onChange={(e) => {*/}
+                {/*                if (dateCheck(e, endDate)) {*/}
+                {/*                    setStartDate(e);*/}
+                {/*                }else {*/}
+                {/*                    setStartDate(e);*/}
+                {/*                    setEndDate(e);*/}
+                {/*                }*/}
+                {/*            }}*/}
+                {/*            renderInput={(params) => <TextField {...params} />}*/}
+                {/*        />*/}
+                {/*    </LocalizationProvider>*/}
+                {/*    <LocalizationProvider dateAdapter={AdapterDayjs}>*/}
+                {/*        <DesktopDatePicker*/}
+                {/*            label="종료일"*/}
+                {/*            inputFormat="MM/DD/YYYY"*/}
+                {/*            value={endDate}*/}
+                {/*            minDate={startDate}*/}
+                {/*            disablePast*/}
+                {/*            sx={{ml:"1rem"}}*/}
+                {/*            onChange={(e) => {*/}
+                {/*                console.log(e);*/}
+                {/*                if (startDate <= e) {*/}
+                {/*                    console.log("여기걸림")*/}
+                {/*                    setEndDate(e);*/}
+                {/*                }else {*/}
+                {/*                    setEndDate(startDate);*/}
+                {/*                }*/}
+                {/*            }}*/}
+                {/*            renderInput={(params) => <TextField {...params} />}*/}
+                {/*        />*/}
+                {/*    </LocalizationProvider>*/}
+                {/*    <Button*/}
+                {/*        variant="contained"*/}
+                {/*        sx={{*/}
+                {/*            py:"1rem",*/}
+                {/*            mx:"1rem",*/}
+                {/*            bgcolor: 'primary.main', // 버튼 배경색*/}
+                {/*            '&:hover': {*/}
+                {/*                bgcolor: 'primary.dark', // 호버 시 배경색 변경*/}
+                {/*            },*/}
+                {/*        }}*/}
+                {/*        onClick={() => {*/}
+                {/*            // 검색 버튼 클릭 시 로직...*/}
+                {/*        }}*/}
+                {/*    >*/}
+                {/*        검색*/}
+                {/*    </Button>*/}
+                {/*</Grid>*/}
                 <Grid container item xs={12} sx={{pt:"3rem", mt:0, px:{xs:"5%", md:"20%"}}}>
 
 
