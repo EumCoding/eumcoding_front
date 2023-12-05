@@ -750,57 +750,63 @@ function LectureInfo(props) {
                                     <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />}>
                                         <span className={styles.font_curriculum_title}>{item.name}</span>
                                     </AccordionSummary>
-                                    <Grid container sx={{width:"100%", mb:"0.8rem", pl:"1rem",
-                                        display:"flex", justifyContent:"flex-start", alignItems:"center"
-                                    }} >
-                                        <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                                            소요시간 :
-                                        </Typography>
-                                        {editTimetaken[idx] && (
-                                            <TextField type={"number"} variant={"standard"} value={newTimeTaken} onChange={(e) => setNewTimeTaken(e.target.value)} />
-                                        )}
-                                        {!editTimetaken[idx] && (
-                                            <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>{curriculum[idx].sectionDTOList[0].timetaken}</Typography>
-                                        )}
-                                        <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>일
-                                            {!editTimetaken[idx] && (
-                                                <EditIcon
-                                                    onClick={() => {
-                                                        // 클릭시 해당 idx의 editTimetaken을 true로 변경
-                                                        let array = JSON.parse(JSON.stringify(editTimetaken)); // 깊은 복사
-                                                        array[idx] = true;
-                                                        console.log(array);
-                                                        setEditTimetaken(array);
-                                                        setNewTimeTaken(curriculum[idx].sectionDTOList[0].timetaken); // newTimetaken를 기존의 timeTaken으로 초기화
-                                                    }}
-                                                />
-                                            )}
-                                            {editTimetaken[idx] && (
-                                                <ClearIcon
-                                                    onClick={() => {
-                                                        // 클릭시 해당 idx의 editTimetaken을 true로 변경
-                                                        let array = JSON.parse(JSON.stringify(editTimetaken)); // 깊은 복사
-                                                        array[idx] = false;
-                                                        console.log(array);
-                                                        setEditTimetaken(array);
-                                                    }}
-                                                />
-                                            )}
-                                            {editTimetaken[idx] && (
-                                                <CheckIcon
-                                                    onClick={() => {
-                                                         editTimeTaken(curriculum[idx].curriculumId, newTimeTaken).then((res) => {
-                                                                 getSectionInfo(params.value); // Section 정보 다시 불러옴
-                                                                 // 커리큘럼 정보도 다시 불러옴
-                                                                 getCurriculum(params.value);
-                                                             }
-                                                         )
-                                                    }}
-                                                />
-                                            )}
+                                    {curriculum.map((curItem, curIndex) => {
+                                        if(curItem.sectionDTOList[0].sectionId === item.id){
+                                            return(
+                                                <Grid container sx={{width:"100%", mb:"0.8rem", pl:"1rem",
+                                                    display:"flex", justifyContent:"flex-start", alignItems:"center"
+                                                }} >
+                                                    <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                                                        소요시간 :
+                                                    </Typography>
+                                                    {editTimetaken[idx] && (
+                                                        <TextField type={"number"} variant={"standard"} value={newTimeTaken} onChange={(e) => setNewTimeTaken(e.target.value)} />
+                                                    )}
+                                                    {!editTimetaken[idx] && (
+                                                        <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>{curItem.sectionDTOList[0].timetaken}</Typography>
+                                                    )}
+                                                    <Typography sx={{display:"flex", justifyContent:"flex-start", alignItems:"center"}}>일
+                                                        {!editTimetaken[idx] && (
+                                                            <EditIcon
+                                                                onClick={() => {
+                                                                    // 클릭시 해당 idx의 editTimetaken을 true로 변경
+                                                                    let array = JSON.parse(JSON.stringify(editTimetaken)); // 깊은 복사
+                                                                    array[idx] = true;
+                                                                    console.log(array);
+                                                                    setEditTimetaken(array);
+                                                                    setNewTimeTaken(curItem.sectionDTOList[0].timetaken); // newTimetaken를 기존의 timeTaken으로 초기화
+                                                                }}
+                                                            />
+                                                        )}
+                                                        {editTimetaken[idx] && (
+                                                            <ClearIcon
+                                                                onClick={() => {
+                                                                    // 클릭시 해당 idx의 editTimetaken을 true로 변경
+                                                                    let array = JSON.parse(JSON.stringify(editTimetaken)); // 깊은 복사
+                                                                    array[idx] = false;
+                                                                    console.log(array);
+                                                                    setEditTimetaken(array);
+                                                                }}
+                                                            />
+                                                        )}
+                                                        {editTimetaken[idx] && (
+                                                            <CheckIcon
+                                                                onClick={() => {
+                                                                    editTimeTaken(curItem.curriculumId, newTimeTaken).then((res) => {
+                                                                            getSectionInfo(params.value); // Section 정보 다시 불러옴
+                                                                            // 커리큘럼 정보도 다시 불러옴
+                                                                            getCurriculum(params.value);
+                                                                        }
+                                                                    )
+                                                                }}
+                                                            />
+                                                        )}
 
-                                        </Typography>
-                                    </Grid>
+                                                    </Typography>
+                                                </Grid>
+                                            )
+                                        }
+                                    })}
                                     {item.videoDTOList && item.videoDTOList.map((subItem, subIdx) => {
                                         return(
                                             <AccordionDetails>

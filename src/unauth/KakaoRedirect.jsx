@@ -35,6 +35,8 @@ const KakaoRedirect = () => {
         } catch (error) {
             console.error("카카오 로그인 에러:", error);
             // 에러 처리 로직
+            alert("카카오 로그인에 실패했습니다.")
+            navigate('/login');
         }
     };
 

@@ -42,6 +42,7 @@ function Login(props) {
     },[accessToken])
 
     useEffect(() => {
+        window.Kakao.init(`${process.env.REACT_APP_KAKAO_JS_KEY}`); // 여기에 카카오 JavaScript 키 입력
         // 이미 로그인 상태인 경우 메인 페이지로 이동
         if (accessToken) {
             navigate("/main")

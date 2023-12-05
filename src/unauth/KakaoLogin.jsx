@@ -39,7 +39,8 @@ const KakaoRedirect = () => {
                     // 에러 처리 로직
                     console.error('서버 에러:', error);
                     // 에러 페이지로 리디렉션
-                        alert("카카오 로그인에 실패했습니다.")
+                    alert("카카오 로그인에 실패했습니다.")
+                    navigate('/login');
                 });
         }
     }, [navigate]);
