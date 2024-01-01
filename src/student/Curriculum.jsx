@@ -308,10 +308,10 @@ function Curriculum(props) {
                                             setStartDate(e);
                                             setEndDate(e);
                                         }
-                                        // 출발일은 오늘보다 이전 날짜가 될 수 없게
-                                        if (e < today) {
-                                            setStartDate(today);
-                                        }
+                                        // // 출발일은 오늘보다 이전 날짜가 될 수 없게
+                                        // if (e < today) {
+                                        //     setStartDate(today);
+                                        // }
                                     }}
                                     renderInput={(params) =>
                                         <TextField {...params} sx={{
