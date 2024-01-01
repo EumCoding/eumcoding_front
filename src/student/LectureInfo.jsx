@@ -750,7 +750,7 @@ function LectureInfo(props) {
                                     <AccordionSummary sx={{height:'3vw', backgroundColor:'#D9D9D9'}} expandIcon={<ExpandMoreIcon />}>
                                         <span className={styles.font_curriculum_title}>{item.name}</span>
                                     </AccordionSummary>
-                                    {curriculum.map((curItem, curIndex) => {
+                                    {curriculum && curriculum.map((curItem, curIndex) => {
                                         if(curItem.sectionDTOList[0].sectionId === item.id){
                                             return(
                                                 <Grid container sx={{width:"100%", mb:"0.8rem", pl:"1rem",
